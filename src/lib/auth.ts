@@ -12,6 +12,7 @@ const clientPromise = client.connect()
 
 export const authOptions: NextAuthOptions = {
   adapter: MongoDBAdapter(clientPromise),
+  trustHost: true,
   providers: [
     CredentialsProvider({
       name: "credentials",
