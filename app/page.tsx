@@ -1,103 +1,319 @@
-import Image from "next/image";
+'use client'
 
-export default function Home() {
-  return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+import { useSession } from "next-auth/react"
+import { useRouter } from "next/navigation"
+import { useEffect, useState } from "react"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
+import Layout from "@/components/Layout"
+import ProductCard from "@/components/ProductCard"
+import CategoryCard from "@/components/CategoryCard"
+import FeatureSection from "@/components/FeatureSection"
+import ProductCardSkeleton from "@/components/ProductCardSkeleton"
+import CategoryCardSkeleton from "@/components/CategoryCardSkeleton"
+import LoadingSpinner from "@/components/LoadingSpinner"
+import { 
+  ShoppingBag, 
+  TrendingUp, 
+  Star, 
+  Users, 
+  Search, 
+  ArrowRight,
+  Crown,
+  Zap,
+  Sparkles,
+  Code,
+  Image,
+  BookOpen
+} from "lucide-react"
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+export default function Dashboard() {
+  const { data: session, status } = useSession()
+  const router = useRouter()
+  const [isLoading, setIsLoading] = useState(true)
+
+  useEffect(() => {
+    if (status === "loading") return
+
+    if (!session) {
+      router.push("/auth/signin")
+      return
+    }
+
+    // 로딩 시뮬레이션
+    const timer = setTimeout(() => {
+      setIsLoading(false)
+    }, 2000)
+
+    return () => clearTimeout(timer)
+  }, [session, status, router])
+
+  const featuredProducts = [
+    {
+      id: 1,
+      title: "프리미엄 UI/UX 디자인 템플릿 컬렉션",
+      description: "현대적이고 세련된 웹사이트 템플릿 50종 + 디자인 시스템 가이드라인",
+      thumbnail: "/api/placeholder/400/225",
+      price: 89000,
+      originalPrice: 150000,
+      discountPercentage: 41,
+      rating: 4.9,
+      reviewCount: 847,
+      downloadCount: 12580,
+      author: "디자인스튜디오",
+      category: "UI/UX",
+      tags: ["웹디자인", "템플릿", "UI킷", "반응형"],
+      isNew: true,
+      isPopular: true
+    },
+    {
+      id: 2,
+      title: "React & Next.js 마스터 클래스 강의",
+      description: "최신 React 18과 Next.js 13 앱 라우터를 활용한 풀스택 개발 완성 코스",
+      thumbnail: "/api/placeholder/400/225",
+      price: 149000,
+      originalPrice: 299000,
+      discountPercentage: 50,
+      rating: 4.8,
+      reviewCount: 1205,
+      downloadCount: 8940,
+      author: "코딩마스터",
+      category: "개발",
+      tags: ["React", "Next.js", "JavaScript", "풀스택"],
+      isNew: false,
+      isPopular: true
+    },
+    {
+      id: 3,
+      title: "AI 생성 프롬프트 엔지니어링 가이드",
+      description: "ChatGPT, Claude, Midjourney 등 AI 도구 활용 완벽 가이드북",
+      thumbnail: "/api/placeholder/400/225",
+      price: 0,
+      originalPrice: 0,
+      discountPercentage: 0,
+      rating: 4.7,
+      reviewCount: 2847,
+      downloadCount: 45920,
+      author: "AI전문가",
+      category: "AI/ML",
+      tags: ["AI", "프롬프트", "ChatGPT", "생산성"],
+      isNew: true,
+      isPopular: false
+    },
+    {
+      id: 4,
+      title: "포토샵 & 일러스트레이터 디자인 패키지",
+      description: "실무에서 바로 쓸 수 있는 그래픽 디자인 소스 1000종",
+      thumbnail: "/api/placeholder/400/225",
+      price: 59000,
+      originalPrice: 120000,
+      discountPercentage: 51,
+      rating: 4.6,
+      reviewCount: 634,
+      downloadCount: 7820,
+      author: "그래픽플러스",
+      category: "디자인",
+      tags: ["포토샵", "일러스트", "그래픽", "템플릿"],
+      isNew: false,
+      isPopular: true
+    }
+  ]
+
+  const categories = [
+    {
+      id: 1,
+      title: "개발 & 프로그래밍",
+      description: "최신 프로그래밍 강의와 소스코드",
+      productCount: 2847,
+      icon: Code,
+      gradient: "bg-gradient-to-br from-blue-500 to-cyan-500",
+      href: "/categories/development",
+      isPopular: true
+    },
+    {
+      id: 2,
+      title: "디자인 & 크리에이티브",
+      description: "UI/UX, 그래픽 디자인 리소스",
+      productCount: 1925,
+      icon: Image,
+      gradient: "bg-gradient-to-br from-purple-500 to-pink-500",
+      href: "/categories/design",
+      isPopular: true
+    },
+    {
+      id: 3,
+      title: "비즈니스 & 마케팅",
+      description: "마케팅 전략과 비즈니스 툴킷",
+      productCount: 1456,
+      icon: TrendingUp,
+      gradient: "bg-gradient-to-br from-emerald-500 to-teal-500",
+      href: "/categories/business",
+      isPopular: false
+    },
+    {
+      id: 4,
+      title: "교육 & 학습",
+      description: "온라인 강의와 교육 자료",
+      productCount: 3241,
+      icon: BookOpen,
+      gradient: "bg-gradient-to-br from-orange-500 to-red-500",
+      href: "/categories/education",
+      isPopular: true
+    }
+  ]
+
+  if (status === "loading" || isLoading) {
+    return (
+      <Layout>
+        <div className="flex items-center justify-center min-h-screen">
+          <LoadingSpinner />
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+      </Layout>
+    )
+  }
+
+  if (!session) {
+    return null
+  }
+
+  return (
+    <Layout>
+      <div className="space-y-12">
+        {/* 🎯 CLEAN WELCOME SECTION 🎯 */}
+        <div className="relative bg-gradient-to-r from-blue-600 to-indigo-700 rounded-2xl p-8 md:p-12 text-white overflow-hidden">
+          {/* 간단한 배경 장식 */}
+          <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-white/10 to-transparent rounded-full -translate-y-32 translate-x-32"></div>
+          
+          <div className="relative z-10 max-w-3xl">
+            <h1 className="text-3xl md:text-4xl font-bold mb-4 leading-tight">
+              안녕하세요, <span className="text-blue-200">{session.user?.name}</span>님! 👋
+            </h1>
+
+            <p className="text-blue-100 mb-8 text-lg leading-relaxed">
+              <span className="font-semibold text-white">WAgent</span>에서 필요한 디지털 자료를 찾아보세요.
+              <br />
+              <span className="text-blue-200">다양한 프리미엄 콘텐츠</span>를 만나보실 수 있습니다.
+            </p>
+            
+            <div className="flex flex-col sm:flex-row gap-4">
+              <Button className="bg-white text-blue-600 hover:bg-blue-50 font-semibold px-6 py-3 rounded-lg shadow-md hover:shadow-lg transition-all duration-200">
+                <Search className="h-5 w-5 mr-2" />
+                자료 검색하기
+              </Button>
+              
+              <Button variant="outline" className="border-2 border-white/30 text-white hover:bg-white hover:text-blue-600 font-semibold px-6 py-3 rounded-lg backdrop-blur-sm bg-white/10 transition-all duration-200">
+                카테고리 둘러보기
+              </Button>
+            </div>
+          </div>
+        </div>
+
+        {/* 📊 CLEAN STATS SECTION 📊 */}
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+          {/* 전체 상품 카드 */}
+          <Card className="p-6 hover:shadow-lg transition-shadow duration-200">
+            <div className="flex items-center space-x-4">
+              <div className="p-3 bg-blue-100 rounded-lg">
+                <ShoppingBag className="h-6 w-6 text-blue-600" />
+              </div>
+              <div>
+                <p className="text-sm font-medium text-gray-600">전체 상품</p>
+                <p className="text-2xl font-bold text-gray-900">9,057</p>
+                <p className="text-xs text-blue-600">다양한 카테고리</p>
+              </div>
+            </div>
+          </Card>
+
+          {/* 이번 주 인기 카드 */}
+          <Card className="p-6 hover:shadow-lg transition-shadow duration-200">
+            <div className="flex items-center space-x-4">
+              <div className="p-3 bg-green-100 rounded-lg">
+                <TrendingUp className="h-6 w-6 text-green-600" />
+              </div>
+              <div>
+                <p className="text-sm font-medium text-gray-600">이번 주 인기</p>
+                <p className="text-2xl font-bold text-gray-900">1,234</p>
+                <p className="text-xs text-green-600">신규 다운로드</p>
+              </div>
+            </div>
+          </Card>
+
+          {/* 평균 평점 카드 */}
+          <Card className="p-6 hover:shadow-lg transition-shadow duration-200">
+            <div className="flex items-center space-x-4">
+              <div className="p-3 bg-yellow-100 rounded-lg">
+                <Star className="h-6 w-6 text-yellow-600" />
+              </div>
+              <div>
+                <p className="text-sm font-medium text-gray-600">평균 평점</p>
+                <p className="text-2xl font-bold text-gray-900">4.8</p>
+                <p className="text-xs text-yellow-600">높은 만족도</p>
+              </div>
+            </div>
+          </Card>
+
+          {/* 활성 사용자 카드 */}
+          <Card className="p-6 hover:shadow-lg transition-shadow duration-200">
+            <div className="flex items-center space-x-4">
+              <div className="p-3 bg-purple-100 rounded-lg">
+                <Users className="h-6 w-6 text-purple-600" />
+              </div>
+              <div>
+                <p className="text-sm font-medium text-gray-600">활성 사용자</p>
+                <p className="text-2xl font-bold text-gray-900">12.5K</p>
+                <p className="text-xs text-purple-600">온라인 지금</p>
+              </div>
+            </div>
+          </Card>
+        </div>
+
+        {/* 🎯 FEATURED PRODUCTS 🎯 */}
+        <div className="space-y-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-2">
+                오늘의 추천 상품
+              </h2>
+              <p className="text-gray-600">엄선된 디지털 자료들을 만나보세요</p>
+            </div>
+            <Button variant="outline" className="hover:bg-blue-50 hover:text-blue-600 transition-colors duration-200">
+              전체보기 <ArrowRight className="ml-2 h-4 w-4" />
+            </Button>
+          </div>
+
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4">
+            {featuredProducts.map((product) => (
+              <div key={product.id}>
+                <ProductCard {...product} />
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* 📂 CATEGORIES 📂 */}
+        <div className="space-y-6">
+          <div className="text-center">
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">
+              카테고리별 자료
+            </h2>
+            <p className="text-gray-600">원하는 분야의 전문 자료를 찾아보세요</p>
+          </div>
+
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+            {categories.map((category) => (
+              <div key={category.id}>
+                <CategoryCard {...category} />
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* ✨ FEATURES SHOWCASE ✨ */}
+        <div>
+          <FeatureSection />
+        </div>
     </div>
-  );
+    </Layout>
+  )
 }
