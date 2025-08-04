@@ -36,9 +36,13 @@ export default function SimpleSignInPage() {
         setMessage('로그인 성공! 리다이렉트 중...')
         setMessageType('success')
         
-        // 잠시 후 리다이렉트
+        // 역할별 리다이렉트
         setTimeout(() => {
-          router.push('/')
+          if (data.user.role === 'admin') {
+            router.push('/simple-dashboard')
+          } else {
+            router.push('/user-dashboard')
+          }
           window.location.reload() // 강제 새로고침으로 인증 상태 갱신
         }, 1000)
       } else {
@@ -140,14 +144,25 @@ export default function SimpleSignInPage() {
               </p>
             </div>
 
-            {/* 기존 로그인으로 돌아가기 */}
-            <div className="mt-4 text-center">
-              <button
-                onClick={() => router.push('/auth/signin')}
-                className="text-sm text-gray-500 hover:text-gray-700"
-              >
-                기존 로그인 방식으로 돌아가기
-              </button>
+            {/* 회원가입 및 기존 로그인 링크 */}
+            <div className="mt-4 text-center space-y-2">
+              <div>
+                <span className="text-sm text-gray-600">계정이 없으신가요? </span>
+                <button
+                  onClick={() => router.push('/auth/signup')}
+                  className="text-sm text-blue-600 hover:text-blue-800 font-medium"
+                >
+                  회원가입
+                </button>
+              </div>
+              <div>
+                <button
+                  onClick={() => router.push('/auth/signin')}
+                  className="text-sm text-gray-500 hover:text-gray-700"
+                >
+                  기존 로그인 방식으로 돌아가기
+                </button>
+              </div>
             </div>
           </CardContent>
         </Card>
