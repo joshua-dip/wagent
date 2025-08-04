@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import { useParams } from 'next/navigation'
+import { useSimpleAuth } from '@/hooks/useSimpleAuth'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { 
@@ -41,9 +42,15 @@ interface Product {
 
 export default function ProductDetailPage() {
   const { data: session, status } = useSession()
+  const simpleAuth = useSimpleAuth()
   const router = useRouter()
   const params = useParams()
   const productId = params.id as string
+
+  // 두 인증 시스템 통합
+  const currentUser = simpleAuth.user || session?.user
+  const isAuthenticated = simpleAuth.isAuthenticated || !!session
+  const authLoading = simpleAuth.isLoading || status === "loading"
 
   const [product, setProduct] = useState<Product | null>(null)
   const [loading, setLoading] = useState(true)
@@ -79,8 +86,8 @@ export default function ProductDetailPage() {
 
   // 다운로드 처리
   const handleDownload = async () => {
-    if (!session?.user?.email) {
-      router.push('/auth/signin')
+    if (!isAuthenticated) {
+      router.push('/auth/simple-signin')
       return
     }
 
@@ -342,7 +349,7 @@ export default function ProductDetailPage() {
                       <p className="text-sm text-gray-600">로그인 후 바로 다운로드하세요</p>
                     </div>
                     
-                    {session?.user?.email ? (
+                    {isAuthenticated ? (
                       <Button 
                         onClick={handleDownload}
                         disabled={downloading}
@@ -362,7 +369,7 @@ export default function ProductDetailPage() {
                       </Button>
                     ) : (
                       <Button 
-                        onClick={() => router.push('/auth/signin')}
+                        onClick={() => router.push('/auth/simple-signin')}
                         className="w-full py-3 text-lg font-semibold bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600"
                       >
                         로그인 후 다운로드
