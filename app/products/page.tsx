@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import { useSession } from 'next-auth/react'
 import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
@@ -60,7 +60,8 @@ const categories = [
   { value: 'other', label: '기타' }
 ]
 
-export default function ProductsPage() {
+// SearchParams를 사용하는 컴포넌트 분리
+function ProductsContent() {
   const { data: session } = useSession()
   const searchParams = useSearchParams()
   const [products, setProducts] = useState<Product[]>([])
@@ -353,5 +354,20 @@ export default function ProductsPage() {
         )}
       </div>
     </div>
+  )
+}
+
+export default function ProductsPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-gray-600">상품을 불러오는 중...</p>
+        </div>
+      </div>
+    }>
+      <ProductsContent />
+    </Suspense>
   )
 }
