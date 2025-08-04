@@ -20,7 +20,8 @@ import {
   Code,
   Star,
   TrendingUp,
-  Gift
+  Gift,
+  Database
 } from "lucide-react"
 
 const sidebarSections = [
