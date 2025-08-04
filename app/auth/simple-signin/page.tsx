@@ -41,7 +41,7 @@ export default function SimpleSignInPage() {
           if (data.user.role === 'admin') {
             router.push('/simple-dashboard')
           } else {
-            router.push('/user-dashboard')
+            router.push('/') // 일반 사용자는 메인 페이지로
           }
           window.location.reload() // 강제 새로고침으로 인증 상태 갱신
         }, 1000)
