@@ -6,14 +6,14 @@ import multerS3 from 'multer-s3';
 
 // AWS S3 클라이언트 설정
 export const s3Client = new S3Client({
-  region: process.env.AWS_REGION || 'ap-northeast-2', // 서울 리전
+  region: process.env.S3_REGION || process.env.AWS_REGION || 'ap-northeast-2', // 서울 리전
   credentials: {
-    accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
-    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
+    accessKeyId: process.env.S3_ACCESS_KEY_ID || process.env.AWS_ACCESS_KEY_ID!,
+    secretAccessKey: process.env.S3_SECRET_ACCESS_KEY || process.env.AWS_SECRET_ACCESS_KEY!,
   },
 });
 
-export const BUCKET_NAME = process.env.AWS_S3_BUCKET_NAME || 'wagent-products';
+export const BUCKET_NAME = process.env.S3_BUCKET_NAME || process.env.AWS_S3_BUCKET_NAME || 'wagent-products';
 
 // Multer S3 설정
 export const uploadToS3 = multer({
