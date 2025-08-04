@@ -3,6 +3,7 @@
 import { useState } from "react"
 import { signIn, getSession } from "next-auth/react"
 import { useRouter } from "next/navigation"
+import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
@@ -34,7 +35,12 @@ export default function SignInPage() {
         // 세션 확인 후 리디렉션
         const session = await getSession()
         if (session) {
-          router.push("/")
+          // 관리자인 경우 관리자 대시보드로 이동
+          if (email === "wnsbr2898@naver.com") {
+            router.push("/admin/dashboard")
+          } else {
+            router.push("/")
+          }
         }
       }
     } catch (error) {
@@ -44,14 +50,9 @@ export default function SignInPage() {
     }
   }
 
-  const demoAccounts = [
-    { email: "admin@wagent.com", password: "admin123", role: "관리자" },
-    { email: "test@wagent.com", password: "test123", role: "테스트 사용자" },
-  ]
-
-  const fillDemoAccount = (account: { email: string; password: string }) => {
-    setEmail(account.email)
-    setPassword(account.password)
+  const fillAdminAccount = () => {
+    setEmail("wnsbr2898@naver.com")
+    setPassword("123456")
   }
 
   return (
@@ -62,7 +63,7 @@ export default function SignInPage() {
           <div className="mx-auto w-16 h-16 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl flex items-center justify-center">
             <ShoppingBag className="h-8 w-8 text-white" />
           </div>
-          <h1 className="text-3xl font-bold text-gray-900">더블유마켓</h1>
+          <h1 className="text-3xl font-bold text-gray-900">WAgent</h1>
           <p className="text-gray-600">프리미엄 디지털 자료 마켓플레이스</p>
         </div>
 
@@ -124,30 +125,25 @@ export default function SignInPage() {
               </Button>
             </form>
 
-            {/* 데모 계정 */}
+            {/* 관리자 계정 */}
             <div className="mt-6 pt-6 border-t border-gray-200">
-              <p className="text-sm text-gray-600 text-center mb-3">테스트 계정</p>
-              <div className="space-y-2">
-                {demoAccounts.map((account, index) => (
-                  <button
-                    key={index}
-                    onClick={() => fillDemoAccount(account)}
-                    className="w-full text-left p-3 text-sm bg-gray-50 hover:bg-gray-100 rounded-md transition-colors"
-                  >
-                    <div className="font-medium">{account.role}</div>
-                    <div className="text-gray-600">{account.email}</div>
-                  </button>
-                ))}
-              </div>
+              <p className="text-sm text-gray-600 text-center mb-3">관리자 로그인</p>
+              <button
+                onClick={fillAdminAccount}
+                className="w-full text-left p-3 text-sm bg-gray-50 hover:bg-gray-100 rounded-md transition-colors"
+              >
+                <div className="font-medium">관리자</div>
+                <div className="text-gray-600">wnsbr2898@naver.com</div>
+              </button>
             </div>
 
             {/* 회원가입 링크 */}
             <div className="mt-6 text-center">
               <p className="text-sm text-gray-600">
                 계정이 없으신가요?{" "}
-                <a href="#" className="font-medium text-blue-600 hover:text-blue-500">
+                <Link href="/auth/signup" className="font-medium text-blue-600 hover:text-blue-500">
                   회원가입
-                </a>
+                </Link>
               </p>
             </div>
           </CardContent>
@@ -155,7 +151,7 @@ export default function SignInPage() {
 
         {/* 추가 정보 */}
         <div className="text-center text-sm text-gray-500">
-          <p>로그인하면 더블유마켓의 서비스 약관에 동의하게 됩니다.</p>
+          <p>로그인하면 WAgent의 서비스 약관에 동의하게 됩니다.</p>
         </div>
       </div>
     </div>

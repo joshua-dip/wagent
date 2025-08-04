@@ -19,7 +19,8 @@ import {
   Music,
   Code,
   Star,
-  TrendingUp
+  TrendingUp,
+  Gift
 } from "lucide-react"
 
 const sidebarSections = [
@@ -40,6 +41,16 @@ const sidebarSections = [
         title: "추천 상품",
         href: "/recommended",
         icon: Star,
+      },
+      {
+        title: "무료 자료",
+        href: "/products/free",
+        icon: Gift,
+      },
+      {
+        title: "관리자 메뉴",
+        href: "/admin/dashboard",
+        icon: Settings,
       },
     ]
   },

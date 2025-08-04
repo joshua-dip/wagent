@@ -3,7 +3,7 @@
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { useSession, signOut } from "next-auth/react"
-import { ShoppingBag, Search, User, LogOut, ShoppingCart, Heart, Bell } from "lucide-react"
+import { ShoppingBag, Search, User, LogOut, ShoppingCart, Heart, Bell, Settings, Upload } from "lucide-react"
 import Link from "next/link"
 
 export default function Header() {
@@ -69,6 +69,24 @@ export default function Header() {
                 <ShoppingCart className="h-5 w-5 text-gray-600" />
                 <span className="absolute -top-1 -right-1 h-4 w-4 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full text-xs text-white flex items-center justify-center">3</span>
               </Button>
+
+              {/* 관리자 전용 메뉴 */}
+              {session.user?.email === "wnsbr2898@naver.com" && (
+                <div className="flex items-center space-x-2 pr-4 border-r border-gray-200">
+                  <Link href="/admin/dashboard">
+                    <Button variant="outline" size="sm" className="border-blue-200 text-blue-600 hover:bg-blue-50 flex items-center gap-1">
+                      <Settings className="w-4 h-4" />
+                      관리자
+                    </Button>
+                  </Link>
+                  <Link href="/admin/upload">
+                    <Button variant="outline" size="sm" className="border-green-200 text-green-600 hover:bg-green-50 flex items-center gap-1">
+                      <Upload className="w-4 h-4" />
+                      업로드
+                    </Button>
+                  </Link>
+                </div>
+              )}
 
               {/* 사용자 메뉴 */}
               <div className="flex items-center space-x-4 pl-4 border-l border-gray-200">

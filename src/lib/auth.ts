@@ -2,6 +2,8 @@ import { NextAuthOptions } from "next-auth"
 import CredentialsProvider from "next-auth/providers/credentials"
 import { MongoDBAdapter } from "@auth/mongodb-adapter"
 import { MongoClient } from "mongodb"
+import connectDB from "@/lib/db"
+import User from "@/models/User"
 
 if (!process.env.MONGODB_URI) {
   throw new Error('MONGODB_URI가 설정되지 않았습니다')
@@ -25,37 +27,37 @@ export const authOptions: NextAuthOptions = {
           return null
         }
 
-        // 데모 계정들
-        const demoAccounts = [
-          {
-            email: "admin@wagent.com",
-            password: "admin123",
-            id: "1",
-            name: "관리자",
-            role: "admin"
-          },
-          {
-            email: "test@wagent.com", 
-            password: "test123",
-            id: "2",
-            name: "테스트 사용자",
-            role: "user"
+        try {
+          await connectDB()
+          
+          // 먼저 DB에서 사용자 찾기
+          const user = await User.findOne({ 
+            email: credentials.email.toLowerCase(),
+            isActive: true 
+          })
+          
+          if (user && await user.comparePassword(credentials.password)) {
+            return {
+              id: user._id.toString(),
+              email: user.email,
+              name: user.name,
+            }
           }
-        ]
 
-        const user = demoAccounts.find(
-          account => account.email === credentials.email && account.password === credentials.password
-        )
-
-        if (user) {
-          return {
-            id: user.id,
-            email: user.email,
-            name: user.name,
+          // DB에 없으면 관리자 계정으로 폴백
+          if (credentials.email === "wnsbr2898@naver.com" && credentials.password === "123456") {
+            return {
+              id: "wnsbr2898@naver.com",
+              email: "wnsbr2898@naver.com",
+              name: "관리자",
+            }
           }
+
+          return null
+        } catch (error) {
+          console.error('로그인 오류:', error)
+          return null
         }
-
-        return null
       }
     }),
     // 필요시 소셜 로그인 프로바이더 추가

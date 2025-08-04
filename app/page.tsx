@@ -27,11 +27,16 @@ import {
   Image,
   BookOpen
 } from "lucide-react"
+import Link from "next/link"
+import { Settings, Upload, Gift, Download } from "lucide-react"
 
 export default function Dashboard() {
   const { data: session, status } = useSession()
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(true)
+  
+  // 관리자인지 확인
+  const isAdmin = session?.user?.email === "wnsbr2898@naver.com"
 
   useEffect(() => {
     if (status === "loading") return
@@ -180,6 +185,60 @@ export default function Dashboard() {
   return (
     <Layout>
       <div className="space-y-12">
+        {/* 관리자 전용 대시보드 링크 */}
+        {isAdmin && (
+          <div className="bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-2xl p-6 shadow-lg">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 bg-gradient-to-r from-amber-500 to-orange-500 rounded-xl flex items-center justify-center">
+                  <Settings className="w-6 h-6 text-white" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-gray-900">관리자 대시보드</h3>
+                  <p className="text-gray-600 text-sm">상품 관리, 업로드, 판매 분석을 확인하세요</p>
+                </div>
+              </div>
+              <div className="flex gap-3">
+                <Link href="/admin/upload">
+                  <Button variant="outline" className="border-orange-300 text-orange-700 hover:bg-orange-50">
+                    <Upload className="w-4 h-4 mr-2" />
+                    상품 업로드
+                  </Button>
+                </Link>
+                <Link href="/admin/dashboard">
+                  <Button className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600">
+                    <Settings className="w-4 h-4 mr-2" />
+                    대시보드 열기
+                  </Button>
+                </Link>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* 🎁 무료 자료 다운로드 섹션 🎁 */}
+        <div className="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-2xl p-6 shadow-lg">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 bg-gradient-to-r from-green-500 to-emerald-500 rounded-xl flex items-center justify-center">
+                <Gift className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <h3 className="text-lg font-bold text-gray-900">무료 자료 다운로드</h3>
+                <p className="text-gray-600 text-sm">프리미엄 품질의 무료 디지털 자료를 만나보세요</p>
+              </div>
+            </div>
+            <div className="flex gap-3">
+              <Link href="/products/free">
+                <Button className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600">
+                  <Download className="w-4 h-4 mr-2" />
+                  무료 자료 보기
+                </Button>
+              </Link>
+            </div>
+          </div>
+        </div>
+
         {/* 🎯 CLEAN WELCOME SECTION 🎯 */}
         <div className="relative bg-gradient-to-r from-blue-600 to-indigo-700 rounded-2xl p-8 md:p-12 text-white overflow-hidden">
           {/* 간단한 배경 장식 */}
