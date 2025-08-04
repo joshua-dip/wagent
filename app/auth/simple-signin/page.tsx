@@ -36,24 +36,24 @@ export default function SimpleSignInPage() {
         setMessage('로그인 성공! 리다이렉트 중...')
         setMessageType('success')
         
-        // 역할별 리다이렉트
-        setTimeout(() => {
-          if (data.user.role === 'admin') {
-            window.location.href = '/simple-dashboard'
-          } else {
-            window.location.href = '/' // 일반 사용자는 메인 페이지로
-          }
-        }, 1000)
+        // 로딩 상태 유지를 위해 setLoading을 false로 설정하지 않음
+        
+        // 역할별 리다이렉트 (즉시 실행)
+        if (data.user.role === 'admin') {
+          window.location.href = '/simple-dashboard'
+        } else {
+          window.location.href = '/' // 일반 사용자는 메인 페이지로
+        }
       } else {
         setMessage(data.error || '로그인에 실패했습니다.')
         setMessageType('error')
+        setLoading(false) // 로그인 실패 시 로딩 해제
       }
     } catch (error) {
       console.error('로그인 오류:', error)
       setMessage('로그인 중 오류가 발생했습니다.')
       setMessageType('error')
-    } finally {
-      setLoading(false)
+      setLoading(false) // 에러 시 즉시 로딩 해제
     }
   }
 
