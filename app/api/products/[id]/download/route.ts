@@ -6,21 +6,44 @@ import Product from "@/models/Product";
 import { ObjectId } from 'mongodb';
 import { downloadFile, getStorageInfo } from "@/lib/fileStorage";
 import { generateSecureDownloadUrl } from "@/lib/s3Config";
+import { cookies } from "next/headers";
+import { verify } from "jsonwebtoken";
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    // 세션 확인 (로그인 필요)
+    // 통합 인증 확인 (NextAuth + JWT)
     const session = await getServerSession(authOptions);
-    if (!session?.user?.email) {
+    let currentUser = null;
+    
+    if (session?.user?.email) {
+      // NextAuth 로그인
+      currentUser = session.user;
+    } else {
+      // JWT 토큰 확인
+      const cookieStore = await cookies();
+      const token = cookieStore.get("wagent-auth")?.value;
+      
+      if (token) {
+        try {
+          const decoded = verify(token, process.env.NEXTAUTH_SECRET || "fallback-secret") as any;
+          currentUser = decoded;
+        } catch (error) {
+          console.error("JWT 토큰 검증 실패:", error);
+        }
+      }
+    }
+
+    if (!currentUser) {
       return NextResponse.json({ error: "로그인이 필요합니다." }, { status: 401 });
     }
 
     await connectDB();
 
-    const { id } = params;
+    const resolvedParams = await params;
+    const { id } = resolvedParams;
 
     // ObjectId 유효성 검사
     if (!ObjectId.isValid(id)) {
