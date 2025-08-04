@@ -6,7 +6,7 @@ const JWT_SECRET = process.env.NEXTAUTH_SECRET || "simple-auth-secret-key";
 
 export async function GET(request: NextRequest) {
   try {
-    const cookieStore = cookies();
+    const cookieStore = await cookies();
     const token = cookieStore.get("wagent-auth")?.value;
 
     if (!token) {
@@ -34,7 +34,7 @@ export async function GET(request: NextRequest) {
 
 export async function DELETE() {
   try {
-    const cookieStore = cookies();
+    const cookieStore = await cookies();
     cookieStore.delete("wagent-auth");
     
     return NextResponse.json({ message: "로그아웃 완료" });
