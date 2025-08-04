@@ -7,6 +7,19 @@ const nextConfig: NextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: '**',
+      },
+    ],
+  },
+  // AWS Amplify 최적화
+  trailingSlash: false,
+  experimental: {
+    esmExternals: false,
+  },
 };
 
 export default nextConfig;
