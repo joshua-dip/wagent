@@ -47,11 +47,16 @@ const sidebarSections = [
         href: "/products/free",
         icon: Gift,
       },
-      {
-        title: "관리자 메뉴",
-        href: "/admin/dashboard",
-        icon: Settings,
-      },
+                {
+            title: "관리자 메뉴",
+            href: "/admin/dashboard",
+            icon: Settings,
+          },
+          {
+            title: "MongoDB 진단",
+            href: "/debug/mongodb",
+            icon: Database,
+          },
     ]
   },
   {
