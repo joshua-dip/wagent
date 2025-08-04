@@ -17,9 +17,6 @@ const nextConfig: NextConfig = {
   },
   // AWS Amplify 최적화
   trailingSlash: false,
-  experimental: {
-    esmExternals: false,
-  },
 };
 
 export default nextConfig;
