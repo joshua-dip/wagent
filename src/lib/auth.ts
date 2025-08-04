@@ -1,12 +1,9 @@
 import { NextAuthOptions } from "next-auth"
 import CredentialsProvider from "next-auth/providers/credentials"
-import connectDB from "@/lib/db"
-import User from "@/models/User"
 
 export const authOptions: NextAuthOptions = {
-  // MongoDBAdapter 제거 (Credentials Provider와 호환성 문제)
   trustHost: true,
-  secret: process.env.NEXTAUTH_SECRET,
+  secret: process.env.NEXTAUTH_SECRET || "fallback-secret-key",
   providers: [
     CredentialsProvider({
       name: "credentials",
