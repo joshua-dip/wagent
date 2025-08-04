@@ -22,7 +22,7 @@ const nextConfig: NextConfig = {
     MONGODB_URI: process.env.MONGODB_URI || '',
     NEXTAUTH_SECRET: process.env.NEXTAUTH_SECRET || '',
     NEXTAUTH_URL: process.env.NEXTAUTH_URL || '',
-    NODE_ENV: process.env.NODE_ENV || 'production',
+    // NODE_ENV는 Next.js 예약어라서 제외
     S3_ACCESS_KEY_ID: process.env.S3_ACCESS_KEY_ID || '',
     S3_SECRET_ACCESS_KEY: process.env.S3_SECRET_ACCESS_KEY || '',
     S3_REGION: process.env.S3_REGION || 'ap-northeast-2',
