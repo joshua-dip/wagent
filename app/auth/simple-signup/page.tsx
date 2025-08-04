@@ -59,7 +59,19 @@ export default function SimpleSignUpPage() {
       }
     } catch (error) {
       console.error('회원가입 네트워크 오류:', error)
-      setMessage('네트워크 오류가 발생했습니다. 다시 시도해주세요.')
+      
+      // 더 자세한 에러 메시지
+      if (error instanceof Error) {
+        if (error.message.includes('SyntaxError') || error.message.includes('JSON')) {
+          setMessage('서버 오류: API가 HTML을 반환했습니다. 환경변수 설정을 확인해주세요.')
+        } else if (error.message.includes('Failed to fetch')) {
+          setMessage('서버에 연결할 수 없습니다. 네트워크를 확인해주세요.')
+        } else {
+          setMessage(`오류: ${error.message}`)
+        }
+      } else {
+        setMessage('알 수 없는 오류가 발생했습니다.')
+      }
       setMessageType('error')
     } finally {
       setLoading(false)

@@ -1,10 +1,14 @@
 import mongoose from 'mongoose'
 
-if (!process.env.MONGODB_URI) {
-  throw new Error('MONGODB_URI가 설정되지 않았습니다')
+// 환경변수 체크를 런타임으로 이동
+const getMongoDbUri = (): string => {
+  const uri = process.env.MONGODB_URI
+  if (!uri) {
+    console.error('MONGODB_URI가 설정되지 않았습니다')
+    throw new Error('MONGODB_URI가 설정되지 않았습니다')
+  }
+  return uri
 }
-
-const MONGODB_URI: string = process.env.MONGODB_URI
 
 interface MongooseConnection {
   conn: typeof mongoose | null
@@ -34,7 +38,8 @@ async function connectDB(): Promise<typeof mongoose> {
     }
 
     console.log('새로운 MongoDB 연결 시도...')
-    cached.promise = mongoose.connect(MONGODB_URI, opts).then((mongoose) => {
+    const mongoUri = getMongoDbUri()
+    cached.promise = mongoose.connect(mongoUri, opts).then((mongoose) => {
       console.log('MongoDB 연결 성공!')
       return mongoose
     }).catch((error) => {
