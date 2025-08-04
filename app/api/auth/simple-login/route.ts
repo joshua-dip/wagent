@@ -28,7 +28,7 @@ export async function POST(request: NextRequest) {
         { expiresIn: "7d" }
       );
 
-      const cookieStore = cookies();
+      const cookieStore = await cookies();
       cookieStore.set("wagent-auth", token, {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
@@ -72,7 +72,7 @@ export async function POST(request: NextRequest) {
           { expiresIn: "7d" }
         );
 
-        const cookieStore = cookies();
+        const cookieStore = await cookies();
         cookieStore.set("wagent-auth", token, {
           httpOnly: true,
           secure: process.env.NODE_ENV === "production",

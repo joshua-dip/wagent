@@ -3,6 +3,7 @@
 import { useSession } from "next-auth/react"
 import { useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
+import { useSimpleAuth } from "@/hooks/useSimpleAuth"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -32,28 +33,20 @@ import { Settings, Upload, Gift, Download } from "lucide-react"
 
 export default function Dashboard() {
   const { data: session, status } = useSession()
+  const simpleAuth = useSimpleAuth()
   const router = useRouter()
-  const [isLoading, setIsLoading] = useState(true)
+  const [isLoading, setIsLoading] = useState(false)
   
-  // 관리자인지 확인
-  const isAdmin = session?.user?.email === "wnsbr2898@naver.com"
+  // 두 인증 시스템 중 하나라도 로그인되어 있으면 인증된 것으로 처리
+  const currentUser = simpleAuth.user || session?.user
+  const isAuthenticated = simpleAuth.isAuthenticated || !!session
+  const authLoading = simpleAuth.isLoading || status === "loading"
+  
+  // 관리자인지 확인 (두 시스템 모두 체크)
+  const isAdmin = currentUser?.email === "wnsbr2898@naver.com" || 
+                  simpleAuth.user?.role === 'admin'
 
-  useEffect(() => {
-    if (status === "loading") return
-
-    // 로그인하지 않은 사용자도 메인 페이지를 볼 수 있도록 수정
-    // if (!session) {
-    //   router.push("/auth/signin")
-    //   return
-    // }
-
-    // 로딩 시뮬레이션
-    const timer = setTimeout(() => {
-      setIsLoading(false)
-    }, 2000)
-
-    return () => clearTimeout(timer)
-  }, [session, status, router])
+  // useEffect 제거 - 더 이상 필요 없음
 
   const featuredProducts = [
     {
@@ -169,7 +162,7 @@ export default function Dashboard() {
     }
   ]
 
-  if (status === "loading" || isLoading) {
+  if (authLoading || isLoading) {
     return (
       <Layout>
         <div className="flex items-center justify-center min-h-screen">
@@ -179,9 +172,7 @@ export default function Dashboard() {
     )
   }
 
-  if (!session) {
-    return null
-  }
+  // 세션이 없어도 메인 페이지를 보여줌 (비로그인 사용자 허용)
 
   return (
     <Layout>
@@ -247,8 +238,8 @@ export default function Dashboard() {
           
           <div className="relative z-10 max-w-3xl">
             <h1 className="text-3xl md:text-4xl font-bold mb-4 leading-tight">
-              {session ? (
-                <>안녕하세요, <span className="text-blue-200">{session.user?.name}</span>님! 👋</>
+              {isAuthenticated ? (
+                <>안녕하세요, <span className="text-blue-200">{currentUser?.name}</span>님! 👋</>
               ) : (
                 <>프리미엄 디지털 콘텐츠의 세계로 오신 것을 환영합니다! 🌟</>
               )}
@@ -261,7 +252,7 @@ export default function Dashboard() {
             </p>
             
             <div className="flex flex-col sm:flex-row gap-4">
-              {session ? (
+              {isAuthenticated ? (
                 <>
                   <Link href="/products">
                     <Button className="bg-white text-blue-600 hover:bg-blue-50 font-semibold px-6 py-3 rounded-lg shadow-md hover:shadow-lg transition-all duration-200">
