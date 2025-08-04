@@ -8,13 +8,23 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { AlertCircle, CheckCircle2, Loader2 } from 'lucide-react'
 
-export default function SimpleSignInPage() {
+export default function SimpleSignUpPage() {
   const router = useRouter()
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
+  const [formData, setFormData] = useState({
+    email: '',
+    password: '',
+    name: ''
+  })
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState('')
   const [messageType, setMessageType] = useState<'success' | 'error' | ''>('')
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData(prev => ({
+      ...prev,
+      [e.target.name]: e.target.value
+    }))
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -22,36 +32,34 @@ export default function SimpleSignInPage() {
     setMessage('')
 
     try {
-      const response = await fetch('/api/auth/simple-login', {
+      console.log('회원가입 시도:', formData);
+      
+      const response = await fetch('/api/auth/simple-signup', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify(formData),
       })
 
       const data = await response.json()
+      console.log('회원가입 응답:', data);
 
       if (response.ok) {
-        setMessage('로그인 성공! 리다이렉트 중...')
+        setMessage('회원가입 성공! 로그인 페이지로 이동합니다...')
         setMessageType('success')
         
-        // 역할별 리다이렉트
+        // 성공 시 로그인 페이지로 이동
         setTimeout(() => {
-          if (data.user.role === 'admin') {
-            router.push('/simple-dashboard')
-          } else {
-            router.push('/user-dashboard')
-          }
-          window.location.reload() // 강제 새로고침으로 인증 상태 갱신
-        }, 1000)
+          router.push('/auth/simple-signin')
+        }, 2000)
       } else {
-        setMessage(data.error || '로그인에 실패했습니다.')
+        setMessage(data.error || '회원가입에 실패했습니다.')
         setMessageType('error')
       }
     } catch (error) {
-      console.error('로그인 오류:', error)
-      setMessage('로그인 중 오류가 발생했습니다.')
+      console.error('회원가입 네트워크 오류:', error)
+      setMessage('네트워크 오류가 발생했습니다. 다시 시도해주세요.')
       setMessageType('error')
     } finally {
       setLoading(false)
@@ -63,41 +71,57 @@ export default function SimpleSignInPage() {
       <div className="max-w-md w-full space-y-8">
         {/* 헤더 */}
         <div className="text-center">
-          <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-500 rounded-2xl flex items-center justify-center mx-auto mb-4">
+          <div className="w-16 h-16 bg-gradient-to-r from-green-500 to-emerald-500 rounded-2xl flex items-center justify-center mx-auto mb-4">
             <span className="text-white font-bold text-2xl">W</span>
           </div>
           <h2 className="text-3xl font-bold text-gray-900">WAgent</h2>
-          <p className="mt-2 text-gray-600">간단한 로그인 (디버깅용)</p>
+          <p className="mt-2 text-gray-600">간단한 회원가입 (디버깅용)</p>
         </div>
 
-        {/* 로그인 폼 */}
+        {/* 회원가입 폼 */}
         <Card className="shadow-xl">
           <CardHeader>
-            <CardTitle className="text-center text-xl">로그인</CardTitle>
+            <CardTitle className="text-center text-xl">회원가입</CardTitle>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-6">
               <div>
-                <Label htmlFor="email">이메일</Label>
+                <Label htmlFor="email">이메일 *</Label>
                 <Input
                   id="email"
+                  name="email"
                   type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="wnsbr2898@naver.com"
+                  value={formData.email}
+                  onChange={handleChange}
+                  placeholder="예: user@example.com"
                   required
                   className="mt-1"
                 />
               </div>
 
               <div>
-                <Label htmlFor="password">비밀번호</Label>
+                <Label htmlFor="password">비밀번호 *</Label>
                 <Input
                   id="password"
+                  name="password"
                   type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="123456"
+                  value={formData.password}
+                  onChange={handleChange}
+                  placeholder="6자 이상"
+                  required
+                  className="mt-1"
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="name">이름 *</Label>
+                <Input
+                  id="name"
+                  name="name"
+                  type="text"
+                  value={formData.name}
+                  onChange={handleChange}
+                  placeholder="예: 홍길동"
                   required
                   className="mt-1"
                 />
@@ -122,52 +146,46 @@ export default function SimpleSignInPage() {
               <Button
                 type="submit"
                 disabled={loading}
-                className="w-full bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600"
+                className="w-full bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600"
               >
                 {loading ? (
                   <div className="flex items-center gap-2">
                     <Loader2 className="w-4 h-4 animate-spin" />
-                    로그인 중...
+                    회원가입 중...
                   </div>
                 ) : (
-                  '로그인'
+                  '회원가입'
                 )}
               </Button>
             </form>
 
-            {/* 테스트 계정 안내 */}
+            {/* 특징 안내 */}
             <div className="mt-6 p-4 bg-blue-50 rounded-lg">
-              <p className="text-sm text-blue-700 font-medium mb-2">🧪 테스트 계정:</p>
-              <p className="text-sm text-blue-600">
-                이메일: wnsbr2898@naver.com<br />
-                비밀번호: 123456
-              </p>
+              <p className="text-sm text-blue-700 font-medium mb-2">🛠️ 간단한 회원가입 특징:</p>
+              <ul className="text-sm text-blue-600 space-y-1">
+                <li>• 필수 정보만 입력 (이메일, 비밀번호, 이름)</li>
+                <li>• 간단한 validation (복잡한 규칙 없음)</li>
+                <li>• 빠른 처리 및 디버깅 로그</li>
+              </ul>
             </div>
 
-            {/* 회원가입 및 기존 로그인 링크 */}
+            {/* 로그인으로 이동 */}
             <div className="mt-4 text-center space-y-2">
               <div>
-                <span className="text-sm text-gray-600">계정이 없으신가요? </span>
+                <span className="text-sm text-gray-600">이미 계정이 있으신가요? </span>
                 <button
-                  onClick={() => router.push('/auth/simple-signup')}
-                  className="text-sm text-green-600 hover:text-green-800 font-medium"
-                >
-                  간단한 회원가입
-                </button>
-                <span className="text-gray-400 mx-2">|</span>
-                <button
-                  onClick={() => router.push('/auth/signup')}
+                  onClick={() => router.push('/auth/simple-signin')}
                   className="text-sm text-blue-600 hover:text-blue-800 font-medium"
                 >
-                  기존 회원가입
+                  로그인
                 </button>
               </div>
               <div>
                 <button
-                  onClick={() => router.push('/auth/signin')}
+                  onClick={() => router.push('/auth/signup')}
                   className="text-sm text-gray-500 hover:text-gray-700"
                 >
-                  기존 로그인 방식으로 돌아가기
+                  기존 회원가입 방식으로 돌아가기
                 </button>
               </div>
             </div>
