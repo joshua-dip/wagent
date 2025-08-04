@@ -39,11 +39,10 @@ export default function SimpleSignInPage() {
         // 역할별 리다이렉트
         setTimeout(() => {
           if (data.user.role === 'admin') {
-            router.push('/simple-dashboard')
+            window.location.href = '/simple-dashboard'
           } else {
-            router.push('/') // 일반 사용자는 메인 페이지로
+            window.location.href = '/' // 일반 사용자는 메인 페이지로
           }
-          window.location.reload() // 강제 새로고침으로 인증 상태 갱신
         }, 1000)
       } else {
         setMessage(data.error || '로그인에 실패했습니다.')

@@ -51,7 +51,7 @@ export default function SimpleSignUpPage() {
         
         // 성공 시 로그인 페이지로 이동
         setTimeout(() => {
-          router.push('/auth/simple-signin')
+          window.location.href = '/auth/simple-signin'
         }, 2000)
       } else {
         setMessage(data.error || '회원가입에 실패했습니다.')
