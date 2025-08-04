@@ -41,10 +41,11 @@ export default function Dashboard() {
   useEffect(() => {
     if (status === "loading") return
 
-    if (!session) {
-      router.push("/auth/signin")
-      return
-    }
+    // 로그인하지 않은 사용자도 메인 페이지를 볼 수 있도록 수정
+    // if (!session) {
+    //   router.push("/auth/signin")
+    //   return
+    // }
 
     // 로딩 시뮬레이션
     const timer = setTimeout(() => {
@@ -246,7 +247,11 @@ export default function Dashboard() {
           
           <div className="relative z-10 max-w-3xl">
             <h1 className="text-3xl md:text-4xl font-bold mb-4 leading-tight">
-              안녕하세요, <span className="text-blue-200">{session.user?.name}</span>님! 👋
+              {session ? (
+                <>안녕하세요, <span className="text-blue-200">{session.user?.name}</span>님! 👋</>
+              ) : (
+                <>프리미엄 디지털 콘텐츠의 세계로 오신 것을 환영합니다! 🌟</>
+              )}
             </h1>
 
             <p className="text-blue-100 mb-8 text-lg leading-relaxed">
@@ -256,14 +261,37 @@ export default function Dashboard() {
             </p>
             
             <div className="flex flex-col sm:flex-row gap-4">
-              <Button className="bg-white text-blue-600 hover:bg-blue-50 font-semibold px-6 py-3 rounded-lg shadow-md hover:shadow-lg transition-all duration-200">
-                <Search className="h-5 w-5 mr-2" />
-                자료 검색하기
-              </Button>
-              
-              <Button variant="outline" className="border-2 border-white/30 text-white hover:bg-white hover:text-blue-600 font-semibold px-6 py-3 rounded-lg backdrop-blur-sm bg-white/10 transition-all duration-200">
-                카테고리 둘러보기
-              </Button>
+              {session ? (
+                <>
+                  <Link href="/products">
+                    <Button className="bg-white text-blue-600 hover:bg-blue-50 font-semibold px-6 py-3 rounded-lg shadow-md hover:shadow-lg transition-all duration-200">
+                      <Search className="h-5 w-5 mr-2" />
+                      자료 검색하기
+                    </Button>
+                  </Link>
+                  
+                  <Link href="/my/purchases">
+                    <Button variant="outline" className="border-2 border-white/30 text-white hover:bg-white hover:text-blue-600 font-semibold px-6 py-3 rounded-lg backdrop-blur-sm bg-white/10 transition-all duration-200">
+                      <ShoppingBag className="h-5 w-5 mr-2" />
+                      구매 내역 보기
+                    </Button>
+                  </Link>
+                </>
+              ) : (
+                <>
+                  <Link href="/auth/signin">
+                    <Button className="bg-white text-blue-600 hover:bg-blue-50 font-semibold px-6 py-3 rounded-lg shadow-md hover:shadow-lg transition-all duration-200">
+                      로그인하기
+                    </Button>
+                  </Link>
+                  
+                  <Link href="/auth/signup">
+                    <Button variant="outline" className="border-2 border-white/30 text-white hover:bg-white hover:text-blue-600 font-semibold px-6 py-3 rounded-lg backdrop-blur-sm bg-white/10 transition-all duration-200">
+                      회원가입
+                    </Button>
+                  </Link>
+                </>
+              )}
             </div>
           </div>
         </div>
