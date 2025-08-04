@@ -3,8 +3,14 @@ import connectDB from "@/lib/db";
 import User from "@/models/User";
 
 export async function POST(request: NextRequest) {
+  console.log('간단한 회원가입 API 시작 - 환경:', process.env.NODE_ENV);
+  
   try {
-    console.log('간단한 회원가입 API 시작');
+    // 환경변수 체크 로깅
+    console.log('환경변수 상태:', {
+      MONGODB_URI: process.env.MONGODB_URI ? 'SET' : 'NOT_SET',
+      NODE_ENV: process.env.NODE_ENV
+    });
     
     const body = await request.json();
     const { email, password, name } = body;
@@ -37,8 +43,20 @@ export async function POST(request: NextRequest) {
 
     // MongoDB 연결
     console.log('MongoDB 연결 시도...');
-    await connectDB();
-    console.log('MongoDB 연결 성공');
+    try {
+      await connectDB();
+      console.log('MongoDB 연결 성공');
+    } catch (dbError) {
+      console.error('MongoDB 연결 실패:', dbError);
+      return NextResponse.json(
+        { 
+          error: "데이터베이스 연결에 실패했습니다.",
+          details: dbError instanceof Error ? dbError.message : "Unknown DB error",
+          env: process.env.NODE_ENV
+        },
+        { status: 503 }
+      );
+    }
 
     // 이메일 중복 체크
     console.log('이메일 중복 체크:', email.toLowerCase());
