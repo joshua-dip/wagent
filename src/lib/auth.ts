@@ -20,9 +20,9 @@ export const authOptions: NextAuthOptions = {
         }
 
         try {
-          // 먼저 관리자 계정 확인 (빠른 인증)
+          // 관리자 계정만 허용 (MongoDB 의존성 완전 제거)
           if (credentials.email === "wnsbr2898@naver.com" && credentials.password === "123456") {
-            console.log('관리자 로그인 성공')
+            console.log('관리자 로그인 성공 (MongoDB 독립)')
             return {
               id: "admin",
               email: "wnsbr2898@naver.com",
@@ -30,37 +30,10 @@ export const authOptions: NextAuthOptions = {
             }
           }
 
-          // DB 연결 후 일반 사용자 확인
-          await connectDB()
-          console.log('MongoDB 연결 성공')
-          
-          const user = await User.findOne({ 
-            email: credentials.email.toLowerCase(),
-            isActive: true 
-          })
-          
-          if (user && await user.comparePassword(credentials.password)) {
-            console.log('사용자 로그인 성공:', user.email)
-            return {
-              id: user._id.toString(),
-              email: user.email,
-              name: user.name,
-            }
-          }
-
-          console.log('인증 실패:', credentials.email)
+          console.log('인증 실패 - 관리자 계정만 허용:', credentials.email)
           return null
         } catch (error) {
-          console.error('로그인 오류 상세:', error)
-          // 에러 발생시에도 관리자 계정은 동작하도록
-          if (credentials.email === "wnsbr2898@naver.com" && credentials.password === "123456") {
-            console.log('DB 오류 상황에서 관리자 로그인')
-            return {
-              id: "admin",
-              email: "wnsbr2898@naver.com",
-              name: "관리자",
-            }
-          }
+          console.error('로그인 오류:', error)
           return null
         }
       }
