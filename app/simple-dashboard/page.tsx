@@ -133,9 +133,14 @@ export default function SimpleDashboard() {
               </CardHeader>
               <CardContent>
                 <p className="text-gray-600 mb-4">시스템 헬스체크를 확인하세요</p>
-                <Link href="/api/health" target="_blank">
-                  <Button variant="outline" className="w-full">확인하기</Button>
-                </Link>
+                <div className="space-y-2">
+                  <Link href="/api/health" target="_blank">
+                    <Button variant="outline" className="w-full">시스템 상태</Button>
+                  </Link>
+                  <Link href="/api/test-user" target="_blank">
+                    <Button variant="outline" className="w-full text-xs">테스트 사용자 생성</Button>
+                  </Link>
+                </div>
               </CardContent>
             </Card>
           </div>
