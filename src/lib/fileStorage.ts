@@ -87,6 +87,9 @@ export async function getDownloadUrl(filePath: string): Promise<FileDownloadResu
   }
 }
 
+// downloadFile alias for backward compatibility
+export const downloadFile = getDownloadUrl;
+
 // 통합 파일 삭제
 export async function deleteFile(filePath: string): Promise<void> {
   if (STORAGE_TYPE === 's3') {
