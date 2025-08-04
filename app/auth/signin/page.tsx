@@ -31,16 +31,15 @@ export default function SignInPage() {
 
       if (result?.error) {
         setError("이메일 또는 비밀번호가 올바르지 않습니다.")
-      } else {
-        // 세션 확인 후 리디렉션
-        const session = await getSession()
-        if (session) {
-          // 관리자인 경우 관리자 대시보드로 이동
-          if (email === "wnsbr2898@naver.com") {
-            router.push("/admin/dashboard")
-          } else {
-            router.push("/")
-          }
+      } else if (result?.ok) {
+        // 로그인 성공 - 즉시 리다이렉션
+        setError("") // 에러 메시지 초기화
+        
+        // 관리자인 경우 관리자 대시보드로 이동
+        if (email === "wnsbr2898@naver.com") {
+          window.location.href = "/admin/dashboard"
+        } else {
+          window.location.href = "/"
         }
       }
     } catch (error) {
