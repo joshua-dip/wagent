@@ -8,6 +8,9 @@ module.exports = {
   ],
   theme: {
     extend: {
+      screens: {
+        'xs': '475px',
+      },
       animation: {
         'fade-in-up': 'fadeInUp 0.8s ease-out forwards',
         'scale-in': 'scaleIn 0.6s ease-out forwards',

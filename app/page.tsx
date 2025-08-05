@@ -19,6 +19,7 @@ import {
   TrendingUp, 
   Star, 
   Users, 
+  User,
   Search, 
   ArrowRight,
   Crown,
@@ -26,10 +27,14 @@ import {
   Sparkles,
   Code,
   Image,
-  BookOpen
+  BookOpen,
+  Download,
+  Gift,
+  Heart,
+  Settings,
+  Upload
 } from "lucide-react"
 import Link from "next/link"
-import { Settings, Upload, Gift, Download } from "lucide-react"
 
 export default function Dashboard() {
   const { data: session, status } = useSession()
@@ -270,13 +275,13 @@ export default function Dashboard() {
                 </>
               ) : (
                 <>
-                  <Link href="/auth/signin">
+                  <Link href="/auth/simple-signin">
                     <Button className="bg-white text-blue-600 hover:bg-blue-50 font-semibold px-6 py-3 rounded-lg shadow-md hover:shadow-lg transition-all duration-200">
                       로그인하기
                     </Button>
                   </Link>
                   
-                  <Link href="/auth/signup">
+                  <Link href="/auth/simple-signup">
                     <Button variant="outline" className="border-2 border-white/30 text-white hover:bg-white hover:text-blue-600 font-semibold px-6 py-3 rounded-lg backdrop-blur-sm bg-white/10 transition-all duration-200">
                       회원가입
                     </Button>
@@ -287,64 +292,149 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* 📊 CLEAN STATS SECTION 📊 */}
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-          {/* 전체 상품 카드 */}
-          <Card className="p-6 hover:shadow-lg transition-shadow duration-200">
-            <div className="flex items-center space-x-4">
-              <div className="p-3 bg-blue-100 rounded-lg">
-                <ShoppingBag className="h-6 w-6 text-blue-600" />
-              </div>
-              <div>
-                <p className="text-sm font-medium text-gray-600">전체 상품</p>
-                <p className="text-2xl font-bold text-gray-900">9,057</p>
-                <p className="text-xs text-blue-600">다양한 카테고리</p>
+        {/* 📊 로그인 상태별 대시보드 📊 */}
+        {isAuthenticated ? (
+          // 로그인된 사용자를 위한 개인화된 대시보드
+          <div className="space-y-6">
+            <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-2xl p-6">
+              <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+                <User className="w-5 h-5 text-blue-600" />
+                내 활동 현황
+              </h2>
+              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+                <Card className="p-4 hover:shadow-lg transition-shadow duration-200">
+                  <div className="flex items-center space-x-3">
+                    <div className="p-2 bg-green-100 rounded-lg">
+                      <ShoppingBag className="h-5 w-5 text-green-600" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-gray-600">구매한 상품</p>
+                      <p className="text-xl font-bold text-gray-900">12</p>
+                      <p className="text-xs text-green-600">총 구매</p>
+                    </div>
+                  </div>
+                </Card>
+                <Card className="p-4 hover:shadow-lg transition-shadow duration-200">
+                  <div className="flex items-center space-x-3">
+                    <div className="p-2 bg-blue-100 rounded-lg">
+                      <Download className="h-5 w-5 text-blue-600" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-gray-600">다운로드</p>
+                      <p className="text-xl font-bold text-gray-900">28</p>
+                      <p className="text-xs text-blue-600">이번 달</p>
+                    </div>
+                  </div>
+                </Card>
+                <Card className="p-4 hover:shadow-lg transition-shadow duration-200">
+                  <div className="flex items-center space-x-3">
+                    <div className="p-2 bg-red-100 rounded-lg">
+                      <Heart className="h-5 w-5 text-red-600" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-gray-600">위시리스트</p>
+                      <p className="text-xl font-bold text-gray-900">7</p>
+                      <p className="text-xs text-red-600">관심 상품</p>
+                    </div>
+                  </div>
+                </Card>
+                <Card className="p-4 hover:shadow-lg transition-shadow duration-200">
+                  <div className="flex items-center space-x-3">
+                    <div className="p-2 bg-purple-100 rounded-lg">
+                      <Star className="h-5 w-5 text-purple-600" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-gray-600">리뷰 작성</p>
+                      <p className="text-xl font-bold text-gray-900">5</p>
+                      <p className="text-xs text-purple-600">평가 완료</p>
+                    </div>
+                  </div>
+                </Card>
               </div>
             </div>
-          </Card>
-
-          {/* 이번 주 인기 카드 */}
-          <Card className="p-6 hover:shadow-lg transition-shadow duration-200">
-            <div className="flex items-center space-x-4">
-              <div className="p-3 bg-green-100 rounded-lg">
-                <TrendingUp className="h-6 w-6 text-green-600" />
+          </div>
+        ) : (
+          // 비로그인 사용자를 위한 플랫폼 소개
+          <div className="space-y-6">
+            <div className="bg-gradient-to-r from-gray-50 to-blue-50 border border-gray-200 rounded-2xl p-6">
+              <h2 className="text-xl font-bold text-gray-900 mb-4 text-center">
+                WAgent와 함께하세요! 🚀
+              </h2>
+              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+                <Card className="p-4 hover:shadow-lg transition-shadow duration-200">
+                  <div className="flex items-center space-x-3">
+                    <div className="p-2 bg-blue-100 rounded-lg">
+                      <ShoppingBag className="h-5 w-5 text-blue-600" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-gray-600">전체 상품</p>
+                      <p className="text-xl font-bold text-gray-900">9,057</p>
+                      <p className="text-xs text-blue-600">다양한 카테고리</p>
+                    </div>
+                  </div>
+                </Card>
+                <Card className="p-4 hover:shadow-lg transition-shadow duration-200">
+                  <div className="flex items-center space-x-3">
+                    <div className="p-2 bg-green-100 rounded-lg">
+                      <TrendingUp className="h-5 w-5 text-green-600" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-gray-600">이번 주 인기</p>
+                      <p className="text-xl font-bold text-gray-900">1,234</p>
+                      <p className="text-xs text-green-600">신규 다운로드</p>
+                    </div>
+                  </div>
+                </Card>
+                <Card className="p-4 hover:shadow-lg transition-shadow duration-200">
+                  <div className="flex items-center space-x-3">
+                    <div className="p-2 bg-yellow-100 rounded-lg">
+                      <Star className="h-5 w-5 text-yellow-600" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-gray-600">평균 평점</p>
+                      <p className="text-xl font-bold text-gray-900">4.8</p>
+                      <p className="text-xs text-yellow-600">높은 만족도</p>
+                    </div>
+                  </div>
+                </Card>
+                <Card className="p-4 hover:shadow-lg transition-shadow duration-200">
+                  <div className="flex items-center space-x-3">
+                    <div className="p-2 bg-purple-100 rounded-lg">
+                      <Users className="h-5 w-5 text-purple-600" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-gray-600">활성 사용자</p>
+                      <p className="text-xl font-bold text-gray-900">12.5K</p>
+                      <p className="text-xs text-purple-600">온라인 지금</p>
+                    </div>
+                  </div>
+                </Card>
               </div>
-              <div>
-                <p className="text-sm font-medium text-gray-600">이번 주 인기</p>
-                <p className="text-2xl font-bold text-gray-900">1,234</p>
-                <p className="text-xs text-green-600">신규 다운로드</p>
+              
+              {/* 회원가입 유도 섹션 */}
+              <div className="mt-6 text-center bg-white rounded-xl p-6 border border-blue-200">
+                <h3 className="text-lg font-bold text-gray-900 mb-2">
+                  지금 가입하고 특별 혜택을 받아보세요! 🎁
+                </h3>
+                <p className="text-gray-600 mb-4">
+                  무료 회원가입으로 더 많은 자료에 접근하고 개인화된 추천을 받아보세요
+                </p>
+                <div className="flex justify-center gap-3">
+                  <Link href="/auth/simple-signup">
+                    <Button className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700">
+                      무료 회원가입
+                    </Button>
+                  </Link>
+                  <Link href="/products/free">
+                    <Button variant="outline" className="border-blue-300 text-blue-600 hover:bg-blue-50">
+                      무료 자료 먼저 보기
+                    </Button>
+                  </Link>
+                </div>
               </div>
             </div>
-          </Card>
-
-          {/* 평균 평점 카드 */}
-          <Card className="p-6 hover:shadow-lg transition-shadow duration-200">
-            <div className="flex items-center space-x-4">
-              <div className="p-3 bg-yellow-100 rounded-lg">
-                <Star className="h-6 w-6 text-yellow-600" />
-              </div>
-              <div>
-                <p className="text-sm font-medium text-gray-600">평균 평점</p>
-                <p className="text-2xl font-bold text-gray-900">4.8</p>
-                <p className="text-xs text-yellow-600">높은 만족도</p>
-              </div>
-            </div>
-          </Card>
-
-          {/* 활성 사용자 카드 */}
-          <Card className="p-6 hover:shadow-lg transition-shadow duration-200">
-            <div className="flex items-center space-x-4">
-              <div className="p-3 bg-purple-100 rounded-lg">
-                <Users className="h-6 w-6 text-purple-600" />
-              </div>
-              <div>
-                <p className="text-sm font-medium text-gray-600">활성 사용자</p>
-                <p className="text-2xl font-bold text-gray-900">12.5K</p>
-                <p className="text-xs text-purple-600">온라인 지금</p>
-              </div>
-            </div>
-          </Card>
-        </div>
+          </div>
+        )}
 
         {/* 🎯 FEATURED PRODUCTS 🎯 */}
         <div className="space-y-6">
