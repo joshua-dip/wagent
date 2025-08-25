@@ -1,10 +1,10 @@
-# WAgent
+# Payperic
 
-프리미엄 디지털 자료 마켓플레이스입니다. Next.js, MongoDB, NextAuth를 기반으로 구축되었습니다.
+디지털 자료 마켓플레이스입니다. Next.js, MongoDB, NextAuth를 기반으로 구축되었습니다.
 
 ## 🚀 기능
 
-- **디지털 자료 마켓**: 다양한 카테고리의 프리미엄 콘텐츠 판매
+- **디지털 자료 마켓**: 다양한 카테고리의 디지털 콘텐츠 판매
 - **대시보드**: 판매 통계 및 인기 상품 현황 조회
 - **사용자 인증**: NextAuth를 통한 로그인/로그아웃
 - **검색 및 필터링**: 카테고리, 태그, 가격별 검색
@@ -23,7 +23,7 @@
 ## 📁 프로젝트 구조
 
 ```
-wagent/
+payperic/
 ├── app/                    # Next.js App Router
 │   ├── api/               # API 라우트
 │   ├── auth/              # 인증 관련 페이지
@@ -53,7 +53,7 @@ wagent/
 
 ```bash
 git clone <repository-url>
-cd wagent
+cd payperic
 ```
 
 ### 2. 패키지 설치
@@ -72,9 +72,9 @@ NEXTAUTH_URL=http://localhost:3000
 NEXTAUTH_SECRET=your-very-secure-secret-key-here
 
 # MongoDB 설정
-MONGODB_URI=mongodb://localhost:27017/wagent
+MONGODB_URI=mongodb://localhost:27017/payperic
 # 또는 MongoDB Atlas 사용시:
-# MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/wagent
+# MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/payperic
 
 # 소셜 로그인 (선택사항)
 # GOOGLE_CLIENT_ID=your-google-client-id
@@ -115,9 +115,9 @@ npm run dev
 
 ## 🔑 인증
 
-현재 데모용 계정:
-- 이메일: `admin@wagent.com`
-- 비밀번호: `admin123`
+현재 관리자 계정:
+- 이메일: `wnsrb2898@naver.com`
+- 비밀번호: `jg117428281!`
 
 실제 운영 시에는 `src/lib/auth.ts`에서 인증 로직을 수정하세요.
 

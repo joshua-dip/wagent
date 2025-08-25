@@ -7,6 +7,7 @@ import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import Layout from '@/components/Layout'
 import { 
   Upload,
   Package,
@@ -49,8 +50,8 @@ export default function AdminDashboardPage() {
     return null
   }
 
-  // 관리자가 아닌 경우
-  if (session.user?.email !== 'wnsbr2898@naver.com') {
+  // Admin 컬렉션 기반 권한 확인으로 변경 예정
+  if (session.user?.email !== 'wnsrb2898@naver.com') {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <Card className="w-full max-w-md">
@@ -90,20 +91,18 @@ export default function AdminDashboardPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 py-12 px-4">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center py-12">
-            <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-            <p className="text-gray-600">관리자 대시보드를 불러오는 중...</p>
-          </div>
+      <Layout>
+        <div className="text-center py-12">
+          <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+          <p className="text-gray-600">관리자 대시보드를 불러오는 중...</p>
         </div>
-      </div>
+      </Layout>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 py-12 px-4">
-      <div className="max-w-7xl mx-auto">
+    <Layout>
+      <div className="bg-gradient-to-br from-blue-50 via-white to-purple-50 -m-3 sm:-m-6 min-h-full py-8 px-6 sm:px-8 lg:px-12">
         {/* 헤더 */}
         <div className="mb-8">
           <div className="flex items-center justify-between">
@@ -111,7 +110,7 @@ export default function AdminDashboardPage() {
               <h1 className="text-3xl font-bold text-gray-900 mb-2">
                 관리자 대시보드 🛠️
               </h1>
-              <p className="text-gray-600">WAgent 디지털 마켓플레이스 관리</p>
+              <p className="text-gray-600">Payperic 디지털 마켓플레이스 관리</p>
             </div>
             <Link href="/admin/upload">
               <Button className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700">
@@ -351,6 +350,6 @@ export default function AdminDashboardPage() {
           </Card>
         </div>
       </div>
-    </div>
+    </Layout>
   )
 }

@@ -1,5 +1,7 @@
 import { NextAuthOptions } from "next-auth"
 import CredentialsProvider from "next-auth/providers/credentials"
+import connectDB from "@/lib/db"
+import Admin from "@/models/Admin"
 
 export const authOptions: NextAuthOptions = {
   trustHost: true,
@@ -17,12 +19,12 @@ export const authOptions: NextAuthOptions = {
         }
 
         try {
-          // 관리자 계정만 허용 (MongoDB 의존성 완전 제거)
-          if (credentials.email === "wnsbr2898@naver.com" && credentials.password === "123456") {
-            console.log('관리자 로그인 성공 (MongoDB 독립)')
+          // 관리자 계정만 허용 (하드코딩 - 안정성 위해 임시)
+          if (credentials.email === "wnsrb2898@naver.com" && credentials.password === "jg117428281!") {
+            console.log('관리자 로그인 성공 (NextAuth)')
             return {
               id: "admin",
-              email: "wnsbr2898@naver.com",
+              email: "wnsrb2898@naver.com",
               name: "관리자",
             }
           }

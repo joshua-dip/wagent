@@ -3,7 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import connectDB from "@/lib/db";
 import Product from "@/models/Product";
-import { uploadFile, getStorageInfo } from "@/lib/fileStorage";
+// import { uploadFile, getStorageInfo } from "@/lib/fileStorage"; // 제거됨
 
 export async function POST(request: NextRequest) {
   try {
@@ -14,7 +14,7 @@ export async function POST(request: NextRequest) {
     }
 
     // 관리자 권한 확인
-    if (session.user.email !== "wnsbr2898@naver.com") {
+    if (session.user.email !== "wnsrb2898@naver.com") {
       return NextResponse.json({ error: "관리자 권한이 필요합니다." }, { status: 403 });
     }
 
@@ -41,7 +41,7 @@ export async function POST(request: NextRequest) {
     }
 
     // 작성자가 없으면 기본값 설정
-    const finalAuthor = author?.trim() || 'WAgent';
+    const finalAuthor = author?.trim() || 'Payperic';
 
     // PDF 파일 확인
     if (file.type !== 'application/pdf') {

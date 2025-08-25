@@ -4,25 +4,18 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
 import { useSidebar } from "@/contexts/SidebarContext"
+import { useSession } from "next-auth/react"
+import { useSimpleAuth } from "@/hooks/useSimpleAuth"
 import { 
   LayoutDashboard, 
   Package, 
-  ShoppingCart,
-  Heart,
-  CreditCard,
-  User,
-  BarChart3,
-  Settings,
   BookOpen,
-  Video,
   FileText,
-  Image,
-  Music,
-  Code,
   Star,
-  TrendingUp,
-  Gift,
-  Database,
+  PenTool,
+  Settings,
+  Upload,
+  BarChart3,
   Menu,
   ChevronLeft,
   ChevronRight
@@ -37,151 +30,114 @@ const sidebarSections = [
         href: "/",
         icon: LayoutDashboard,
       },
+
       {
-        title: "인기 상품",
-        href: "/popular",
-        icon: TrendingUp,
-      },
-      {
-        title: "추천 상품",
-        href: "/recommended",
+        title: "공유 자료",
+        href: "/products/free",
         icon: Star,
       },
       {
-        title: "무료 자료",
-        href: "/products/free",
-        icon: Gift,
+        title: "주문 제작",
+        href: "/custom-order",
+        icon: PenTool,
       },
-                {
-            title: "관리자 메뉴",
-            href: "/admin/dashboard",
-            icon: Settings,
-          },
-          {
-            title: "MongoDB 진단",
-            href: "/debug/mongodb",
-            icon: Database,
-          },
+
+
+
     ]
   },
   {
     title: "카테고리",
     items: [
       {
-        title: "모든 상품",
-        href: "/products",
-        icon: Package,
-      },
-      {
-        title: "전자책",
-        href: "/products/ebooks",
-        icon: BookOpen,
-      },
-      {
-        title: "동영상 강의",
-        href: "/products/videos",
-        icon: Video,
-      },
-      {
-        title: "문서 자료",
-        href: "/products/documents",
+        title: "2025 영어모의고사",
+        href: "/products/2025-english-mock",
         icon: FileText,
       },
       {
-        title: "이미지/디자인",
-        href: "/products/images",
-        icon: Image,
+        title: "2024 영어모의고사",
+        href: "/products/2024-english-mock",
+        icon: FileText,
       },
       {
-        title: "음원/사운드",
-        href: "/products/audio",
-        icon: Music,
+        title: "2023 영어모의고사",
+        href: "/products/2023-english-mock",
+        icon: FileText,
       },
       {
-        title: "소스코드",
-        href: "/products/code",
-        icon: Code,
+        title: "EBS수능특강영어",
+        href: "/products/ebs-special-english",
+        icon: BookOpen,
+      },
+      {
+        title: "EBS수능특강영어독해",
+        href: "/products/ebs-english-reading",
+        icon: BookOpen,
+      },
+      {
+        title: "부교재자료",
+        href: "/products/supplementary-materials",
+        icon: Package,
       },
     ]
   },
-  {
-    title: "마이페이지",
-    items: [
-      {
-        title: "장바구니",
-        href: "/cart",
-        icon: ShoppingCart,
-      },
-      {
-        title: "위시리스트",
-        href: "/wishlist",
-        icon: Heart,
-      },
-      {
-        title: "구매 내역",
-        href: "/orders",
-        icon: CreditCard,
-      },
-      {
-        title: "내 정보",
-        href: "/profile",
-        icon: User,
-      },
-    ]
-  },
-  {
-    title: "기타",
-    items: [
-      {
-        title: "판매 통계",
-        href: "/analytics",
-        icon: BarChart3,
-      },
-      {
-        title: "설정",
-        href: "/settings",
-        icon: Settings,
-      },
-    ]
-  }
+
+
 ]
 
 export default function Sidebar() {
   const pathname = usePathname()
   const { isCollapsed, setIsCollapsed, isMobile } = useSidebar()
+  const { data: session } = useSession()
+  const simpleAuth = useSimpleAuth()
+  
+  // 두 인증 시스템 중 하나라도 로그인되어 있으면 인증된 것으로 처리
+  const currentUser = simpleAuth.user || session?.user
+  
+  // 관리자인지 확인 (두 시스템 모두 체크)
+  const isAdmin = currentUser?.email === "wnsrb2898@naver.com" || 
+                  simpleAuth.user?.role === 'admin'
+
+  // 관리자 메뉴 섹션 (조건부)
+  const adminSection = isAdmin ? {
+    title: "관리자",
+    items: [
+      {
+        title: "관리자 대시보드",
+        href: "/admin/dashboard",
+        icon: BarChart3,
+      },
+      {
+        title: "자료 업로드",
+        href: "/admin/upload",
+        icon: Upload,
+      },
+      {
+        title: "상품 관리",
+        href: "/admin/products",
+        icon: Settings,
+      },
+    ]
+  } : null
+
+  // 전체 사이드바 섹션 (관리자 메뉴 조건부 추가)
+  const allSections = [
+    ...sidebarSections,
+    ...(adminSection ? [adminSection] : [])
+  ]
 
   return (
     <div className={cn(
-      "pb-12 border-r border-gray-200 transition-all duration-300 relative",
+      "border-r border-gray-200 transition-all duration-300 relative flex flex-col h-full",
       // 데스크톱에서는 기본 동작
       !isMobile && (isCollapsed ? "w-16 bg-gray-50/50" : "w-64 bg-gray-50/50"),
       // 모바일에서는 오버레이 모드 - 불투명한 배경
       isMobile && (isCollapsed ? "w-16 bg-gray-50/50" : "w-64 bg-white shadow-2xl z-40")
     )}>
-      {/* 접기/펼치기 버튼 */}
-      <button
-        onClick={() => setIsCollapsed(!isCollapsed)}
-        className={cn(
-          "absolute -right-3 top-6 z-10 bg-white border border-gray-200 rounded-full p-2 hover:bg-gray-50 hover:border-blue-300 transition-all duration-200 shadow-md hover:shadow-lg",
-          isMobile && "bg-blue-50 border-blue-300" // 모바일에서 강조 표시
-        )}
-        title={isCollapsed ? "사이드바 펼치기" : "사이드바 접기"}
-      >
-        {isCollapsed ? (
-          <ChevronRight className={cn(
-            "h-4 w-4 text-gray-600 hover:text-blue-600 transition-colors",
-            isMobile && "text-blue-600" // 모바일에서 파란색
-          )} />
-        ) : (
-          <ChevronLeft className={cn(
-            "h-4 w-4 text-gray-600 hover:text-blue-600 transition-colors",
-            isMobile && "text-blue-600" // 모바일에서 파란색
-          )} />
-        )}
-      </button>
-
-      <div className="space-y-6 pt-8 pb-6">
-        {sidebarSections.map((section, sectionIndex) => (
+      {/* 스크롤 가능한 메뉴 영역 */}
+      <div className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
+        <div className="space-y-6 pt-6 pb-6">
+        {allSections.map((section, sectionIndex) => (
           <div key={sectionIndex} className={cn("px-3", sectionIndex === 0 && "pt-2")}>
             {!isCollapsed && (
               <h2 className="mb-3 px-4 text-xs font-semibold tracking-wide text-gray-500 uppercase">
@@ -223,19 +179,32 @@ export default function Sidebar() {
             </div>
           </div>
         ))}
+        </div>
+      </div>
 
-        {/* 프로모션 배너 */}
-        {!isCollapsed && (
-          <div className="mx-3 mt-8">
-            <div className="bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg p-4 text-white">
-              <h3 className="font-semibold text-sm mb-1">프리미엄 멤버십</h3>
-              <p className="text-xs text-blue-100 mb-3">모든 자료를 무제한으로 이용하세요</p>
-              <button className="w-full bg-white text-blue-600 text-xs font-medium py-2 rounded-md hover:bg-blue-50 transition-colors">
-                업그레이드
-              </button>
-            </div>
-          </div>
-        )}
+      {/* 하단 고정 접기/펼치기 버튼 */}
+      <div className="border-t border-gray-200 p-3">
+        <button
+          onClick={() => setIsCollapsed(!isCollapsed)}
+          className={cn(
+            "w-full bg-white border border-gray-200 rounded-lg p-2.5 hover:bg-gray-50 hover:border-blue-300 transition-all duration-200 shadow-sm hover:shadow-md flex items-center justify-center",
+            isMobile && "bg-blue-50 border-blue-300", // 모바일에서 강조 표시
+            isCollapsed && "p-2" // 접힌 상태에서는 패딩 줄이기
+          )}
+          title={isCollapsed ? "사이드바 펼치기" : "사이드바 접기"}
+        >
+          {isCollapsed ? (
+            <ChevronRight className={cn(
+              "h-4 w-4 text-gray-600 hover:text-blue-600 transition-colors",
+              isMobile && "text-blue-600" // 모바일에서 파란색
+            )} />
+          ) : (
+            <ChevronLeft className={cn(
+              "h-4 w-4 text-gray-600 hover:text-blue-600 transition-colors",
+              isMobile && "text-blue-600" // 모바일에서 파란색
+            )} />
+          )}
+        </button>
       </div>
     </div>
   )

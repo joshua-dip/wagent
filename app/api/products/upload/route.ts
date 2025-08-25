@@ -28,7 +28,7 @@ export async function POST(request: NextRequest) {
     }
 
     // 관리자 권한 확인 (임시로 특정 이메일만 허용)
-    if (session.user.email !== "wnsbr2898@naver.com") {
+    if (session.user.email !== "wnsrb2898@naver.com") {
       return NextResponse.json({ error: "관리자 권한이 필요합니다." }, { status: 403 });
     }
 

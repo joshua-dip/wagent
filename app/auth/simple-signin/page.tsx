@@ -38,12 +38,8 @@ export default function SimpleSignInPage() {
         
         // 로딩 상태 유지를 위해 setLoading을 false로 설정하지 않음
         
-        // 역할별 리다이렉트 (즉시 실행)
-        if (data.user.role === 'admin') {
-          window.location.href = '/simple-dashboard'
-        } else {
-          window.location.href = '/' // 일반 사용자는 메인 페이지로
-        }
+        // 로그인 성공 시 메인 페이지로 리다이렉트
+        window.location.href = '/'
       } else {
         setMessage(data.error || '로그인에 실패했습니다.')
         setMessageType('error')
@@ -63,10 +59,10 @@ export default function SimpleSignInPage() {
         {/* 헤더 */}
         <div className="text-center">
           <div className="w-20 h-20 bg-gradient-to-br from-blue-500 via-indigo-600 to-purple-600 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-lg">
-            <span className="text-white font-bold text-3xl">W</span>
+            <span className="text-white font-bold text-3xl">P</span>
           </div>
           <h2 className="text-4xl font-bold bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent">
-            WAgent
+            Payperic
           </h2>
           <p className="mt-3 text-lg text-gray-600">디지털 마켓플레이스에 오신 것을 환영합니다</p>
         </div>
