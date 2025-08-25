@@ -4,7 +4,7 @@ import { authOptions } from "@/lib/auth";
 import connectDB from "@/lib/db";
 import Product from "@/models/Product";
 import { ObjectId } from 'mongodb';
-import { downloadFile, getStorageInfo } from "@/lib/fileStorage";
+// import { downloadFile, getStorageInfo } from "@/lib/fileStorage"; // 제거됨
 import { generateSecureDownloadUrl } from "@/lib/s3Config";
 import { cookies } from "next/headers";
 import { verify } from "jsonwebtoken";

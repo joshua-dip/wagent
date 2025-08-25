@@ -3,19 +3,55 @@
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { useSession, signOut } from "next-auth/react"
-import { ShoppingBag, Search, User, LogOut, ShoppingCart, Heart, Bell, Settings, Upload } from "lucide-react"
+import { ShoppingBag, Search, User, LogOut, ShoppingCart, Heart, Bell } from "lucide-react"
 import Link from "next/link"
 import { useSimpleAuth } from "@/hooks/useSimpleAuth"
+import { useRef, useEffect } from "react"
 
 export default function Header() {
   const { data: session } = useSession()
   const simpleAuth = useSimpleAuth()
+  const searchInputRef = useRef<HTMLInputElement>(null)
   
   // 두 인증 시스템 통합
   const currentUser = simpleAuth.user || session?.user
   const isAuthenticated = simpleAuth.isAuthenticated || !!session
-  const isAdmin = currentUser?.email === "wnsbr2898@naver.com" || 
+  const isAdmin = currentUser?.email === "wnsrb2898@naver.com" || 
                   simpleAuth.user?.role === 'admin'
+
+  // 키보드 입력 시 검색창 자동 포커스
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      // Cmd/Ctrl + K 또는 일반 문자 입력 시 검색창 포커스
+      if (event.metaKey && event.key === 'k') {
+        event.preventDefault()
+        searchInputRef.current?.focus()
+        return
+      }
+      
+      // 특수키나 조합키가 아닌 일반 문자 입력 시
+      if (
+        !event.ctrlKey && 
+        !event.metaKey && 
+        !event.altKey && 
+        event.key.length === 1 && 
+        event.key.match(/[a-zA-Z0-9가-힣\s]/) &&
+        document.activeElement?.tagName !== 'INPUT' &&
+        document.activeElement?.tagName !== 'TEXTAREA'
+      ) {
+        searchInputRef.current?.focus()
+        // 입력된 문자를 검색창에 추가
+        if (searchInputRef.current) {
+          searchInputRef.current.value = event.key
+          // 커서를 끝으로 이동
+          searchInputRef.current.setSelectionRange(1, 1)
+        }
+      }
+    }
+
+    document.addEventListener('keydown', handleKeyDown)
+    return () => document.removeEventListener('keydown', handleKeyDown)
+  }, [])
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/60 shadow-lg">
@@ -30,7 +66,7 @@ export default function Header() {
           </div>
           <div className="hidden xs:block">
             <h1 className="font-bold text-lg sm:text-xl bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent">
-              WAgent
+              Payperic
             </h1>
             <p className="text-xs text-gray-500 hidden xl:block font-medium">Digital Marketplace</p>
           </div>
@@ -41,6 +77,7 @@ export default function Header() {
           <div className="relative w-full">
             <Search className="absolute left-2 sm:left-3 top-1/2 transform -translate-y-1/2 h-3 w-3 sm:h-4 sm:w-4 text-gray-400" />
             <Input
+              ref={searchInputRef}
               type="search"
               placeholder="검색..."
               className="pl-8 sm:pl-10 pr-8 sm:pr-12 h-8 sm:h-10 bg-gray-50 border-gray-200 rounded-lg sm:rounded-xl focus:bg-white focus:shadow-md focus:border-blue-300 transition-all duration-200 text-xs sm:text-sm"
@@ -78,23 +115,7 @@ export default function Header() {
                 <span className="absolute -top-0.5 -right-0.5 h-2.5 w-2.5 sm:h-3 sm:w-3 bg-blue-500 rounded-full text-xs text-white flex items-center justify-center">3</span>
               </Button>
 
-              {/* 관리자 전용 메뉴 - 반응형 */}
-              {isAdmin && (
-                <div className="flex items-center space-x-1 pr-2 sm:pr-3 border-r border-gray-200">
-                  <Link href="/admin/dashboard">
-                    <Button variant="outline" size="sm" className="border-blue-200 text-blue-600 hover:bg-blue-50 h-7 sm:h-8 px-1.5 sm:px-2">
-                      <Settings className="w-3 h-3 sm:mr-1" />
-                      <span className="hidden sm:inline">관리자</span>
-                    </Button>
-                  </Link>
-                  <Link href="/admin/upload" className="hidden md:block">
-                    <Button variant="outline" size="sm" className="border-green-200 text-green-600 hover:bg-green-50 h-7 sm:h-8 px-1.5 sm:px-2">
-                      <Upload className="w-3 h-3 sm:mr-1" />
-                      <span className="hidden sm:inline">업로드</span>
-                    </Button>
-                  </Link>
-                </div>
-              )}
+
 
               {/* 사용자 메뉴 - 반응형 */}
               <div className="flex items-center space-x-1 sm:space-x-2 pl-2 sm:pl-3 border-l border-gray-200">

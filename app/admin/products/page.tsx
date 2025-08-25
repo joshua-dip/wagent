@@ -70,7 +70,7 @@ export default function AdminProductsPage() {
   }
 
   // 관리자가 아닌 경우
-  if (session.user?.email !== 'wnsbr2898@naver.com') {
+  if (session.user?.email !== 'wnsrb2898@naver.com') {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <Card className="w-full max-w-md">

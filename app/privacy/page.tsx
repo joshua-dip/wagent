@@ -21,7 +21,7 @@ export default function PrivacyPage() {
               <CardTitle className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
                 개인정보처리방침
               </CardTitle>
-              <p className="text-gray-600 mt-2">개인정보 보호에 관한 WAgent의 정책입니다</p>
+              <p className="text-gray-600 mt-2">개인정보 보호에 관한 Payperic의 정책입니다</p>
               <div className="flex items-center justify-center gap-4 text-sm text-gray-500 mt-4">
                 <div className="flex items-center gap-2">
                   <Calendar className="w-4 h-4" />
@@ -29,7 +29,7 @@ export default function PrivacyPage() {
                 </div>
                 <div className="flex items-center gap-2">
                   <User className="w-4 h-4" />
-                  <span>WAgent</span>
+                  <span>Payperic</span>
                 </div>
               </div>
             </CardHeader>
@@ -47,7 +47,7 @@ export default function PrivacyPage() {
                 제1조 (개인정보의 처리목적)
               </h2>
               <div className="space-y-3 text-gray-700">
-                <p>WAgent는 다음의 목적을 위하여 개인정보를 처리하고 있으며, 다음의 목적 이외의 용도로는 이용하지 않습니다.</p>
+                <p>Payperic는 다음의 목적을 위하여 개인정보를 처리하고 있으며, 다음의 목적 이외의 용도로는 이용하지 않습니다.</p>
                 <ul className="list-disc list-inside ml-4 space-y-1">
                   <li>회원가입 및 관리: 회원 가입의사 확인, 회원제 서비스 제공에 따른 본인 식별·인증</li>
                   <li>재화 또는 서비스 제공: 디지털 콘텐츠 제공, 콘텐츠 제공, 요금결제·정산</li>
@@ -63,7 +63,7 @@ export default function PrivacyPage() {
                 제2조 (개인정보의 처리 및 보유기간)
               </h2>
               <div className="space-y-4 text-gray-700">
-                <p>① WAgent는 정보주체로부터 개인정보를 수집할 때 동의받은 개인정보 보유·이용기간 또는 법령에 따른 개인정보 보유·이용기간 내에서 개인정보를 처리·보유합니다.</p>
+                <p>① Payperic는 정보주체로부터 개인정보를 수집할 때 동의받은 개인정보 보유·이용기간 또는 법령에 따른 개인정보 보유·이용기간 내에서 개인정보를 처리·보유합니다.</p>
                 
                 <div className="bg-blue-50 p-4 rounded-lg">
                   <h3 className="font-semibold mb-2">② 구체적인 개인정보 처리 및 보유기간은 다음과 같습니다.</h3>
@@ -83,9 +83,9 @@ export default function PrivacyPage() {
                 제3조 (개인정보의 제3자 제공)
               </h2>
               <div className="space-y-3 text-gray-700">
-                <p>① WAgent는 개인정보를 제1조(개인정보의 처리목적)에서 명시한 범위 내에서만 처리하며, 정보주체의 동의, 법률의 특별한 규정 등 개인정보 보호법 제17조 및 제18조에 해당하는 경우에만 개인정보를 제3자에게 제공합니다.</p>
+                <p>① Payperic는 개인정보를 제1조(개인정보의 처리목적)에서 명시한 범위 내에서만 처리하며, 정보주체의 동의, 법률의 특별한 규정 등 개인정보 보호법 제17조 및 제18조에 해당하는 경우에만 개인정보를 제3자에게 제공합니다.</p>
                 <div className="bg-red-50 p-4 rounded-lg border-l-4 border-red-400">
-                  <p className="font-semibold">② WAgent는 원칙적으로 이용자의 개인정보를 외부에 제공하지 않습니다.</p>
+                  <p className="font-semibold">② Payperic는 원칙적으로 이용자의 개인정보를 외부에 제공하지 않습니다.</p>
                 </div>
               </div>
             </section>
@@ -94,7 +94,7 @@ export default function PrivacyPage() {
             <section>
               <h2 className="text-xl font-bold text-gray-900 mb-4">제4조 (개인정보처리 위탁)</h2>
               <div className="space-y-3 text-gray-700">
-                <p>① WAgent는 원활한 개인정보 업무처리를 위하여 다음과 같이 개인정보 처리업무를 위탁하고 있습니다.</p>
+                <p>① Payperic는 원활한 개인정보 업무처리를 위하여 다음과 같이 개인정보 처리업무를 위탁하고 있습니다.</p>
                 <div className="bg-gray-50 p-4 rounded-lg">
                   <p><strong>현재 위탁 업체:</strong> 없음</p>
                   <p className="text-sm text-gray-600 mt-2">※ 향후 위탁 시 관련 내용을 업데이트하겠습니다.</p>
@@ -109,14 +109,14 @@ export default function PrivacyPage() {
                 제5조 (정보주체의 권리·의무 및 행사방법)
               </h2>
               <div className="space-y-3 text-gray-700">
-                <p>① 정보주체는 WAgent에 대해 언제든지 다음 각 호의 개인정보 보호 관련 권리를 행사할 수 있습니다.</p>
+                <p>① 정보주체는 Payperic에 대해 언제든지 다음 각 호의 개인정보 보호 관련 권리를 행사할 수 있습니다.</p>
                 <ul className="list-disc list-inside ml-4 space-y-1">
                   <li>개인정보 처리현황 통지요구</li>
                   <li>개인정보 처리정지 요구</li>
                   <li>개인정보의 정정·삭제 요구</li>
                   <li>손해배상 청구</li>
                 </ul>
-                <p>② 제1항에 따른 권리 행사는 개인정보 보호법 시행령 제41조제1항에 따라 서면, 전자우편, 모사전송(FAX) 등을 통하여 하실 수 있으며 WAgent는 이에 대해 지체없이 조치하겠습니다.</p>
+                <p>② 제1항에 따른 권리 행사는 개인정보 보호법 시행령 제41조제1항에 따라 서면, 전자우편, 모사전송(FAX) 등을 통하여 하실 수 있으며 Payperic는 이에 대해 지체없이 조치하겠습니다.</p>
               </div>
             </section>
 
@@ -124,7 +124,7 @@ export default function PrivacyPage() {
             <section>
               <h2 className="text-xl font-bold text-gray-900 mb-4">제6조 (처리하는 개인정보의 항목)</h2>
               <div className="space-y-4 text-gray-700">
-                <p>① WAgent는 다음의 개인정보 항목을 처리하고 있습니다.</p>
+                <p>① Payperic는 다음의 개인정보 항목을 처리하고 있습니다.</p>
                 
                 <div className="bg-blue-50 p-4 rounded-lg">
                   <h3 className="font-semibold mb-2">회원가입 및 관리</h3>
@@ -145,7 +145,7 @@ export default function PrivacyPage() {
             <section>
               <h2 className="text-xl font-bold text-gray-900 mb-4">제7조 (개인정보의 파기)</h2>
               <div className="space-y-3 text-gray-700">
-                <p>① WAgent는 개인정보 보유기간의 경과, 처리목적 달성 등 개인정보가 불필요하게 되었을 때에는 지체없이 해당 개인정보를 파기합니다.</p>
+                <p>① Payperic는 개인정보 보유기간의 경과, 처리목적 달성 등 개인정보가 불필요하게 되었을 때에는 지체없이 해당 개인정보를 파기합니다.</p>
                 <p>② 파기절차 및 파기방법은 다음과 같습니다.</p>
                 <ul className="list-disc list-inside ml-4 space-y-1">
                   <li><strong>파기절차:</strong> 별도의 DB에 옮겨져(종이의 경우 별도의 서류함) 내부 방침 및 기타 관련 법령에 따라 일정기간 저장된 후 혹은 즉시 파기됩니다.</li>
@@ -158,7 +158,7 @@ export default function PrivacyPage() {
             <section>
               <h2 className="text-xl font-bold text-gray-900 mb-4">제8조 (개인정보의 안전성 확보조치)</h2>
               <div className="space-y-3 text-gray-700">
-                <p>WAgent는 개인정보보호법 제29조에 따라 다음과 같이 안전성 확보에 필요한 기술적/관리적 및 물리적 조치를 하고 있습니다.</p>
+                <p>Payperic는 개인정보보호법 제29조에 따라 다음과 같이 안전성 확보에 필요한 기술적/관리적 및 물리적 조치를 하고 있습니다.</p>
                 <ul className="list-disc list-inside ml-4 space-y-1">
                   <li>개인정보 취급 직원의 최소화 및 교육</li>
                   <li>개인정보에 대한 접근 제한</li>
@@ -174,17 +174,17 @@ export default function PrivacyPage() {
             <section>
               <h2 className="text-xl font-bold text-gray-900 mb-4">제9조 (개인정보 보호책임자)</h2>
               <div className="space-y-3 text-gray-700">
-                <p>① WAgent는 개인정보 처리에 관한 업무를 총괄해서 책임지고, 개인정보 처리와 관련한 정보주체의 불만처리 및 피해구제 등을 위하여 아래와 같이 개인정보 보호책임자를 지정하고 있습니다.</p>
+                <p>① Payperic는 개인정보 처리에 관한 업무를 총괄해서 책임지고, 개인정보 처리와 관련한 정보주체의 불만처리 및 피해구제 등을 위하여 아래와 같이 개인정보 보호책임자를 지정하고 있습니다.</p>
                 
                 <div className="bg-indigo-50 p-4 rounded-lg">
                   <h3 className="font-semibold mb-2">▶ 개인정보 보호책임자</h3>
                   <div className="space-y-1">
-                    <p><strong>성명:</strong> WAgent 관리자</p>
-                    <p><strong>연락처:</strong> wnsbr2898@naver.com</p>
+                    <p><strong>성명:</strong> Payperic 관리자</p>
+                    <p><strong>연락처:</strong> contact@deepthink.co.kr</p>
                   </div>
                 </div>
 
-                <p>② 정보주체께서는 WAgent의 서비스를 이용하시면서 발생한 모든 개인정보 보호 관련 문의, 불만처리, 피해구제 등에 관한 사항을 개인정보 보호책임자에게 문의하실 수 있습니다.</p>
+                <p>② 정보주체께서는 Payperic의 서비스를 이용하시면서 발생한 모든 개인정보 보호 관련 문의, 불만처리, 피해구제 등에 관한 사항을 개인정보 보호책임자에게 문의하실 수 있습니다.</p>
               </div>
             </section>
 

@@ -84,10 +84,10 @@ export default function SimpleSignUpPage() {
         {/* 헤더 */}
         <div className="text-center">
           <div className="w-20 h-20 bg-gradient-to-br from-blue-500 via-indigo-600 to-purple-600 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-lg">
-            <span className="text-white font-bold text-3xl">W</span>
+            <span className="text-white font-bold text-3xl">P</span>
           </div>
           <h2 className="text-4xl font-bold bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent">
-            WAgent
+            Payperic
           </h2>
           <p className="mt-3 text-lg text-gray-600">새로운 디지털 여행을 시작하세요</p>
         </div>
@@ -228,7 +228,7 @@ export default function SimpleSignUpPage() {
               </h4>
               <ul className="text-sm text-blue-700 space-y-1">
                 <li>✓ 무료 자료 무제한 다운로드</li>
-                <li>✓ 프리미엄 콘텐츠 할인 혜택</li>
+                <li>✓ 고품질 콘텐츠 할인 혜택</li>
                 <li>✓ 개인화된 추천 서비스</li>
                 <li>✓ 구매 내역 및 위시리스트 관리</li>
               </ul>

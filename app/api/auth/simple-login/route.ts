@@ -3,6 +3,7 @@ import { cookies } from "next/headers";
 import jwt from "jsonwebtoken";
 import connectDB from "@/lib/db";
 import User from "@/models/User";
+import Admin from "@/models/Admin";
 
 const JWT_SECRET = process.env.NEXTAUTH_SECRET || "simple-auth-secret-key";
 
@@ -13,14 +14,14 @@ export async function POST(request: NextRequest) {
 
     console.log('로그인 시도:', email);
 
-    // 1. 관리자 계정 우선 확인 (빠른 처리)
-    if (email === "wnsbr2898@naver.com" && password === "123456") {
+    // 1. 관리자 계정 우선 확인 (하드코딩 - 안정성 위해 임시)
+    if (email === "wnsrb2898@naver.com" && password === "jg117428281!") {
       console.log('관리자 인증 성공');
       
       const token = jwt.sign(
         {
           id: "admin",
-          email: "wnsbr2898@naver.com",
+          email: "wnsrb2898@naver.com",
           name: "관리자",
           role: "admin"
         },
@@ -41,7 +42,7 @@ export async function POST(request: NextRequest) {
         success: true,
         message: "관리자 로그인 성공",
         user: {
-          email: "wnsbr2898@naver.com",
+          email: "wnsrb2898@naver.com",
           name: "관리자",
           role: "admin"
         }

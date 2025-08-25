@@ -14,8 +14,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "WAgent - 디지털 자료 마켓플레이스",
-  description: "프리미엄 디지털 콘텐츠와 자료를 만나보세요",
+  title: "Payperic - 디지털 자료 마켓플레이스",
+  description: "다양한 디지털 콘텐츠와 자료를 만나보세요",
 };
 
 export default function RootLayout({

@@ -35,7 +35,7 @@ export const uploadToS3 = multer({
       const originalNameEncoded = Buffer.from(file.originalname, 'utf8').toString('base64');
       cb(null, {
         'original-name': originalNameEncoded, // 하이픈으로 변경
-        'uploaded-by': 'WAgent',
+        'uploaded-by': 'Payperic',
         'upload-date': new Date().toISOString()
       });
     },
@@ -88,7 +88,7 @@ export async function uploadFileToS3(fileBuffer: Buffer, fileName: string, conte
     ContentType: contentType,
     Metadata: {
       'original-name': Buffer.from(fileName, 'utf8').toString('base64'), // Base64 인코딩
-      'uploaded-by': 'WAgent',
+      'uploaded-by': 'Payperic',
       'upload-date': new Date().toISOString()
     }
   });

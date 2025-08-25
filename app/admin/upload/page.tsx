@@ -104,7 +104,7 @@ export default function AdminUploadPage() {
   }
 
   // 관리자가 아닌 경우
-  if (session.user?.email !== 'wnsbr2898@naver.com') {
+  if (session.user?.email !== 'wnsrb2898@naver.com') {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <Card className="w-full max-w-md">
@@ -163,7 +163,7 @@ export default function AdminUploadPage() {
       formData.append('tags', data.tags || '')
       
       // 작성자가 없으면 기본값 설정
-      const finalAuthor = data.author?.trim() || 'WAgent'
+      const finalAuthor = data.author?.trim() || 'Payperic'
       formData.append('author', finalAuthor)
 
       // 통합 업로드 API 사용 (환경에 따라 로컬 또는 S3)
@@ -360,7 +360,7 @@ export default function AdminUploadPage() {
                     {...register('author')}
                     placeholder="작성자명을 입력하세요 (선택사항)"
                   />
-                  <p className="text-sm text-gray-500">작성자명을 입력하지 않으면 'WAgent'로 설정됩니다.</p>
+                  <p className="text-sm text-gray-500">작성자명을 입력하지 않으면 'Payperic'로 설정됩니다.</p>
                 </div>
               </div>
 

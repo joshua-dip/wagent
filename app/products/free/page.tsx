@@ -5,17 +5,14 @@ import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
+
 import { 
   Download, 
-  Search, 
   FileText, 
   User, 
   Calendar,
   Filter,
-  Gift,
-  Star,
-  Eye
+  Gift
 } from 'lucide-react'
 import Layout from '@/components/Layout'
 
@@ -54,13 +51,28 @@ interface ApiResponse {
 
 const categories = [
   { value: 'all', label: '전체' },
-  { value: 'development', label: '개발' },
-  { value: 'design', label: '디자인' },
-  { value: 'business', label: '비즈니스' },
-  { value: 'education', label: '교육' },
-  { value: 'ebook', label: '전자책' },
-  { value: 'template', label: '템플릿' },
-  { value: 'other', label: '기타' }
+  { value: 'vocabulary', label: '어휘' },
+  { value: 'grammar', label: '문법' },
+  { value: 'reading', label: '독해' },
+  { value: 'listening', label: '듣기' },
+  { value: 'writing', label: '쓰기' },
+  { value: 'speaking', label: '말하기' },
+  { value: 'worksheet', label: '워크시트' }
+]
+
+const difficulties = [
+  { value: 'all', label: '모든 난이도' },
+  { value: 'beginner', label: '초급' },
+  { value: 'intermediate', label: '중급' },
+  { value: 'advanced', label: '고급' }
+]
+
+const fileTypes = [
+  { value: 'all', label: '모든 파일' },
+  { value: 'pdf', label: 'PDF' },
+  { value: 'doc', label: 'Word' },
+  { value: 'ppt', label: 'PowerPoint' },
+  { value: 'mp3', label: '오디오' }
 ]
 
 export default function FreeProductsPage() {
@@ -68,13 +80,14 @@ export default function FreeProductsPage() {
   const router = useRouter()
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
-  const [searchTerm, setSearchTerm] = useState('')
   const [selectedCategory, setSelectedCategory] = useState('all')
+  const [selectedDifficulty, setSelectedDifficulty] = useState('all')
+  const [selectedFileType, setSelectedFileType] = useState('all')
   const [pagination, setPagination] = useState<ApiResponse['pagination'] | null>(null)
   const [currentPage, setCurrentPage] = useState(1)
 
   // 상품 목록 조회
-  const fetchProducts = async (page = 1, category = selectedCategory, search = searchTerm) => {
+  const fetchProducts = async (page = 1, category = selectedCategory, difficulty = selectedDifficulty, fileType = selectedFileType) => {
     try {
       setLoading(true)
       const params = new URLSearchParams({
@@ -82,7 +95,8 @@ export default function FreeProductsPage() {
         limit: '12',
         free: 'true', // 무료 상품만
         ...(category !== 'all' && { category }),
-        ...(search && { search })
+        ...(difficulty !== 'all' && { difficulty }),
+        ...(fileType !== 'all' && { fileType })
       })
 
       const response = await fetch(`/api/products?${params}`)
@@ -106,23 +120,30 @@ export default function FreeProductsPage() {
     fetchProducts()
   }, [])
 
-  // 검색 처리
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault()
-    setCurrentPage(1)
-    fetchProducts(1, selectedCategory, searchTerm)
-  }
-
   // 카테고리 변경
   const handleCategoryChange = (category: string) => {
     setSelectedCategory(category)
     setCurrentPage(1)
-    fetchProducts(1, category, searchTerm)
+    fetchProducts(1, category, selectedDifficulty, selectedFileType)
+  }
+
+  // 난이도 변경
+  const handleDifficultyChange = (difficulty: string) => {
+    setSelectedDifficulty(difficulty)
+    setCurrentPage(1)
+    fetchProducts(1, selectedCategory, difficulty, selectedFileType)
+  }
+
+  // 파일 타입 변경
+  const handleFileTypeChange = (fileType: string) => {
+    setSelectedFileType(fileType)
+    setCurrentPage(1)
+    fetchProducts(1, selectedCategory, selectedDifficulty, fileType)
   }
 
   // 페이지 변경
   const handlePageChange = (page: number) => {
-    fetchProducts(page, selectedCategory, searchTerm)
+    fetchProducts(page, selectedCategory, selectedDifficulty, selectedFileType)
   }
 
   // 파일 크기 포맷
@@ -163,40 +184,83 @@ export default function FreeProductsPage() {
             </div>
             <h1 className="text-3xl font-bold text-gray-900">무료 자료 다운로드</h1>
           </div>
-          <p className="text-gray-600 text-lg">프리미엄 품질의 무료 디지털 자료를 만나보세요</p>
+          <p className="text-gray-600 text-lg">고품질 무료 디지털 자료를 만나보세요</p>
         </div>
 
-        {/* 검색 및 필터 */}
+        {/* 필터 옵션 */}
         <Card className="shadow-lg">
           <CardContent className="p-6">
-            <div className="flex flex-col md:flex-row gap-4">
-              {/* 검색 */}
-              <form onSubmit={handleSearch} className="flex-1">
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                  <Input
-                    type="text"
-                    placeholder="자료를 검색해보세요..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-10 pr-4"
-                  />
-                </div>
-              </form>
-
+            <div className="flex items-center gap-2 mb-4">
+              <Filter className="h-5 w-5 text-blue-600" />
+              <h3 className="text-lg font-semibold text-gray-900">자료 필터</h3>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {/* 카테고리 필터 */}
-              <div className="flex items-center gap-2">
-                <Filter className="h-4 w-4 text-gray-500" />
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  영역별
+                </label>
                 <select
                   value={selectedCategory}
                   onChange={(e) => handleCategoryChange(e.target.value)}
-                  className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 >
                   {categories.map(cat => (
                     <option key={cat.value} value={cat.value}>{cat.label}</option>
                   ))}
                 </select>
               </div>
+
+              {/* 난이도 필터 */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  난이도
+                </label>
+                <select
+                  value={selectedDifficulty}
+                  onChange={(e) => handleDifficultyChange(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                >
+                  {difficulties.map(diff => (
+                    <option key={diff.value} value={diff.value}>{diff.label}</option>
+                  ))}
+                </select>
+              </div>
+
+              {/* 파일 타입 필터 */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  파일 형식
+                </label>
+                <select
+                  value={selectedFileType}
+                  onChange={(e) => handleFileTypeChange(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                >
+                  {fileTypes.map(type => (
+                    <option key={type.value} value={type.value}>{type.label}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            {/* 필터 초기화 버튼 */}
+            <div className="mt-4 flex justify-end">
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => {
+                  setSelectedCategory('all')
+                  setSelectedDifficulty('all')
+                  setSelectedFileType('all')
+                  setCurrentPage(1)
+                  fetchProducts(1, 'all', 'all', 'all')
+                }}
+                className="text-gray-600 hover:text-gray-900"
+              >
+                필터 초기화
+              </Button>
             </div>
           </CardContent>
         </Card>
@@ -320,14 +384,16 @@ export default function FreeProductsPage() {
               <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <FileText className="w-8 h-8 text-gray-400" />
               </div>
-              <h3 className="text-lg font-medium text-gray-900 mb-2">검색 결과가 없습니다</h3>
-              <p className="text-gray-500 mb-4">다른 키워드로 검색해보세요.</p>
+              <h3 className="text-lg font-medium text-gray-900 mb-2">조건에 맞는 자료가 없습니다</h3>
+              <p className="text-gray-500 mb-4">다른 필터 조건을 선택해보세요.</p>
               <Button 
                 variant="outline" 
                 onClick={() => {
-                  setSearchTerm('')
                   setSelectedCategory('all')
-                  fetchProducts(1, 'all', '')
+                  setSelectedDifficulty('all')
+                  setSelectedFileType('all')
+                  setCurrentPage(1)
+                  fetchProducts(1, 'all', 'all', 'all')
                 }}
               >
                 전체 보기

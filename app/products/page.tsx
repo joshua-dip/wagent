@@ -147,7 +147,7 @@ function ProductsContent() {
         {/* 헤더 */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">디지털 상품</h1>
-          <p className="text-gray-600">프리미엄 PDF 자료를 탐색하고 구매하세요</p>
+          <p className="text-gray-600">다양한 PDF 자료를 탐색하고 구매하세요</p>
         </div>
 
         {/* 검색 및 필터 */}
@@ -343,7 +343,7 @@ function ProductsContent() {
         )}
 
         {/* 관리자용 업로드 버튼 */}
-        {session?.user?.email === 'wnsbr2898@naver.com' && (
+        {session?.user?.email === 'wnsrb2898@naver.com' && (
           <div className="fixed bottom-6 right-6">
             <Link href="/admin/upload">
               <Button className="rounded-full w-14 h-14 shadow-lg bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700">
