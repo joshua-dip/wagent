@@ -2,9 +2,6 @@
 
 import Link from "next/link"
 import { 
-  Mail, 
-  Phone, 
-  MapPin,
   Facebook,
   Twitter,
   Instagram,
@@ -22,28 +19,15 @@ export default function Footer() {
           {/* 회사 정보 */}
           <div className="space-y-4">
             <div className="flex items-center space-x-3">
-              <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center">
+              <div className="w-8 h-8 bg-gradient-to-r from-emerald-500 to-teal-600 rounded-lg flex items-center justify-center">
                 <span className="text-white font-bold text-lg">P</span>
               </div>
-              <h3 className="text-xl font-bold">Payperic</h3>
+              <h3 className="text-xl font-bold">PAYPERIC</h3>
             </div>
             <p className="text-gray-300 leading-relaxed">
-              현직 교사들이 만든 검증된 영어 교육 자료로 더 효과적인 수업을 만들어보세요.
+              영어 교육 전문가들이 제작한 고품질 학습 자료를 맞춤형으로 이용해보세요.
+              선생님의 수업 목적과 학생 수준에 꼭 맞는 자료를 주문 제작해드립니다.
             </p>
-            <div className="space-y-2 text-sm text-gray-400">
-              <div className="flex items-center space-x-2">
-                <MapPin className="h-4 w-4" />
-                <span>서울특별시 강남구 테헤란로 123</span>
-              </div>
-              <div className="flex items-center space-x-2">
-                <Phone className="h-4 w-4" />
-                <span>02-1234-5678</span>
-              </div>
-              <div className="flex items-center space-x-2">
-                <Mail className="h-4 w-4" />
-                <span>contact@deepthink.co.kr</span>
-              </div>
-            </div>
           </div>
 
           {/* 서비스 */}
@@ -93,12 +77,12 @@ export default function Footer() {
                 </Link>
               </li>
               <li>
-                <a href="mailto:support@deepthink.co.kr" className="hover:text-white transition-colors">
+                <a href="mailto:payperic@naver.com" className="hover:text-white transition-colors">
                   고객 문의
                 </a>
               </li>
               <li>
-                <a href="tel:02-1234-5678" className="hover:text-white transition-colors">
+                <a href="tel:010-7927-0806" className="hover:text-white transition-colors">
                   전화 상담
                 </a>
               </li>
@@ -164,9 +148,12 @@ export default function Footer() {
         <div className="px-6 sm:px-8 lg:px-12 py-6">
           <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
             <div className="text-gray-400 text-sm">
-              <p>© {currentYear} <span className="font-semibold text-white">deepthink</span>. All rights reserved.</p>
+              <p>© {currentYear} <span className="font-semibold text-white">페이퍼릭 (Payperic)</span>. All rights reserved.</p>
               <p className="mt-1">
-                사업자등록번호: 123-45-67890 | 대표: 김대표 | 통신판매업신고: 2024-서울강남-1234
+                대표자: 박준규 | 사업자등록번호: 246-47-01070
+              </p>
+              <p className="mt-1">
+                주소: 부산광역시 해운대구 센텀중앙로 48, 1304호(우동, 에이스하이테크21) | 전화: 010-7927-0806
               </p>
             </div>
             <div className="flex items-center space-x-6 text-sm text-gray-400">
@@ -177,7 +164,7 @@ export default function Footer() {
                 개인정보처리방침
               </Link>
               <span className="text-gray-600">|</span>
-              <span>deepthink Co., Ltd.</span>
+              <span>Payperic</span>
             </div>
           </div>
         </div>

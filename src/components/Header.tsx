@@ -59,16 +59,16 @@ export default function Header() {
         {/* 브랜드 로고 - 반응형 */}
         <Link href="/" className="flex items-center space-x-2 sm:space-x-3 group shrink-0">
           <div className="relative">
-            <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-blue-500 via-indigo-600 to-purple-600 rounded-lg sm:rounded-xl flex items-center justify-center shadow-md group-hover:shadow-lg transition-all duration-300">
+            <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-emerald-500 via-teal-600 to-cyan-600 rounded-lg sm:rounded-xl flex items-center justify-center shadow-md group-hover:shadow-lg transition-all duration-300">
               <ShoppingBag className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
             </div>
             <div className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 sm:w-3 sm:h-3 bg-gradient-to-r from-orange-400 to-red-500 rounded-full animate-pulse"></div>
           </div>
           <div className="hidden xs:block">
-            <h1 className="font-bold text-lg sm:text-xl bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent">
-              Payperic
+            <h1 className="font-bold text-lg sm:text-xl bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 bg-clip-text text-transparent">
+              PAYPERIC
             </h1>
-            <p className="text-xs text-gray-500 hidden xl:block font-medium">Digital Marketplace</p>
+            <p className="text-xs text-gray-500 hidden xl:block font-medium">서술형은 페이퍼릭</p>
           </div>
         </Link>
 

@@ -18,6 +18,7 @@ export interface IProduct extends Document {
   rating: number;
   reviewCount: number;
   isActive: boolean;
+  isFree: boolean; // 무료 상품 여부
   createdAt: Date;
   updatedAt: Date;
 }
@@ -43,10 +44,16 @@ const ProductSchema: Schema = new Schema({
     type: Number, 
     min: 0 
   },
-  category: { 
+    category: { 
     type: String, 
     required: true,
-    enum: ['development', 'design', 'business', 'education', 'ebook', 'template', 'other']
+    enum: [
+      'shared-materials', 'original-translation', 'lecture-material', 'class-material', 'line-translation', 
+      'english-writing', 'translation-writing', 'workbook-blanks', 'order-questions', 
+      'insertion-questions', 'ebs-lecture', 'ebs-workbook', 'ebs-test',
+      'reading-comprehension', 'reading-strategy', 'reading-test',
+      'grade1-material', 'grade2-material', 'grade3-material'
+    ]
   },
   tags: [{ 
     type: String, 
@@ -97,6 +104,10 @@ const ProductSchema: Schema = new Schema({
   isActive: { 
     type: Boolean, 
     default: true 
+  },
+  isFree: { 
+    type: Boolean, 
+    default: false 
   }
 }, { 
   timestamps: true 

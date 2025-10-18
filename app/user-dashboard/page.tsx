@@ -58,7 +58,7 @@ export default function UserDashboard() {
               <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-500 rounded-lg flex items-center justify-center">
                 <span className="text-white font-bold">P</span>
               </div>
-              <h1 className="text-xl font-bold text-gray-900">Payperic</h1>
+              <h1 className="text-xl font-bold text-gray-900">PAYPERIC</h1>
             </div>
             
             <div className="flex items-center gap-4">
@@ -83,7 +83,7 @@ export default function UserDashboard() {
               안녕하세요, {user?.name}님! 👋
             </h2>
             <p className="text-blue-100">
-              Payperic에서 다양한 디지털 자료를 만나보세요. 무료 자료부터 고품질 콘텐츠까지!
+              PAYPERIC에서 다양한 디지털 자료를 만나보세요. 무료 자료부터 고품질 콘텐츠까지!
             </p>
           </div>
 

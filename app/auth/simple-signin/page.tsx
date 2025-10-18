@@ -58,11 +58,11 @@ export default function SimpleSignInPage() {
       <div className="max-w-md w-full space-y-8">
         {/* 헤더 */}
         <div className="text-center">
-          <div className="w-20 h-20 bg-gradient-to-br from-blue-500 via-indigo-600 to-purple-600 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-lg">
+          <div className="w-20 h-20 bg-gradient-to-br from-emerald-500 via-teal-600 to-cyan-600 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-lg">
             <span className="text-white font-bold text-3xl">P</span>
           </div>
-          <h2 className="text-4xl font-bold bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent">
-            Payperic
+          <h2 className="text-4xl font-bold bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 bg-clip-text text-transparent">
+            PAYPERIC
           </h2>
           <p className="mt-3 text-lg text-gray-600">디지털 마켓플레이스에 오신 것을 환영합니다</p>
         </div>

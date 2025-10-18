@@ -3,18 +3,41 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import connectDB from "@/lib/db";
 import Product from "@/models/Product";
-// import { uploadFile, getStorageInfo } from "@/lib/fileStorage"; // 제거됨
+import { cookies } from "next/headers";
+import { verify } from "jsonwebtoken";
+import { uploadFileToS3 } from "@/lib/s3Config";
 
 export async function POST(request: NextRequest) {
   try {
-    // 세션 확인
+    // 통합 인증 확인 (NextAuth + SimpleAuth)
     const session = await getServerSession(authOptions);
-    if (!session?.user?.email) {
+    let currentUser = null;
+    
+    // 1. NextAuth 세션 확인
+    if (session?.user?.email) {
+      currentUser = session.user;
+    } else {
+      // 2. SimpleAuth JWT 토큰 확인
+      try {
+        const cookieStore = await cookies();
+        const token = cookieStore.get("wagent-auth")?.value;
+        
+        if (token) {
+          const JWT_SECRET = process.env.NEXTAUTH_SECRET || "simple-auth-secret-key";
+          const decoded = verify(token, JWT_SECRET) as any;
+          currentUser = decoded;
+        }
+      } catch (error) {
+        console.log('JWT 토큰 검증 실패:', error);
+      }
+    }
+
+    if (!currentUser?.email) {
       return NextResponse.json({ error: "인증이 필요합니다." }, { status: 401 });
     }
 
     // 관리자 권한 확인
-    if (session.user.email !== "wnsrb2898@naver.com") {
+    if (currentUser.email !== "wnsrb2898@naver.com") {
       return NextResponse.json({ error: "관리자 권한이 필요합니다." }, { status: 403 });
     }
 
@@ -30,6 +53,7 @@ export async function POST(request: NextRequest) {
     const category = formData.get('category') as string;
     const tags = formData.get('tags') as string;
     const author = formData.get('author') as string;
+    const isFree = formData.get('isFree') === 'true';
 
     // 유효성 검사
     if (!file) {
@@ -41,7 +65,7 @@ export async function POST(request: NextRequest) {
     }
 
     // 작성자가 없으면 기본값 설정
-    const finalAuthor = author?.trim() || 'Payperic';
+    const finalAuthor = author?.trim() || 'PAYPERIC';
 
     // PDF 파일 확인
     if (file.type !== 'application/pdf') {
@@ -53,8 +77,12 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "파일 크기는 50MB를 초과할 수 없습니다." }, { status: 400 });
     }
 
-    // 통합 파일 업로드 (환경에 따라 로컬 또는 S3)
-    const uploadResult = await uploadFile(file, file.name, file.type);
+    // S3에 파일 업로드
+    const buffer = await file.arrayBuffer();
+    const uploadResult = await uploadFileToS3(Buffer.from(buffer), file.name, file.type);
+    
+    // 안전한 파일명 생성 (S3 키에서 파일명 추출)
+    const safeFileName = uploadResult.split('/').pop() || file.name;
 
     // 태그 처리
     const tagArray = tags ? tags.split(',').map(tag => tag.trim()).filter(tag => tag) : [];
@@ -68,31 +96,34 @@ export async function POST(request: NextRequest) {
       category,
       tags: tagArray,
       author: finalAuthor,
-      authorId: session.user.email,
-      fileName: uploadResult.fileName,
+      authorId: currentUser.email,
+      fileName: safeFileName,
       originalFileName: file.name,
-      fileSize: uploadResult.fileSize,
-      filePath: uploadResult.filePath,
+      fileSize: file.size,
+      filePath: uploadResult, // S3 키
       downloadCount: 0,
       rating: 0,
       reviewCount: 0,
-      isActive: true
+      isActive: true,
+      isFree: isFree
     });
 
     await product.save();
 
-    const storageInfo = getStorageInfo();
-
     return NextResponse.json({ 
-      message: `상품이 성공적으로 업로드되었습니다. (${storageInfo.type.toUpperCase()})`,
+      message: "상품이 성공적으로 업로드되었습니다. (S3)",
       product: {
         id: product._id,
         title: product.title,
         price: product.price,
         fileName: product.fileName,
-        storageType: storageInfo.type
+        filePath: product.filePath,
+        storageType: "s3"
       },
-      storage: storageInfo
+      storage: {
+        type: "s3",
+        bucket: process.env.S3_BUCKET_NAME || process.env.AWS_S3_BUCKET_NAME || "wagent-products"
+      }
     }, { status: 201 });
 
   } catch (error) {

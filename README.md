@@ -1,4 +1,4 @@
-# Payperic
+# PAYPERIC
 
 디지털 자료 마켓플레이스입니다. Next.js, MongoDB, NextAuth를 기반으로 구축되었습니다.
 
