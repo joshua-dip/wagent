@@ -37,7 +37,7 @@ const sidebarSections = [
         icon: Star,
       },
       {
-        title: "주문 제작",
+        title: "서술형 자료 맞춤 제작",
         href: "/custom-order",
         icon: PenTool,
       },
@@ -54,16 +54,7 @@ const sidebarSections = [
         href: "/products/2025-english-mock",
         icon: FileText,
       },
-      {
-        title: "2024 영어모의고사",
-        href: "/products/2024-english-mock",
-        icon: FileText,
-      },
-      {
-        title: "2023 영어모의고사",
-        href: "/products/2023-english-mock",
-        icon: FileText,
-      },
+
       {
         title: "EBS수능특강영어",
         href: "/products/ebs-special-english",
@@ -75,7 +66,7 @@ const sidebarSections = [
         icon: BookOpen,
       },
       {
-        title: "부교재자료",
+        title: "부교재자료 (쏠북링크)",
         href: "/products/supplementary-materials",
         icon: Package,
       },

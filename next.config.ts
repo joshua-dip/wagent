@@ -26,13 +26,13 @@ const nextConfig: NextConfig = {
     S3_ACCESS_KEY_ID: process.env.S3_ACCESS_KEY_ID || '',
     S3_SECRET_ACCESS_KEY: process.env.S3_SECRET_ACCESS_KEY || '',
     S3_REGION: process.env.S3_REGION || 'ap-northeast-2',
-    S3_BUCKET_NAME: process.env.S3_BUCKET_NAME || 'payperic-products',
+    S3_BUCKET_NAME: process.env.S3_BUCKET_NAME || 'wagent-products',
     STORAGE_TYPE: process.env.STORAGE_TYPE || 's3',
     // 기존 AWS_ 프리픽스도 지원
     AWS_ACCESS_KEY_ID: process.env.AWS_ACCESS_KEY_ID || process.env.S3_ACCESS_KEY_ID || '',
     AWS_SECRET_ACCESS_KEY: process.env.AWS_SECRET_ACCESS_KEY || process.env.S3_SECRET_ACCESS_KEY || '',
     AWS_REGION: process.env.AWS_REGION || process.env.S3_REGION || 'ap-northeast-2',
-    AWS_S3_BUCKET_NAME: process.env.AWS_S3_BUCKET_NAME || process.env.S3_BUCKET_NAME || 'payperic-products',
+    AWS_S3_BUCKET_NAME: process.env.AWS_S3_BUCKET_NAME || process.env.S3_BUCKET_NAME || 'wagent-products',
   },
 };
 

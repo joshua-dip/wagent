@@ -4,17 +4,40 @@ import { authOptions } from "@/lib/auth";
 import connectDB from "@/lib/db";
 import Product from "@/models/Product";
 import { uploadFileToS3 } from "@/lib/s3Config";
+import { cookies } from "next/headers";
+import { verify } from "jsonwebtoken";
 
 export async function POST(request: NextRequest) {
   try {
-    // 세션 확인
+    // 통합 인증 확인 (NextAuth + SimpleAuth)
     const session = await getServerSession(authOptions);
-    if (!session?.user?.email) {
+    let currentUser = null;
+    
+    // 1. NextAuth 세션 확인
+    if (session?.user?.email) {
+      currentUser = session.user;
+    } else {
+      // 2. SimpleAuth JWT 토큰 확인
+      try {
+        const cookieStore = await cookies();
+        const token = cookieStore.get("wagent-auth")?.value;
+        
+        if (token) {
+          const JWT_SECRET = process.env.NEXTAUTH_SECRET || "simple-auth-secret-key";
+          const decoded = verify(token, JWT_SECRET) as any;
+          currentUser = decoded;
+        }
+      } catch (error) {
+        console.log('JWT 토큰 검증 실패:', error);
+      }
+    }
+
+    if (!currentUser?.email) {
       return NextResponse.json({ error: "인증이 필요합니다." }, { status: 401 });
     }
 
     // 관리자 권한 확인
-    if (session.user.email !== "wnsrb2898@naver.com") {
+    if (currentUser.email !== "wnsrb2898@naver.com") {
       return NextResponse.json({ error: "관리자 권한이 필요합니다." }, { status: 403 });
     }
 

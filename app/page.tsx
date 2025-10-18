@@ -35,21 +35,7 @@ export default function HomePage() {
       productCount: 24,
       isNew: true
     },
-    {
-      title: "2024 영어모의고사",
-      href: "/products/2024-english-mock", 
-      icon: FileText,
-      description: "검증된 2024년도 영어 모의고사 문제집",
-      productCount: 36,
-      isPopular: true
-    },
-    {
-      title: "2023 영어모의고사",
-      href: "/products/2023-english-mock",
-      icon: FileText,
-      description: "기출 유형 분석이 완료된 2023년도 모의고사",
-      productCount: 42
-    },
+
     {
       title: "EBS수능특강영어",
       href: "/products/ebs-special-english",
@@ -108,13 +94,13 @@ export default function HomePage() {
               {isAuthenticated ? (
                 <>안녕하세요, <span className="text-yellow-300">{currentUser?.name || currentUser?.email}</span>님! 👋</>
               ) : (
-                <>영어 교육의 새로운 기준<br />
-                <span className="text-yellow-300">Payperic</span></>
+                <>고등 영어 서술형 자료의 새로운 기준<br />
+                <span className="text-emerald-300">PAYPERIC</span></>
               )}
             </h1>
             
             <p className="text-xl md:text-2xl text-blue-100 mb-8 max-w-3xl mx-auto leading-relaxed">
-              현직 교사들이 만든 검증된 영어 교육 자료로<br />
+              250개 학교의 기출 문제를 분석하여 만든 검증된 영어 서술형 자료로<br />
               <span className="text-yellow-200 font-semibold">더 효과적인 수업</span>을 만들어보세요
             </p>
 
@@ -202,7 +188,7 @@ export default function HomePage() {
         <div className="px-6 sm:px-8 lg:px-12">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-              왜 Payperic을 선택해야 할까요?
+              왜 PAYPERIC을 선택해야 할까요?
             </h2>
             <p className="text-xl text-gray-600 max-w-2xl mx-auto">
               교사들이 직접 선택한 이유가 있습니다

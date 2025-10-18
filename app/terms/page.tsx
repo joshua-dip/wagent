@@ -19,7 +19,7 @@ export default function TermsPage() {
           <Card className="shadow-xl border-0">
             <CardHeader className="text-center">
               <CardTitle className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                Payperic 이용약관
+                PAYPERIC 이용약관
               </CardTitle>
               <p className="text-gray-600 mt-2">서비스 이용을 위한 필수 약관입니다</p>
               <div className="flex items-center justify-center gap-4 text-sm text-gray-500 mt-4">
@@ -29,7 +29,7 @@ export default function TermsPage() {
                 </div>
                 <div className="flex items-center gap-2">
                   <User className="w-4 h-4" />
-                  <span>Payperic</span>
+                  <span>PAYPERIC</span>
                 </div>
               </div>
             </CardHeader>
@@ -47,7 +47,7 @@ export default function TermsPage() {
                 제1조 (목적)
               </h2>
               <p className="text-gray-700 leading-relaxed">
-                이 약관은 Payperic(이하 "회사")가 제공하는 디지털 자료 마켓플레이스 서비스(이하 "서비스")의 이용과 관련하여 
+                이 약관은 PAYPERIC(이하 "회사")가 제공하는 디지털 자료 마켓플레이스 서비스(이하 "서비스")의 이용과 관련하여 
                 회사와 이용자 간의 권리, 의무 및 책임사항을 규정함을 목적으로 합니다.
               </p>
             </section>

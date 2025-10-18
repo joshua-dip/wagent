@@ -54,7 +54,7 @@ export default function SimpleDashboard() {
               <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-500 rounded-lg flex items-center justify-center">
                 <span className="text-white font-bold">P</span>
               </div>
-              <h1 className="text-xl font-bold text-gray-900">Payperic 대시보드</h1>
+              <h1 className="text-xl font-bold text-gray-900">PAYPERIC 대시보드</h1>
             </div>
             
             <div className="flex items-center gap-4">
@@ -79,7 +79,7 @@ export default function SimpleDashboard() {
               안녕하세요, {user?.name}님! 👋
             </h2>
             <p className="text-blue-100">
-              Payperic 관리자 대시보드에 오신 것을 환영합니다. (간단한 인증 버전)
+              PAYPERIC 관리자 대시보드에 오신 것을 환영합니다. (간단한 인증 버전)
             </p>
           </div>
 

@@ -110,7 +110,7 @@ export default function AdminDashboardPage() {
               <h1 className="text-3xl font-bold text-gray-900 mb-2">
                 관리자 대시보드 🛠️
               </h1>
-              <p className="text-gray-600">Payperic 디지털 마켓플레이스 관리</p>
+              <p className="text-gray-600">PAYPERIC 디지털 마켓플레이스 관리</p>
             </div>
             <Link href="/admin/upload">
               <Button className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700">
