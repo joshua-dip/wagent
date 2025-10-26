@@ -94,6 +94,13 @@ export default function AdminProductsPage() {
   const isAdmin = currentUser?.email === "wnsrb2898@naver.com" || 
                   simpleAuth.user?.role === 'admin'
 
+  // 모든 Hook은 조건부 return 전에 호출되어야 함
+  useEffect(() => {
+    if (isAdmin && isAuthenticated) {
+      loadProducts()
+    }
+  }, [searchTerm, selectedCategory, isAdmin, isAuthenticated])
+
   // 로딩 중이면 로딩 표시
   if (status === 'loading' || simpleAuth.isLoading) {
     return (
@@ -131,10 +138,6 @@ export default function AdminProductsPage() {
       </Layout>
     )
   }
-
-  useEffect(() => {
-    loadProducts()
-  }, [searchTerm, selectedCategory])
 
   const loadProducts = async () => {
     setLoading(true)
