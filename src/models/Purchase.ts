@@ -5,15 +5,20 @@ export interface IPurchase extends Document {
   userEmail: string;
   productId: string;
   productTitle: string;
-  productPrice: number;
+  amount: number; // 실제 결제 금액
+  productPrice?: number; // 상품 원가
   downloadCount: number;
   maxDownloads: number;
   purchaseDate: Date;
   lastDownloadDate?: Date;
   isActive: boolean;
-  paymentMethod: 'card' | 'bank' | 'paypal' | 'test'; // 테스트용
-  paymentStatus: 'pending' | 'completed' | 'failed' | 'refunded';
+  paymentMethod: string; // 'CARD', 'VIRTUAL_ACCOUNT', etc
+  paymentStatus: 'PENDING' | 'COMPLETED' | 'FAILED' | 'REFUNDED';
   transactionId?: string;
+  // 토스페이먼츠 관련
+  paymentKey?: string;
+  orderId?: string;
+  tossPaymentData?: any;
 }
 
 const PurchaseSchema: Schema = new Schema({
@@ -34,9 +39,13 @@ const PurchaseSchema: Schema = new Schema({
     type: String, 
     required: true 
   },
-  productPrice: { 
+  amount: { 
     type: Number, 
     required: true,
+    min: 0 
+  },
+  productPrice: { 
+    type: Number,
     min: 0 
   },
   downloadCount: { 
@@ -45,7 +54,7 @@ const PurchaseSchema: Schema = new Schema({
   },
   maxDownloads: { 
     type: Number, 
-    default: 5 // 최대 5회 다운로드 허용
+    default: 10 // 최대 10회 다운로드 허용
   },
   purchaseDate: { 
     type: Date, 
@@ -60,16 +69,24 @@ const PurchaseSchema: Schema = new Schema({
   },
   paymentMethod: { 
     type: String, 
-    enum: ['card', 'bank', 'paypal', 'test'],
     required: true 
   },
   paymentStatus: { 
     type: String, 
-    enum: ['pending', 'completed', 'failed', 'refunded'],
-    default: 'pending' 
+    enum: ['PENDING', 'COMPLETED', 'FAILED', 'REFUNDED'],
+    default: 'PENDING' 
   },
   transactionId: { 
     type: String 
+  },
+  paymentKey: {
+    type: String
+  },
+  orderId: {
+    type: String
+  },
+  tossPaymentData: {
+    type: Schema.Types.Mixed
   }
 }, { 
   timestamps: true 

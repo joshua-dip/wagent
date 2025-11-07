@@ -55,17 +55,17 @@ export default function Header() {
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/60 shadow-lg">
-      <div className="flex h-20 items-center px-2 sm:px-4 gap-2 sm:gap-4">
+      <div className="flex h-14 sm:h-16 items-center px-2 sm:px-4 gap-2 sm:gap-4">
         {/* 브랜드 로고 - 반응형 */}
-        <Link href="/" className="flex items-center space-x-2 sm:space-x-3 group shrink-0">
+        <Link href="/" className="flex items-center space-x-2 group shrink-0">
           <div className="relative">
-            <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-emerald-500 via-teal-600 to-cyan-600 rounded-lg sm:rounded-xl flex items-center justify-center shadow-md group-hover:shadow-lg transition-all duration-300">
-              <ShoppingBag className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
+            <div className="w-7 h-7 sm:w-9 sm:h-9 bg-gradient-to-br from-emerald-500 via-teal-600 to-cyan-600 rounded-lg flex items-center justify-center shadow-md group-hover:shadow-lg transition-all duration-300">
+              <ShoppingBag className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-white" />
             </div>
-            <div className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 sm:w-3 sm:h-3 bg-gradient-to-r from-orange-400 to-red-500 rounded-full animate-pulse"></div>
+            <div className="absolute -top-0.5 -right-0.5 w-2 h-2 sm:w-2.5 sm:h-2.5 bg-gradient-to-r from-orange-400 to-red-500 rounded-full animate-pulse"></div>
           </div>
           <div className="hidden xs:block">
-            <h1 className="font-bold text-lg sm:text-xl bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 bg-clip-text text-transparent">
+            <h1 className="font-bold text-base sm:text-lg bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 bg-clip-text text-transparent">
               PAYPERIC
             </h1>
             <p className="text-xs text-gray-500 hidden xl:block font-medium">서술형은 페이퍼릭</p>
@@ -75,14 +75,14 @@ export default function Header() {
         {/* 검색바 - 반응형 크기 조정 */}
         <div className="hidden sm:flex w-40 md:w-56 lg:w-64">
           <div className="relative w-full">
-            <Search className="absolute left-2 sm:left-3 top-1/2 transform -translate-y-1/2 h-3 w-3 sm:h-4 sm:w-4 text-gray-400" />
+            <Search className="absolute left-2 sm:left-3 top-1/2 transform -translate-y-1/2 h-3 w-3 sm:h-3.5 sm:w-3.5 text-gray-400" />
             <Input
               ref={searchInputRef}
               type="search"
               placeholder="검색..."
-              className="pl-8 sm:pl-10 pr-8 sm:pr-12 h-8 sm:h-10 bg-gray-50 border-gray-200 rounded-lg sm:rounded-xl focus:bg-white focus:shadow-md focus:border-blue-300 transition-all duration-200 text-xs sm:text-sm"
+              className="pl-7 sm:pl-9 pr-7 sm:pr-10 h-8 sm:h-9 bg-gray-50 border-gray-200 rounded-lg focus:bg-white focus:shadow-md focus:border-blue-300 transition-all duration-200 text-xs sm:text-sm"
             />
-            <div className="absolute right-1 sm:right-2 top-1/2 transform -translate-y-1/2 text-xs text-gray-400 bg-gray-100 px-1 sm:px-1.5 py-0.5 rounded text-xs hidden sm:block">
+            <div className="absolute right-1.5 sm:right-2 top-1/2 transform -translate-y-1/2 text-xs text-gray-400 bg-gray-100 px-1 sm:px-1.5 py-0.5 rounded hidden sm:block">
               ⌘K
             </div>
           </div>
@@ -121,13 +121,13 @@ export default function Header() {
               <div className="flex items-center space-x-1 sm:space-x-2 pl-2 sm:pl-3 border-l border-gray-200">
                 <div className="flex items-center space-x-1 sm:space-x-2 group cursor-pointer">
                   <div className="relative">
-                    <div className="w-7 h-7 sm:w-8 sm:h-8 bg-gradient-to-br from-blue-500 via-indigo-600 to-purple-600 rounded-full flex items-center justify-center shadow-md group-hover:shadow-lg transition-all duration-300">
-                      <User className="h-3 w-3 sm:h-4 sm:w-4 text-white" />
+                    <div className="w-6 h-6 sm:w-7 sm:h-7 bg-gradient-to-br from-blue-500 via-indigo-600 to-purple-600 rounded-full flex items-center justify-center shadow-md group-hover:shadow-lg transition-all duration-300">
+                      <User className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-white" />
                     </div>
-                    <div className="absolute -bottom-0.5 -right-0.5 w-2 h-2 sm:w-2.5 sm:h-2.5 bg-green-500 rounded-full border border-white"></div>
+                    <div className="absolute -bottom-0.5 -right-0.5 w-1.5 h-1.5 sm:w-2 sm:h-2 bg-green-500 rounded-full border border-white"></div>
                   </div>
                   <div className="hidden xl:block">
-                    <p className="text-sm font-medium text-gray-900 group-hover:text-blue-600 transition-colors">{currentUser?.name}</p>
+                    <p className="text-xs sm:text-sm font-medium text-gray-900 group-hover:text-blue-600 transition-colors">{currentUser?.name}</p>
                     <p className="text-xs text-gray-500 truncate max-w-20">{currentUser?.email}</p>
                   </div>
                 </div>
@@ -143,7 +143,7 @@ export default function Header() {
                         .then(() => window.location.href = '/')
                     }
                   }}
-                  className="text-gray-600 hover:text-red-600 hover:bg-red-50 transition-all duration-200 p-1.5 sm:p-2"
+                  className="text-gray-600 hover:text-red-600 hover:bg-red-50 transition-all duration-200 p-1 sm:p-1.5"
                 >
                   <LogOut className="h-3 w-3" />
                 </Button>
