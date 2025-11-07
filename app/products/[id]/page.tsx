@@ -22,6 +22,7 @@ import {
   CheckCircle2
 } from 'lucide-react'
 import Layout from '@/components/Layout'
+import PaymentButton from '@/components/PaymentButton'
 
 interface Product {
   _id: string
@@ -390,12 +391,16 @@ export default function ProductDetailPage() {
                       )}
                     </div>
                     
-                    <Button 
-                      className="w-full py-3 text-lg font-semibold bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600"
-                      disabled
-                    >
-                      구매 기능 준비 중
-                    </Button>
+                    <PaymentButton
+                      productId={product._id}
+                      productTitle={product.title}
+                      price={product.price}
+                      isAuthenticated={isAuthenticated}
+                    />
+                    
+                    <div className="text-xs text-gray-500 text-center mt-2">
+                      안전한 결제 시스템으로 보호됩니다
+                    </div>
                   </>
                 )}
               </CardContent>

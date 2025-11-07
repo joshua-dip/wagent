@@ -39,6 +39,15 @@ export default function AdminDashboardPage() {
   const [stats, setStats] = useState<AdminStats | null>(null)
   const [loading, setLoading] = useState(true)
 
+  const isAdmin = session?.user?.email === 'wnsrb2898@naver.com'
+
+  // 모든 Hook은 조건부 return 전에 호출
+  useEffect(() => {
+    if (isAdmin) {
+      loadAdminStats()
+    }
+  }, [isAdmin])
+
   // 로딩 중이면 로딩 표시
   if (status === 'loading') {
     return <div className="min-h-screen flex items-center justify-center">로딩 중...</div>
@@ -51,7 +60,7 @@ export default function AdminDashboardPage() {
   }
 
   // Admin 컬렉션 기반 권한 확인으로 변경 예정
-  if (session.user?.email !== 'wnsrb2898@naver.com') {
+  if (!isAdmin) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <Card className="w-full max-w-md">
@@ -68,21 +77,55 @@ export default function AdminDashboardPage() {
     )
   }
 
-  useEffect(() => {
-    loadAdminStats()
-  }, [])
-
   const loadAdminStats = async () => {
-    // 임시 데이터 (실제로는 API에서 가져와야 함)
-    setStats({
-      totalProducts: 12,
-      totalSales: 45,
-      totalRevenue: 1234500,
-      totalUsers: 89,
-      recentProducts: [],
-      recentPurchases: []
-    })
-    setLoading(false)
+    try {
+      setLoading(true)
+      
+      // 상품 통계
+      const productsRes = await fetch('/api/products?limit=1000')
+      const productsData = await productsRes.ok ? await productsRes.json() : { products: [] }
+      
+      // 구매 통계
+      const purchasesRes = await fetch('/api/purchases?limit=1000')
+      const purchasesData = await purchasesRes.ok ? await purchasesRes.json() : { purchases: [] }
+      
+      const products = productsData.products || []
+      const purchases = purchasesData.purchases || []
+      
+      // 최근 상품 5개
+      const recentProducts = products
+        .sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+        .slice(0, 5)
+      
+      // 최근 구매 5개
+      const recentPurchases = purchases
+        .sort((a: any, b: any) => new Date(b.purchaseDate).getTime() - new Date(a.purchaseDate).getTime())
+        .slice(0, 5)
+      
+      // 총 매출 계산
+      const totalRevenue = purchases.reduce((sum: number, p: any) => sum + (p.amount || 0), 0)
+      
+      setStats({
+        totalProducts: products.length,
+        totalSales: purchases.length,
+        totalRevenue,
+        totalUsers: 0, // User API 추가 필요
+        recentProducts,
+        recentPurchases
+      })
+    } catch (error) {
+      console.error('통계 로드 오류:', error)
+      setStats({
+        totalProducts: 0,
+        totalSales: 0,
+        totalRevenue: 0,
+        totalUsers: 0,
+        recentProducts: [],
+        recentPurchases: []
+      })
+    } finally {
+      setLoading(false)
+    }
   }
 
   const formatPrice = (price: number) => {
@@ -314,38 +357,104 @@ export default function AdminDashboardPage() {
           {/* 최근 업로드된 상품 */}
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <FileText className="w-5 h-5" />
-                최근 업로드된 상품
+              <CardTitle className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <FileText className="w-5 h-5" />
+                  최근 업로드된 상품
+                </div>
+                <Link href="/admin/products">
+                  <Button variant="ghost" size="sm">전체보기</Button>
+                </Link>
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-center py-8 text-gray-500">
-                <Package className="w-12 h-12 mx-auto mb-2 text-gray-300" />
-                <p>아직 업로드된 상품이 없습니다</p>
-                <Link href="/admin/upload">
-                  <Button variant="outline" className="mt-3">
-                    첫 상품 업로드하기
-                  </Button>
-                </Link>
-              </div>
+              {stats?.recentProducts && stats.recentProducts.length > 0 ? (
+                <div className="space-y-3">
+                  {stats.recentProducts.map((product: any) => (
+                    <div key={product._id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                      <div className="flex-1 min-w-0">
+                        <h4 className="font-medium text-sm text-gray-900 truncate">{product.title}</h4>
+                        <div className="flex items-center gap-2 mt-1">
+                          <Badge variant="outline" className="text-xs">
+                            {product.category}
+                          </Badge>
+                          <span className="text-xs text-gray-500">
+                            {new Date(product.createdAt).toLocaleDateString('ko-KR')}
+                          </span>
+                        </div>
+                      </div>
+                      <div className="text-right ml-3">
+                        <p className="font-semibold text-sm text-gray-900">
+                          {formatPrice(product.price)}원
+                        </p>
+                        {product.price === 0 && (
+                          <Badge className="bg-green-500 text-xs">무료</Badge>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-8 text-gray-500">
+                  <Package className="w-12 h-12 mx-auto mb-2 text-gray-300" />
+                  <p>아직 업로드된 상품이 없습니다</p>
+                  <Link href="/admin/upload">
+                    <Button variant="outline" className="mt-3">
+                      첫 상품 업로드하기
+                    </Button>
+                  </Link>
+                </div>
+              )}
             </CardContent>
           </Card>
 
           {/* 최근 구매 */}
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <TrendingUp className="w-5 h-5" />
-                최근 구매 내역
+              <CardTitle className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <TrendingUp className="w-5 h-5" />
+                  최근 구매 내역
+                </div>
+                <Link href="/admin/purchases">
+                  <Button variant="ghost" size="sm">전체보기</Button>
+                </Link>
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-center py-8 text-gray-500">
-                <DollarSign className="w-12 h-12 mx-auto mb-2 text-gray-300" />
-                <p>아직 구매 내역이 없습니다</p>
-                <p className="text-sm text-gray-400">상품이 판매되면 여기에 표시됩니다</p>
-              </div>
+              {stats?.recentPurchases && stats.recentPurchases.length > 0 ? (
+                <div className="space-y-3">
+                  {stats.recentPurchases.map((purchase: any, index: number) => (
+                    <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                      <div className="flex-1 min-w-0">
+                        <h4 className="font-medium text-sm text-gray-900 truncate">
+                          {purchase.productTitle || '상품명 없음'}
+                        </h4>
+                        <div className="flex items-center gap-2 mt-1">
+                          <span className="text-xs text-gray-500">
+                            {purchase.userEmail || '사용자'}
+                          </span>
+                          <span className="text-xs text-gray-400">•</span>
+                          <span className="text-xs text-gray-500">
+                            {new Date(purchase.purchaseDate).toLocaleDateString('ko-KR')}
+                          </span>
+                        </div>
+                      </div>
+                      <div className="text-right ml-3">
+                        <p className="font-semibold text-sm text-green-600">
+                          +{formatPrice(purchase.amount || 0)}원
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-8 text-gray-500">
+                  <DollarSign className="w-12 h-12 mx-auto mb-2 text-gray-300" />
+                  <p>아직 구매 내역이 없습니다</p>
+                  <p className="text-sm text-gray-400">상품이 판매되면 여기에 표시됩니다</p>
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>

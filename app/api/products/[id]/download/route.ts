@@ -4,10 +4,11 @@ import { authOptions } from "@/lib/auth";
 import connectDB from "@/lib/db";
 import Product from "@/models/Product";
 import { ObjectId } from 'mongodb';
-// import { downloadFile, getStorageInfo } from "@/lib/fileStorage"; // 제거됨
 import { generateSecureDownloadUrl } from "@/lib/s3Config";
 import { cookies } from "next/headers";
 import { verify } from "jsonwebtoken";
+import fs from 'fs';
+import path from 'path';
 
 export async function GET(
   request: NextRequest,
@@ -72,12 +73,16 @@ export async function GET(
       $inc: { downloadCount: 1 } 
     });
 
-    const storageInfo = getStorageInfo();
+    // S3 경로인지 확인 (s3:// 또는 products/ 로 시작)
+    const isS3File = product.filePath.startsWith('s3://') || 
+                     product.filePath.startsWith('products/') ||
+                     !product.filePath.includes('/public/');
 
     try {
-      if (storageInfo.type === 's3') {
+      if (isS3File) {
         // S3에서 보안 다운로드 URL 생성
-        const downloadUrl = await generateSecureDownloadUrl(product.filePath);
+        const s3Key = product.filePath.replace('s3://', '').replace(/^\//, '');
+        const downloadUrl = await generateSecureDownloadUrl(s3Key);
         
         return NextResponse.json({ 
           downloadUrl,
@@ -88,19 +93,21 @@ export async function GET(
         });
       } else {
         // 로컬 파일 다운로드
-        const fileResult = await downloadFile(product.filePath);
+        const filePath = path.join(process.cwd(), 'public', product.filePath.replace('/uploads/', 'uploads/'));
         
-        if (!fileResult.fileBuffer) {
+        if (!fs.existsSync(filePath)) {
           return NextResponse.json({ error: "파일을 찾을 수 없습니다." }, { status: 404 });
         }
+
+        const fileBuffer = fs.readFileSync(filePath);
 
         // 파일 다운로드 응답
         const headers = new Headers();
         headers.set('Content-Type', 'application/pdf');
         headers.set('Content-Disposition', `attachment; filename="${encodeURIComponent(product.originalFileName)}"`);
-        headers.set('Content-Length', fileResult.fileBuffer.length.toString());
+        headers.set('Content-Length', fileBuffer.length.toString());
 
-        return new NextResponse(fileResult.fileBuffer, {
+        return new NextResponse(fileBuffer, {
           status: 200,
           headers
         });

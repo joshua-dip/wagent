@@ -103,6 +103,11 @@ export default function Footer() {
                   개인정보처리방침
                 </Link>
               </li>
+              <li>
+                <Link href="/refund-policy" className="hover:text-white transition-colors">
+                  환불정책
+                </Link>
+              </li>
             </ul>
             
             {/* 소셜 미디어 */}
@@ -150,7 +155,7 @@ export default function Footer() {
             <div className="text-gray-400 text-sm">
               <p>© {currentYear} <span className="font-semibold text-white">페이퍼릭 (Payperic)</span>. All rights reserved.</p>
               <p className="mt-1">
-                대표자: 박준규 | 사업자등록번호: 246-47-01070
+                대표자: 박준규 | 사업자등록번호: 246-47-01070 | 통신판매사업신고: 제 2025-부산해운대-1495 호
               </p>
               <p className="mt-1">
                 주소: 부산광역시 해운대구 센텀중앙로 48, 1304호(우동, 에이스하이테크21) | 전화: 010-7927-0806
@@ -162,6 +167,9 @@ export default function Footer() {
               </Link>
               <Link href="/privacy" className="hover:text-white transition-colors">
                 개인정보처리방침
+              </Link>
+              <Link href="/refund-policy" className="hover:text-white transition-colors">
+                환불정책
               </Link>
               <span className="text-gray-600">|</span>
               <span>Payperic</span>
