@@ -122,7 +122,7 @@ https://payperic.com/auth/simple-signup
 ### 사업자 정보
 ```
 상호명: 페이퍼릭(Payperic)
-대표자: 주진균
+대표자: 박준규
 연락처: 010-7927-0806
 이메일: payperic@naver.com
 고객센터 운영시간: 평일 09:00 - 18:00
@@ -169,7 +169,7 @@ https://payperic.com/auth/simple-signup
 ---
 
 **작성일:** 2025년 10월 27일  
-**작성자:** 페이퍼릭(PAYPERIC) 대표 주진균  
+**작성자:** 페이퍼릭(PAYPERIC) 대표 박준규  
 **연락처:** 010-7927-0806  
 **이메일:** payperic@naver.com
 
