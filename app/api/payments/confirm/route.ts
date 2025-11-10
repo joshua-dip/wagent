@@ -4,6 +4,7 @@ import { authOptions } from "@/lib/auth";
 import connectDB from "@/lib/db";
 import Product from "@/models/Product";
 import Purchase from "@/models/Purchase";
+import Order from "@/models/Order";
 import { ObjectId } from 'mongodb';
 import { cookies } from "next/headers";
 import { verify } from "jsonwebtoken";
@@ -34,7 +35,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "로그인이 필요합니다." }, { status: 401 });
     }
 
-    const { paymentKey, orderId, amount, productId } = await request.json();
+    const { paymentKey, orderId, amount, productId, isCart } = await request.json();
 
     if (!paymentKey || !orderId || !amount) {
       return NextResponse.json({ 
@@ -76,7 +77,62 @@ export async function POST(request: NextRequest) {
       }, { status: 400 });
     }
 
-    // 상품 조회
+    // 장바구니 결제인 경우
+    if (isCart) {
+      // orderId로 주문 정보 조회
+      const order = await Order.findOne({ orderId, status: 'PENDING' });
+      
+      if (!order) {
+        return NextResponse.json({ 
+          error: "주문 정보를 찾을 수 없거나 만료되었습니다." 
+        }, { status: 404 });
+      }
+
+      // 주문 금액 검증
+      if (order.totalAmount !== amount) {
+        return NextResponse.json({ 
+          error: "결제 금액이 주문 금액과 일치하지 않습니다." 
+        }, { status: 400 });
+      }
+
+      // 각 상품마다 Purchase 레코드 생성
+      const purchases = [];
+      for (const item of order.cartItems) {
+        const purchase = await Purchase.create({
+          userId: currentUser.id || currentUser._id,
+          userEmail: currentUser.email,
+          productId: item.productId,
+          productTitle: item.title,
+          amount: item.price,
+          paymentKey: paymentKey,
+          orderId: orderId,
+          paymentMethod: tossData.method || 'CARD',
+          paymentStatus: 'COMPLETED',
+          purchaseDate: new Date(),
+          tossPaymentData: tossData,
+        });
+
+        purchases.push({
+          _id: purchase._id,
+          productId: purchase.productId,
+          productTitle: purchase.productTitle,
+          amount: purchase.amount,
+          purchaseDate: purchase.purchaseDate,
+        });
+      }
+
+      // 주문 상태 업데이트
+      order.status = 'CONFIRMED';
+      await order.save();
+
+      return NextResponse.json({
+        success: true,
+        message: "결제가 완료되었습니다.",
+        purchases: purchases
+      });
+    }
+
+    // 단일 상품 결제인 경우
     const product = await Product.findOne({ 
       _id: productId, 
       isActive: true 

@@ -3,6 +3,7 @@
 import { useState, useEffect, Suspense } from 'react'
 import { useSession } from 'next-auth/react'
 import { useSearchParams } from 'next/navigation'
+import { useCart } from '@/contexts/CartContext'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -19,7 +20,8 @@ import {
   User,
   Calendar,
   Grid3X3,
-  List
+  List,
+  Check
 } from 'lucide-react'
 
 interface Product {
@@ -64,12 +66,14 @@ const categories = [
 function ProductsContent() {
   const { data: session } = useSession()
   const searchParams = useSearchParams()
+  const { addToCart, isInCart } = useCart()
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
   const [pagination, setPagination] = useState<ProductsResponse['pagination'] | null>(null)
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedCategory, setSelectedCategory] = useState('all')
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
+  const [addedToCart, setAddedToCart] = useState<string | null>(null)
 
   // URL 파라미터에서 초기값 설정
   useEffect(() => {
@@ -279,8 +283,8 @@ function ProductsContent() {
                       </div>
                     )}
 
-                    {/* 가격 및 구매 버튼 */}
-                    <div className="flex items-center justify-between">
+                    {/* 가격 */}
+                    <div className="mb-3">
                       <div className="flex items-center gap-2">
                         <span className="text-lg font-bold text-gray-900">
                           {formatPrice(product.price)}원
@@ -291,10 +295,47 @@ function ProductsContent() {
                           </span>
                         )}
                       </div>
-                      <Link href={`/products/${product._id}`}>
-                        <Button size="sm" className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700">
-                          <ShoppingCart className="w-4 h-4 mr-1" />
-                          구매
+                    </div>
+
+                    {/* 버튼 그룹 */}
+                    <div className="flex gap-2">
+                      {product.price > 0 && (
+                        isInCart(product._id) ? (
+                          <Button 
+                            size="sm" 
+                            variant="outline"
+                            className="flex-1 bg-gray-50"
+                            onClick={() => window.location.href = '/cart'}
+                          >
+                            <Check className="w-4 h-4 mr-1" />
+                            담김
+                          </Button>
+                        ) : (
+                          <Button 
+                            size="sm" 
+                            variant="outline"
+                            className="flex-1"
+                            onClick={(e) => {
+                              e.preventDefault()
+                              addToCart({
+                                productId: product._id,
+                                title: product.title,
+                                price: product.price,
+                                originalPrice: product.originalPrice,
+                                category: product.category
+                              })
+                              setAddedToCart(product._id)
+                              setTimeout(() => setAddedToCart(null), 2000)
+                            }}
+                          >
+                            <ShoppingCart className="w-4 h-4 mr-1" />
+                            담기
+                          </Button>
+                        )
+                      )}
+                      <Link href={`/products/${product._id}`} className={product.price > 0 ? 'flex-1' : 'w-full'}>
+                        <Button size="sm" className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700">
+                          보기
                         </Button>
                       </Link>
                     </div>

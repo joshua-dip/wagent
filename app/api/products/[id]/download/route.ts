@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import connectDB from "@/lib/db";
 import Product from "@/models/Product";
+import Purchase from "@/models/Purchase";
 import { ObjectId } from 'mongodb';
 import { generateSecureDownloadUrl } from "@/lib/s3Config";
 import { cookies } from "next/headers";
@@ -61,11 +62,33 @@ export async function GET(
       return NextResponse.json({ error: "상품을 찾을 수 없습니다." }, { status: 404 });
     }
 
-    // 무료 상품인지 확인
+    // 무료 상품이 아닌 경우 구매 확인
     if (product.price > 0) {
-      return NextResponse.json({ 
-        error: "유료 상품입니다. 구매 후 다운로드할 수 있습니다." 
-      }, { status: 403 });
+      // Purchase 테이블에서 구매 내역 확인
+      const purchase = await Purchase.findOne({
+        productId: id,
+        userEmail: currentUser.email,
+        paymentStatus: 'COMPLETED'
+      });
+
+      if (!purchase) {
+        return NextResponse.json({ 
+          error: "구매하지 않은 상품입니다. 먼저 구매해주세요." 
+        }, { status: 403 });
+      }
+
+      // 다운로드 횟수 체크
+      if (purchase.downloadCount >= purchase.maxDownloads) {
+        return NextResponse.json({ 
+          error: `다운로드 제한 횟수(${purchase.maxDownloads}회)를 초과했습니다.` 
+        }, { status: 403 });
+      }
+
+      // Purchase의 다운로드 카운트 증가
+      await Purchase.findByIdAndUpdate(purchase._id, { 
+        $inc: { downloadCount: 1 },
+        lastDownloadDate: new Date()
+      });
     }
 
     // 다운로드 카운트 증가
@@ -125,4 +148,12 @@ export async function GET(
       error: error instanceof Error ? error.message : "다운로드 중 오류가 발생했습니다." 
     }, { status: 500 });
   }
+}
+
+// POST 메서드도 동일하게 처리 (구매 페이지에서 사용)
+export async function POST(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  return GET(request, { params });
 }
