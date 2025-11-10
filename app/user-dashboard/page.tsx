@@ -2,6 +2,7 @@
 
 import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import { useSession, signOut } from 'next-auth/react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { useSimpleAuth } from '@/hooks/useSimpleAuth'
@@ -21,19 +22,50 @@ import {
 import Link from 'next/link'
 
 export default function UserDashboard() {
-  const { user, loading, authenticated, logout } = useSimpleAuth()
+  const { data: session, status } = useSession({
+    required: false  // NextAuth의 자동 리다이렉트 비활성화
+  })
+  const simpleAuth = useSimpleAuth()
   const router = useRouter()
 
-  useEffect(() => {
-    if (!loading && !authenticated) {
-      router.push('/auth/simple-signin')
-    } else if (user?.role === 'admin') {
-      // 관리자는 관리자 대시보드로 리다이렉트
-      router.push('/simple-dashboard')
-    }
-  }, [loading, authenticated, user, router])
+  // 두 인증 시스템 통합
+  const currentUser = simpleAuth.user || session?.user
+  const isAuthenticated = simpleAuth.isAuthenticated || !!session
+  const isLoading = simpleAuth.isLoading || status === 'loading'
+  const isAdmin = currentUser?.email === "wnsrb2898@naver.com" || 
+                  simpleAuth.user?.role === 'admin'
 
-  if (loading) {
+  useEffect(() => {
+    // 로딩이 완료될 때까지 대기
+    if (isLoading) {
+      return
+    }
+
+    // 로딩 완료 후 인증 체크
+    if (!isAuthenticated) {
+      console.log('인증되지 않음 - 로그인 페이지로 이동')
+      router.push('/auth/simple-signin')
+      return
+    }
+    
+    if (isAdmin) {
+      // 관리자는 관리자 대시보드로 리다이렉트
+      console.log('관리자 - 관리자 대시보드로 이동')
+      router.push('/admin/dashboard')
+    }
+  }, [isLoading, isAuthenticated, isAdmin, router])
+
+  const handleLogout = () => {
+    if (session) {
+      signOut()
+    } else {
+      // JWT 로그아웃
+      fetch('/api/auth/check-session', { method: 'DELETE' })
+        .then(() => window.location.href = '/')
+    }
+  }
+
+  if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
@@ -44,7 +76,7 @@ export default function UserDashboard() {
     )
   }
 
-  if (!authenticated || user?.role !== 'user') {
+  if (!isAuthenticated) {
     return null
   }
 
@@ -64,9 +96,9 @@ export default function UserDashboard() {
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-2">
                 <User className="w-5 h-5 text-gray-500" />
-                <span className="text-gray-700">{user?.name}</span>
+                <span className="text-gray-700">{currentUser?.name}</span>
               </div>
-              <Button variant="outline" onClick={logout}>
+              <Button variant="outline" onClick={handleLogout}>
                 로그아웃
               </Button>
             </div>
@@ -80,7 +112,7 @@ export default function UserDashboard() {
           {/* 환영 메시지 */}
           <div className="bg-gradient-to-r from-blue-500 to-purple-500 rounded-2xl p-8 text-white">
             <h2 className="text-2xl font-bold mb-2">
-              안녕하세요, {user?.name}님! 👋
+              안녕하세요, {currentUser?.name}님! 👋
             </h2>
             <p className="text-blue-100">
               PAYPERIC에서 다양한 디지털 자료를 만나보세요. 무료 자료부터 고품질 콘텐츠까지!
@@ -211,11 +243,11 @@ export default function UserDashboard() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                   <div>
                     <span className="font-medium text-gray-600">이메일:</span>
-                    <span className="ml-2">{user?.email}</span>
+                    <span className="ml-2">{currentUser?.email}</span>
                   </div>
                   <div>
                     <span className="font-medium text-gray-600">이름:</span>
-                    <span className="ml-2">{user?.name}</span>
+                    <span className="ml-2">{currentUser?.name}</span>
                   </div>
                   <div>
                     <span className="font-medium text-gray-600">역할:</span>

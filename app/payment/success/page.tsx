@@ -6,10 +6,12 @@ import Layout from '@/components/Layout'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { CheckCircle2, Download, Home, Loader2 } from 'lucide-react'
+import { useCart } from '@/contexts/CartContext'
 
 function PaymentSuccessContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
+  const { clearCart } = useCart()
   const [confirming, setConfirming] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [purchaseInfo, setPurchaseInfo] = useState<any>(null)
@@ -20,6 +22,7 @@ function PaymentSuccessContent() {
       const orderId = searchParams.get('orderId')
       const amount = searchParams.get('amount')
       const productId = searchParams.get('productId')
+      const isCart = searchParams.get('isCart') === 'true'
 
       if (!paymentKey || !orderId || !amount) {
         setError('결제 정보가 올바르지 않습니다.')
@@ -38,13 +41,19 @@ function PaymentSuccessContent() {
             orderId,
             amount: parseInt(amount),
             productId,
+            isCart,
           }),
         })
 
         const data = await response.json()
 
         if (response.ok) {
-          setPurchaseInfo(data.purchase)
+          setPurchaseInfo(data.purchase || data.purchases)
+          
+          // 장바구니 결제인 경우 장바구니 비우기
+          if (isCart) {
+            clearCart()
+          }
         } else {
           setError(data.error || '결제 승인에 실패했습니다.')
         }
@@ -57,7 +66,7 @@ function PaymentSuccessContent() {
     }
 
     confirmPayment()
-  }, [searchParams])
+  }, [searchParams, clearCart])
 
   if (confirming) {
     return (
@@ -129,31 +138,72 @@ function PaymentSuccessContent() {
               <div className="bg-white rounded-lg border border-gray-200 p-6 space-y-4">
                 <h3 className="text-lg font-semibold text-gray-900 mb-4">구매 내역</h3>
                 
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <p className="text-sm text-gray-500">상품명</p>
-                    <p className="font-medium text-gray-900">{purchaseInfo.productTitle}</p>
+                {Array.isArray(purchaseInfo) ? (
+                  // 장바구니 결제인 경우 (여러 상품)
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      {purchaseInfo.map((purchase: any, index: number) => (
+                        <div key={index} className="flex justify-between items-center py-2 border-b last:border-0">
+                          <span className="font-medium text-gray-900">{purchase.productTitle}</span>
+                          <span className="text-blue-600 font-semibold">
+                            {new Intl.NumberFormat('ko-KR').format(purchase.amount)}원
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                    
+                    <div className="pt-4 border-t">
+                      <div className="flex justify-between items-center">
+                        <span className="text-lg font-semibold text-gray-900">총 결제 금액</span>
+                        <span className="text-2xl font-bold text-blue-600">
+                          {new Intl.NumberFormat('ko-KR').format(
+                            purchaseInfo.reduce((sum: number, p: any) => sum + p.amount, 0)
+                          )}원
+                        </span>
+                      </div>
+                    </div>
+                    
+                    <div className="grid grid-cols-2 gap-4 pt-4 border-t">
+                      <div>
+                        <p className="text-sm text-gray-500">구매 상품 수</p>
+                        <p className="font-medium text-gray-900">{purchaseInfo.length}개</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-gray-500">구매 일시</p>
+                        <p className="font-medium text-gray-900">
+                          {new Date(purchaseInfo[0].purchaseDate).toLocaleString('ko-KR')}
+                        </p>
+                      </div>
+                    </div>
                   </div>
-                  
-                  <div>
-                    <p className="text-sm text-gray-500">결제 금액</p>
-                    <p className="font-bold text-blue-600 text-lg">
-                      {new Intl.NumberFormat('ko-KR').format(purchaseInfo.amount)}원
-                    </p>
+                ) : (
+                  // 단일 상품 결제인 경우
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <p className="text-sm text-gray-500">상품명</p>
+                      <p className="font-medium text-gray-900">{purchaseInfo.productTitle}</p>
+                    </div>
+                    
+                    <div>
+                      <p className="text-sm text-gray-500">결제 금액</p>
+                      <p className="font-bold text-blue-600 text-lg">
+                        {new Intl.NumberFormat('ko-KR').format(purchaseInfo.amount)}원
+                      </p>
+                    </div>
+                    
+                    <div>
+                      <p className="text-sm text-gray-500">구매 일시</p>
+                      <p className="font-medium text-gray-900">
+                        {new Date(purchaseInfo.purchaseDate).toLocaleString('ko-KR')}
+                      </p>
+                    </div>
+                    
+                    <div>
+                      <p className="text-sm text-gray-500">주문 번호</p>
+                      <p className="font-mono text-xs text-gray-600">{purchaseInfo._id}</p>
+                    </div>
                   </div>
-                  
-                  <div>
-                    <p className="text-sm text-gray-500">구매 일시</p>
-                    <p className="font-medium text-gray-900">
-                      {new Date(purchaseInfo.purchaseDate).toLocaleString('ko-KR')}
-                    </p>
-                  </div>
-                  
-                  <div>
-                    <p className="text-sm text-gray-500">주문 번호</p>
-                    <p className="font-mono text-xs text-gray-600">{purchaseInfo._id}</p>
-                  </div>
-                </div>
+                )}
               </div>
             )}
 
@@ -178,7 +228,7 @@ function PaymentSuccessContent() {
 
             {/* 액션 버튼 */}
             <div className="flex flex-col sm:flex-row gap-3 pt-4">
-              {purchaseInfo && (
+              {purchaseInfo && !Array.isArray(purchaseInfo) && (
                 <Button 
                   className="flex-1 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700"
                   onClick={() => router.push(`/products/${purchaseInfo.productId}`)}

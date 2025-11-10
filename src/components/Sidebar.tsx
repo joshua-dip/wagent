@@ -18,7 +18,8 @@ import {
   BarChart3,
   Menu,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  Download
 } from "lucide-react"
 
 const sidebarSections = [
@@ -30,7 +31,11 @@ const sidebarSections = [
         href: "/",
         icon: LayoutDashboard,
       },
-
+      {
+        title: "구매한 자료 다운로드",
+        href: "/my/purchases",
+        icon: Download,
+      },
       {
         title: "공유 자료",
         href: "/products/free",
@@ -41,9 +46,6 @@ const sidebarSections = [
         href: "/custom-order",
         icon: PenTool,
       },
-
-
-
     ]
   },
   {

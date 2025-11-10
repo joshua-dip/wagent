@@ -78,15 +78,18 @@ MONGODB_URI=mongodb://localhost:27017/wagent
 # MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/wagent
 
 # 토스페이먼츠 설정 (https://developers.tosspayments.com/)
-# 테스트 환경
-NEXT_PUBLIC_TOSS_CLIENT_KEY=test_ck_테스트클라이언트키
-TOSS_CLIENT_KEY=test_ck_테스트클라이언트키
-TOSS_SECRET_KEY=test_sk_테스트시크릿키
+# ⚠️ 상세 설정은 TOSS_PAYMENTS_SETUP.md 파일 참고
+
+# 테스트 환경 (결제위젯 연동 키)
+NEXT_PUBLIC_TOSS_CLIENT_KEY=test_gck_oEjb0gm23PYg09qN6pQjVpGwBJn5
+TOSS_CLIENT_KEY=test_gck_oEjb0gm23PYg09qN6pQjVpGwBJn5
+TOSS_SECRET_KEY=test_gsk_Gv6LjeKD8ajQxlDJngQY3wYxAdXy
+TOSS_MID=payper8aqe
 
 # 운영 환경 (실제 결제시)
-# NEXT_PUBLIC_TOSS_CLIENT_KEY=live_ck_실제클라이언트키
-# TOSS_CLIENT_KEY=live_ck_실제클라이언트키
-# TOSS_SECRET_KEY=live_sk_실제시크릿키
+# NEXT_PUBLIC_TOSS_CLIENT_KEY=live_gck_실제클라이언트키
+# TOSS_CLIENT_KEY=live_gck_실제클라이언트키
+# TOSS_SECRET_KEY=live_gsk_실제시크릿키
 
 # Base URL
 NEXT_PUBLIC_BASE_URL=http://localhost:3000
@@ -98,11 +101,10 @@ NEXT_PUBLIC_BASE_URL=http://localhost:3000
 # S3_BUCKET_NAME=wagent-products
 ```
 
-**토스페이먼츠 키 발급 방법:**
-1. [토스페이먼츠 개발자센터](https://developers.tosspayments.com/)에 가입
-2. 대시보드에서 "결제 연동 정보" 메뉴로 이동
-3. 테스트 키(Sandbox)를 복사하여 환경변수에 입력
-4. 실제 서비스시 운영 키로 변경
+**토스페이먼츠 설정 가이드:**
+- 📘 **상세 가이드**: [`TOSS_PAYMENTS_SETUP.md`](./TOSS_PAYMENTS_SETUP.md) 파일 참고
+- 위 예시 키는 테스트용이며, 실제 운영 시 운영 키로 교체 필요
+- Payment Widget 연동 방식 사용 (결제위젯 연동 키)
 
 ### 4. MongoDB 설정
 
@@ -130,18 +132,27 @@ npm run dev
 
 ## 📖 주요 페이지
 
+### 🛍️ 쇼핑
 - `/` - 메인 페이지 (홈)
 - `/products` - 상품 목록
 - `/products/[id]` - 상품 상세
 - `/products/free` - 무료 자료
+- `/cart` - 장바구니
+- `/cart/checkout` - 결제하기 (Payment Widget)
 - `/custom-order` - 맞춤 제작 서비스
+
+### 🔐 인증
 - `/auth/simple-signup` - 회원가입
 - `/auth/simple-signin` - 로그인
+
+### 💳 결제
+- `/payment/success` - 결제 성공
+- `/payment/fail` - 결제 실패
+
+### 📄 정책
 - `/terms` - 이용약관
 - `/privacy` - 개인정보처리방침
 - `/refund-policy` - 환불정책
-- `/payment/success` - 결제 성공
-- `/payment/fail` - 결제 실패
 
 ## 🔑 인증
 

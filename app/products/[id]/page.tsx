@@ -5,6 +5,7 @@ import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import { useParams } from 'next/navigation'
 import { useSimpleAuth } from '@/hooks/useSimpleAuth'
+import { useCart } from '@/contexts/CartContext'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { 
@@ -19,7 +20,9 @@ import {
   Tag,
   ArrowLeft,
   AlertCircle,
-  CheckCircle2
+  CheckCircle2,
+  ShoppingCart,
+  Check
 } from 'lucide-react'
 import Layout from '@/components/Layout'
 import PaymentButton from '@/components/PaymentButton'
@@ -44,6 +47,7 @@ interface Product {
 export default function ProductDetailPage() {
   const { data: session, status } = useSession()
   const simpleAuth = useSimpleAuth()
+  const { addToCart, isInCart } = useCart()
   const router = useRouter()
   const params = useParams()
   const productId = params.id as string
@@ -391,6 +395,36 @@ export default function ProductDetailPage() {
                       )}
                     </div>
                     
+                    {/* 장바구니 담기 버튼 */}
+                    {isInCart(product._id) ? (
+                      <Button
+                        className="w-full py-3 bg-gray-100 text-gray-700 hover:bg-gray-200 mb-2"
+                        onClick={() => router.push('/cart')}
+                      >
+                        <Check className="w-5 h-5 mr-2" />
+                        장바구니에 담김
+                      </Button>
+                    ) : (
+                      <Button
+                        variant="outline"
+                        className="w-full py-3 border-2 border-blue-500 text-blue-600 hover:bg-blue-50 mb-2"
+                        onClick={() => {
+                          addToCart({
+                            productId: product._id,
+                            title: product.title,
+                            price: product.price,
+                            originalPrice: product.originalPrice,
+                            category: product.category
+                          })
+                          setDownloadMessage('장바구니에 담았습니다!')
+                          setTimeout(() => setDownloadMessage(''), 3000)
+                        }}
+                      >
+                        <ShoppingCart className="w-5 h-5 mr-2" />
+                        장바구니 담기
+                      </Button>
+                    )}
+
                     <PaymentButton
                       productId={product._id}
                       productTitle={product.title}

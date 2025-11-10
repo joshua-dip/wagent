@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react"
 import { useSession } from "next-auth/react"
 import { useSimpleAuth } from "@/hooks/useSimpleAuth"
+import { useCart } from "@/contexts/CartContext"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -16,13 +17,17 @@ import {
   ShoppingCart,
   Eye,
   Calendar,
-  BookOpen
+  BookOpen,
+  Check
 } from "lucide-react"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 
 export default function English2025MockPage() {
   const { data: session } = useSession()
   const simpleAuth = useSimpleAuth()
+  const { addToCart, isInCart } = useCart()
+  const router = useRouter()
   const [selectedCategory, setSelectedCategory] = useState("all")
   const [products, setProducts] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
@@ -486,19 +491,62 @@ export default function English2025MockPage() {
                     </div>
 
                     <div className="flex gap-2">
+                      {/* 장바구니 버튼 - 유료 상품만 */}
+                      {product.price > 0 && (
+                        isInCart(product._id || product.id) ? (
+                          <Button 
+                            variant="outline"
+                            className="flex-1 bg-gray-50"
+                            onClick={() => router.push('/cart')}
+                          >
+                            <Check className="h-4 w-4 mr-2" />
+                            장바구니에 담김
+                          </Button>
+                        ) : (
+                          <Button 
+                            variant="outline"
+                            className="flex-1"
+                            onClick={() => {
+                              addToCart({
+                                productId: product._id || product.id,
+                                title: product.title,
+                                price: product.price,
+                                originalPrice: product.originalPrice,
+                                category: product.category
+                              })
+                            }}
+                          >
+                            <ShoppingCart className="h-4 w-4 mr-2" />
+                            장바구니
+                          </Button>
+                        )
+                      )}
+                      
                       <Button 
-                        className={`flex-1 ${
-                          product.isFree 
+                        className={`${product.price > 0 ? 'flex-1' : 'flex-1'} ${
+                          product.isFree || product.price === 0
                             ? 'bg-green-600 hover:bg-green-700' 
                             : 'bg-amber-700 hover:bg-amber-800'
                         }`}
-                        onClick={() => handlePurchase(product.id)}
+                        onClick={() => {
+                          if (product._id) {
+                            router.push(`/products/${product._id}`)
+                          } else {
+                            handlePurchase(product.id)
+                          }
+                        }}
                       >
-                        <ShoppingCart className="h-4 w-4 mr-2" />
-                        {(product.isFree === true || product.price === 0) ? '무료 다운로드' : '구매하기'}
-                      </Button>
-                      <Button variant="outline" size="icon">
-                        <Eye className="h-4 w-4" />
+                        {(product.isFree === true || product.price === 0) ? (
+                          <>
+                            <Download className="h-4 w-4 mr-2" />
+                            무료 다운로드
+                          </>
+                        ) : (
+                          <>
+                            <Eye className="h-4 w-4 mr-2" />
+                            상세보기
+                          </>
+                        )}
                       </Button>
                     </div>
 
