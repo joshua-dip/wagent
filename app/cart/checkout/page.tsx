@@ -98,11 +98,13 @@ export default function CartCheckoutPage() {
 
     // orderId 생성 및 주문 정보 저장
     const initOrder = async () => {
-      // 더 고유한 orderId 생성 (타임스탬프 + 랜덤 + 추가 랜덤)
+      // 더 고유한 orderId 생성 (타임스탬프 + 랜덤 + 추가 랜덤 + 마이크로초)
       const timestamp = Date.now()
+      const microseconds = performance.now().toString().replace('.', '')
       const random1 = Math.random().toString(36).substr(2, 9)
       const random2 = Math.random().toString(36).substr(2, 5)
-      const newOrderId = `CART_${timestamp}_${random1}_${random2}`
+      const random3 = Math.floor(Math.random() * 10000).toString().padStart(4, '0')
+      const newOrderId = `CART_${timestamp}_${microseconds.slice(-6)}_${random1}_${random2}_${random3}`
       
       console.log('새 주문 ID 생성:', newOrderId)
       setOrderId(newOrderId)
