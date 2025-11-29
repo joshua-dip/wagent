@@ -83,8 +83,16 @@ export default function CartCheckoutPage() {
 
   // Payment Widget 초기화
   useEffect(() => {
-    // 인증이 확인되지 않았거나, 인증되지 않았거나, 장바구니가 비어있으면 중단
-    if (!authChecked || !isAuthenticated || cartItems.length === 0) {
+    // 인증이 확인되지 않았거나, 인증되지 않았으면 중단
+    if (!authChecked || !isAuthenticated) {
+      return
+    }
+
+    // 장바구니가 비어있으면 장바구니 페이지로 리다이렉트
+    if (cartItems.length === 0) {
+      console.log('장바구니 비어있음 - 리다이렉트')
+      alert('장바구니가 비어있습니다.')
+      router.push('/cart')
       return
     }
 
