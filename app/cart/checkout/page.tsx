@@ -170,6 +170,45 @@ export default function CartCheckoutPage() {
         throw new Error('PaymentWidget을 불러올 수 없습니다.')
       }
 
+      // DOM 요소가 준비될 때까지 대기
+      const waitForElement = (selector: string, timeout = 5000) => {
+        return new Promise<Element>((resolve, reject) => {
+          const element = document.querySelector(selector)
+          if (element) {
+            resolve(element)
+            return
+          }
+
+          const observer = new MutationObserver(() => {
+            const element = document.querySelector(selector)
+            if (element) {
+              observer.disconnect()
+              resolve(element)
+            }
+          })
+
+          observer.observe(document.body, {
+            childList: true,
+            subtree: true
+          })
+
+          setTimeout(() => {
+            observer.disconnect()
+            reject(new Error(`${selector} 요소를 찾을 수 없습니다.`))
+          }, timeout)
+        })
+      }
+
+      // 로딩 화면 숨기기
+      setIsLoading(false)
+
+      // DOM 요소가 렌더링될 때까지 잠시 대기
+      await new Promise(resolve => setTimeout(resolve, 100))
+
+      // 결제 위젯을 렌더링할 DOM 요소가 있는지 확인
+      await waitForElement('#payment-method')
+      await waitForElement('#agreement')
+
       // 클라이언트 키 (결제위젯 연동 키)
       const widgetClientKey = process.env.NEXT_PUBLIC_TOSS_CLIENT_KEY || 'test_gck_oEjb0gm23PYg09qN6pQjVpGwBJn5'
       
@@ -193,7 +232,6 @@ export default function CartCheckoutPage() {
       // 이용약관 렌더링
       await paymentWidget.renderAgreement('#agreement', { variantKey: 'AGREEMENT' })
 
-      setIsLoading(false)
     } catch (err) {
       console.error('Payment Widget 초기화 오류:', err)
       setError(err instanceof Error ? err.message : '결제 위젯 초기화에 실패했습니다.')
