@@ -48,6 +48,14 @@ export async function POST(request: NextRequest) {
     // 토스페이먼츠 결제 승인 API 호출
     const tossSecretKey = process.env.TOSS_SECRET_KEY;
     
+    console.log('결제 승인 시작:', { 
+      orderId, 
+      amount, 
+      productId, 
+      isCart,
+      hasSecretKey: !!tossSecretKey 
+    });
+    
     if (!tossSecretKey) {
       console.error("TOSS_SECRET_KEY가 설정되지 않았습니다.");
       return NextResponse.json({ 
@@ -69,11 +77,18 @@ export async function POST(request: NextRequest) {
     });
 
     const tossData = await tossResponse.json();
+    
+    console.log('Toss Payments API 응답:', { 
+      status: tossResponse.status, 
+      ok: tossResponse.ok,
+      data: tossData 
+    });
 
     if (!tossResponse.ok) {
       console.error('토스페이먼츠 승인 실패:', tossData);
       return NextResponse.json({ 
-        error: tossData.message || '결제 승인에 실패했습니다.' 
+        error: tossData.message || '결제 승인에 실패했습니다.',
+        code: tossData.code
       }, { status: 400 });
     }
 
@@ -170,9 +185,16 @@ export async function POST(request: NextRequest) {
     });
 
   } catch (error) {
-    console.error("결제 승인 오류:", error);
+    console.error("결제 승인 오류 상세:", {
+      error,
+      message: error instanceof Error ? error.message : "Unknown error",
+      stack: error instanceof Error ? error.stack : undefined,
+      name: error instanceof Error ? error.name : undefined
+    });
+    
     return NextResponse.json({ 
-      error: error instanceof Error ? error.message : "결제 승인 중 오류가 발생했습니다." 
+      error: error instanceof Error ? error.message : "결제 승인 중 오류가 발생했습니다.",
+      details: process.env.NODE_ENV === 'development' ? (error instanceof Error ? error.stack : String(error)) : undefined
     }, { status: 500 });
   }
 }
