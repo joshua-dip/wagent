@@ -12,6 +12,9 @@ export async function GET() {
       TOSS_SECRET_KEY: !!process.env.TOSS_SECRET_KEY,
       NEXT_PUBLIC_TOSS_CLIENT_KEY: !!process.env.NEXT_PUBLIC_TOSS_CLIENT_KEY,
       TOSS_MID: process.env.TOSS_MID,
+      // 디버깅: 실제 값 일부 표시 (처음 10자)
+      TOSS_CLIENT_KEY_PREFIX: process.env.TOSS_CLIENT_KEY?.substring(0, 10) || 'not set',
+      TOSS_SECRET_KEY_PREFIX: process.env.TOSS_SECRET_KEY?.substring(0, 10) || 'not set',
       AWS_ACCESS_KEY_ID: !!process.env.AWS_ACCESS_KEY_ID,
       AWS_SECRET_ACCESS_KEY: !!process.env.AWS_SECRET_ACCESS_KEY,
       AWS_REGION: process.env.AWS_REGION,

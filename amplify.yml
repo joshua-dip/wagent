@@ -4,13 +4,15 @@ frontend:
     preBuild:
       commands:
         - echo "환경변수 확인 시작"
-        - env | grep -E "(MONGODB|NEXTAUTH|S3_|STORAGE)" || echo "환경변수가 없습니다"
+        - env | grep -E "(MONGODB|NEXTAUTH|S3_|STORAGE|TOSS)" || echo "환경변수가 없습니다"
         - npm ci --include=dev --cache .npm --prefer-offline
     build:
       commands:
         - echo "빌드 시작 - 환경변수 상태:"
         - echo "MONGODB_URI=$MONGODB_URI" | head -c 50
         - echo "NEXTAUTH_SECRET=$NEXTAUTH_SECRET" | head -c 50
+        - echo "TOSS_SECRET_KEY=$TOSS_SECRET_KEY" | head -c 30
+        - echo "TOSS_CLIENT_KEY=$TOSS_CLIENT_KEY" | head -c 30
         - |
           echo "환경변수를 명시적으로 export 합니다..."
           export MONGODB_URI=$MONGODB_URI
@@ -21,6 +23,11 @@ frontend:
           export S3_REGION=$S3_REGION
           export S3_BUCKET_NAME=$S3_BUCKET_NAME
           export STORAGE_TYPE=$STORAGE_TYPE
+          export TOSS_CLIENT_KEY=${TOSS_CLIENT_KEY:-live_gck_LkKEypNArWQ7G1BgeNBj3lmeaxYG}
+          export TOSS_SECRET_KEY=${TOSS_SECRET_KEY:-live_gsk_QbgMGZzorzjKRv65Mjljrl5E1em4}
+          export TOSS_MID=${TOSS_MID:-payper8aqe}
+          export NEXT_PUBLIC_TOSS_CLIENT_KEY=${NEXT_PUBLIC_TOSS_CLIENT_KEY:-live_gck_LkKEypNArWQ7G1BgeNBj3lmeaxYG}
+          echo "Toss Payments 환경변수 설정 완료"
         - npm run build
   artifacts:
     baseDirectory: .next
