@@ -187,3 +187,5 @@ npx shadcn-ui@latest add [component-name]
 ## 📄 라이선스
 
 이 프로젝트는 MIT 라이선스 하에 있습니다.
+## Environment Variables Update
+Updated: Sun Nov 30 01:14:30 KST 2025
