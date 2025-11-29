@@ -46,14 +46,16 @@ export async function POST(request: NextRequest) {
     await connectDB();
 
     // 토스페이먼츠 결제 승인 API 호출
-    const tossSecretKey = process.env.TOSS_SECRET_KEY;
+    // AWS Amplify 환경 변수 이슈로 인한 fallback 값 사용
+    const tossSecretKey = process.env.TOSS_SECRET_KEY || 'live_gsk_QbgMGZzorzjKRv65Mjljrl5E1em4';
     
     console.log('결제 승인 시작:', { 
       orderId, 
       amount, 
       productId, 
       isCart,
-      hasSecretKey: !!tossSecretKey 
+      hasSecretKey: !!tossSecretKey,
+      usingFallback: !process.env.TOSS_SECRET_KEY
     });
     
     if (!tossSecretKey) {

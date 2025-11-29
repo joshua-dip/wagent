@@ -99,7 +99,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: true,
       paymentData,
-      clientKey: process.env.TOSS_CLIENT_KEY || process.env.NEXT_PUBLIC_TOSS_CLIENT_KEY,
+      clientKey: process.env.TOSS_CLIENT_KEY || process.env.NEXT_PUBLIC_TOSS_CLIENT_KEY || 'live_gck_LkKEypNArWQ7G1BgeNBj3lmeaxYG',
     });
 
   } catch (error) {
