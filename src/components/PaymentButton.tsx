@@ -4,7 +4,6 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { CreditCard, Loader2 } from 'lucide-react'
-import { loadTossPayments } from '@tosspayments/payment-sdk'
 
 interface PaymentButtonProps {
   productId: string
@@ -28,52 +27,8 @@ export default function PaymentButton({
       return
     }
 
-    try {
-      setLoading(true)
-
-      // 결제 요청 정보 가져오기
-      const response = await fetch('/api/payments/request', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ productId }),
-      })
-
-      const data = await response.json()
-
-      if (!response.ok) {
-        alert(data.error || '결제 요청에 실패했습니다.')
-        setLoading(false)
-        return
-      }
-
-      const { paymentData, clientKey } = data
-
-      if (!clientKey) {
-        alert('결제 시스템 설정이 올바르지 않습니다.')
-        setLoading(false)
-        return
-      }
-
-      // 토스페이먼츠 결제창 호출
-      const tossPayments = await loadTossPayments(clientKey)
-      
-      await tossPayments.requestPayment('카드', {
-        amount: paymentData.amount,
-        orderId: paymentData.orderId,
-        orderName: paymentData.orderName,
-        customerName: paymentData.customerName,
-        customerEmail: paymentData.customerEmail,
-        successUrl: `${paymentData.successUrl}?productId=${productId}`,
-        failUrl: paymentData.failUrl,
-      })
-
-    } catch (error) {
-      console.error('결제 오류:', error)
-      alert('결제 중 오류가 발생했습니다.')
-      setLoading(false)
-    }
+    // 개별 상품 결제는 전용 결제 페이지로 리다이렉트
+    router.push(`/products/${productId}/checkout`)
   }
 
   return (
