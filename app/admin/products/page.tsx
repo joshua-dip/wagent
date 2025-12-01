@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
 import { useSimpleAuth } from '@/hooks/useSimpleAuth'
 import { useRouter } from 'next/navigation'
+import { isAdminUser } from '@/utils/auth-utils'
 import Link from 'next/link'
 import Layout from '@/components/Layout'
 import { Button } from '@/components/ui/button'
@@ -90,9 +91,8 @@ export default function AdminProductsPage() {
   const currentUser = simpleAuth.user || session?.user
   const isAuthenticated = simpleAuth.isAuthenticated || !!session
   
-  // 관리자인지 확인 (두 시스템 모두 체크)
-  const isAdmin = currentUser?.email === "wnsrb2898@naver.com" || 
-                  simpleAuth.user?.role === 'admin'
+  // 관리자인지 확인 (중앙화된 유틸리티 함수 사용)
+  const isAdmin = isAdminUser(currentUser?.email, simpleAuth.user?.role)
 
   // 모든 Hook은 조건부 return 전에 호출되어야 함
   useEffect(() => {
@@ -145,6 +145,7 @@ export default function AdminProductsPage() {
       const params = new URLSearchParams({
         page: '1',
         limit: '50',
+        showAll: 'true', // 관리자는 모든 상품(활성/비활성) 볼 수 있음
         ...(selectedCategory !== 'all' && { category: selectedCategory }),
         ...(searchTerm && { search: searchTerm })
       })

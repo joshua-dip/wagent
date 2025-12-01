@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import connectDB from "@/lib/db";
 import User from "@/models/User";
+import EmailVerificationToken from "@/models/EmailVerificationToken";
+import crypto from 'crypto';
 
 export async function POST(request: NextRequest) {
   console.log('간단한 회원가입 API 시작 - 환경:', process.env.NODE_ENV);
@@ -85,14 +87,37 @@ export async function POST(request: NextRequest) {
     await newUser.save();
     console.log('사용자 저장 완료:', newUser.email);
 
+    // 6자리 인증번호 생성
+    const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
+    const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10분 후
+
+    // 기존 인증번호 삭제 (같은 이메일)
+    await EmailVerificationToken.deleteMany({ email: newUser.email });
+
+    // 새 인증번호 저장
+    await EmailVerificationToken.create({
+      email: newUser.email,
+      code: verificationCode,
+      expiresAt,
+      attempts: 0,
+    });
+
+    // TODO: 실제 이메일 발송 (Nodemailer, SendGrid 등)
+    console.log('📧 이메일 인증번호:', verificationCode);
+    console.log('✅ 회원가입 완료 - 이메일 인증 필요');
+
     return NextResponse.json({
       success: true,
-      message: "회원가입이 완료되었습니다!",
+      message: "회원가입이 완료되었습니다! 이메일로 발송된 인증번호를 입력해주세요.",
       user: {
         email: newUser.email,
         name: newUser.name,
         created: true
-      }
+      },
+      // 개발 환경에서만 인증번호 노출
+      ...(process.env.NODE_ENV === 'development' && {
+        verificationCode
+      })
     }, { status: 201 });
 
   } catch (error) {

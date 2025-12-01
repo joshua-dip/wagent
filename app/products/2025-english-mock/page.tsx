@@ -18,7 +18,8 @@ import {
   Eye,
   Calendar,
   BookOpen,
-  Check
+  Check,
+  Heart
 } from "lucide-react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
@@ -76,198 +77,21 @@ export default function English2025MockPage() {
     fetchProducts()
   }, [])
 
-  const sampleProducts = [
-    {
-      id: 1,
-      title: "2025년 3월 모의고사 원문과 해석 완전판",
-      description: "전체 지문의 원문과 정확한 해석을 제공하는 완전 분석 자료",
-      category: "original-translation",
-      price: 0,
-      originalPrice: 0,
-      discountRate: 0,
-      rating: 4.9,
-      reviewCount: 203,
-      downloadCount: 3120,
-      author: "김해석 선생님",
-      createdAt: "2024-12-20",
-      difficulty: "중상",
-      pages: 24,
-      isNew: true,
-      isBestseller: true,
-      isFree: true,
-      tags: ["원문", "해석", "완전분석", "전지문", "무료"]
-    },
-    {
-      id: 2,
-      title: "영어 모의고사 강의용 PPT 자료",
-      description: "수업에서 바로 사용할 수 있는 강의용 파워포인트 자료",
-      category: "lecture-material",
-      price: 0,
-      originalPrice: 0,
-      discountRate: 0,
-      rating: 4.8,
-      reviewCount: 156,
-      downloadCount: 2340,
-      author: "박강의 선생님",
-      createdAt: "2024-12-18",
-      difficulty: "중",
-      pages: 32,
-      isNew: true,
-      isBestseller: false,
-      isFree: true,
-      tags: ["강의용", "PPT", "수업자료", "프레젠테이션", "무료"]
-    },
-    {
-      id: 3,
-      title: "영어 모의고사 수업용 활동지",
-      description: "학생 참여형 수업을 위한 다양한 활동지와 워크시트",
-      category: "class-material",
-      price: 0,
-      originalPrice: 0,
-      discountRate: 0,
-      rating: 4.7,
-      reviewCount: 134,
-      downloadCount: 1890,
-      author: "이수업 선생님",
-      createdAt: "2024-12-15",
-      difficulty: "중하",
-      pages: 18,
-      isNew: false,
-      isBestseller: false,
-      isFree: true,
-      tags: ["수업용", "활동지", "참여형", "워크시트", "무료"]
-    },
-    {
-      id: 4,
-      title: "영어 지문 한줄해석 연습 자료",
-      description: "문장별 정확한 해석 연습을 위한 한줄해석 전용 자료",
-      category: "line-translation",
-      price: 0,
-      originalPrice: 0,
-      discountRate: 0,
-      rating: 4.6,
-      reviewCount: 98,
-      downloadCount: 1560,
-      author: "정해석 선생님",
-      createdAt: "2024-12-12",
-      difficulty: "중하",
-      pages: 16,
-      isNew: false,
-      isBestseller: false,
-      isFree: true,
-      tags: ["한줄해석", "문장분석", "해석연습", "기초", "무료"]
-    },
-    {
-      id: 5,
-      title: "영어 모의고사 영작하기 연습 문제",
-      description: "핵심 문장을 영어로 작성하는 영작 연습 문제집",
-      category: "english-writing",
-      price: 0,
-      originalPrice: 0,
-      discountRate: 0,
-      rating: 4.7,
-      reviewCount: 167,
-      downloadCount: 2010,
-      author: "최영작 선생님",
-      createdAt: "2024-12-10",
-      difficulty: "중상",
-      pages: 14,
-      isNew: false,
-      isBestseller: false,
-      isFree: true,
-      tags: ["영작", "영어쓰기", "문장작성", "표현연습", "무료"]
-    },
-    {
-      id: 6,
-      title: "영어 지문 해석쓰기 완전 정복",
-      description: "지문의 핵심 내용을 한국어로 정확히 해석하는 연습 자료",
-      category: "translation-writing",
-      price: 0,
-      originalPrice: 0,
-      discountRate: 0,
-      rating: 4.8,
-      reviewCount: 189,
-      downloadCount: 2450,
-      author: "김번역 선생님",
-      createdAt: "2024-12-08",
-      difficulty: "중",
-      pages: 20,
-      isNew: false,
-      isBestseller: true,
-      isFree: true,
-      tags: ["해석쓰기", "번역연습", "의미파악", "정확성", "무료"]
-    },
-    {
-      id: 7,
-      title: "영어 워크북 빈칸쓰기 종합 패키지",
-      description: "다양한 유형의 빈칸 추론 문제를 체계적으로 정리한 패키지",
-      category: "workbook-blanks",
-      price: 9800,
-      originalPrice: 13000,
-      discountRate: 25,
-      rating: 4.9,
-      reviewCount: 267,
-      downloadCount: 3580,
-      author: "송빈칸 선생님",
-      createdAt: "2024-12-05",
-      difficulty: "상",
-      pages: 28,
-      isNew: false,
-      isBestseller: true,
-      tags: ["빈칸추론", "워크북", "종합패키지", "체계적"]
-    },
-    {
-      id: 8,
-      title: "영어 글의순서 변형문제 4회분",
-      description: "모의고사 지문을 활용한 글의순서 변형문제 4회분 완전판",
-      category: "order-questions",
-      price: 8500,
-      originalPrice: 11500,
-      discountRate: 26,
-      rating: 4.8,
-      reviewCount: 234,
-      downloadCount: 2890,
-      author: "이순서 선생님",
-      createdAt: "2024-12-03",
-      difficulty: "중상",
-      pages: 22,
-      isNew: false,
-      isBestseller: true,
-      tags: ["글의순서", "변형문제", "4회분", "논리적사고"]
-    },
-    {
-      id: 9,
-      title: "영어 문장삽입 변형문제 4회분",
-      description: "문맥 파악 능력 향상을 위한 문장삽입 변형문제 4회분",
-      category: "insertion-questions",
-      price: 8200,
-      originalPrice: 11000,
-      discountRate: 25,
-      rating: 4.7,
-      reviewCount: 198,
-      downloadCount: 2650,
-      author: "박삽입 선생님",
-      createdAt: "2024-12-01",
-      difficulty: "중상",
-      pages: 20,
-      isNew: false,
-      isBestseller: false,
-      tags: ["문장삽입", "변형문제", "4회분", "문맥파악"]
-    }
-  ]
-
-  // 실제 데이터와 샘플 데이터 조합 (ID 충돌 방지)
-  const allProducts = [
-    ...products.map(product => ({
-      ...product,
-      id: product._id || product.id, // MongoDB의 _id 사용
-      key: `real-${product._id || product.id}` // 고유 키 생성
-    })),
-    ...sampleProducts.map(product => ({
-      ...product,
-      key: `sample-${product.id}` // 샘플 데이터용 고유 키
-    }))
-  ]
+  // API에서 가져온 실제 상품만 사용
+  const allProducts = products.map(product => ({
+    ...product,
+    id: product._id || product.id, // MongoDB의 _id 사용
+    key: `real-${product._id || product.id}`, // 고유 키 생성
+    // 기본값 설정
+    rating: product.rating || 0,
+    reviewCount: product.reviewCount || 0,
+    downloadCount: product.downloadCount || 0,
+    difficulty: product.difficulty || '중',
+    pages: product.pages || 0,
+    tags: product.tags || [],
+    isFree: product.price === 0,
+    createdAt: product.createdAt ? new Date(product.createdAt).toISOString().split('T')[0] : new Date().toISOString().split('T')[0]
+  }))
 
   // 카테고리별 상품 개수 계산
   const getSharedMaterialsCount = () => {
