@@ -5,7 +5,6 @@ import jwt from 'jsonwebtoken'
 
 const KAKAO_CLIENT_ID = process.env.NEXT_PUBLIC_KAKAO_CLIENT_ID || ''
 const KAKAO_CLIENT_SECRET = process.env.KAKAO_CLIENT_SECRET || ''
-const KAKAO_REDIRECT_URI = process.env.NEXT_PUBLIC_KAKAO_REDIRECT_URI || ''
 
 export async function GET(request: NextRequest) {
   try {
@@ -21,6 +20,13 @@ export async function GET(request: NextRequest) {
     if (!code) {
       return NextResponse.redirect(new URL('/auth/simple-signin?error=no_code', request.url))
     }
+
+    // 동적으로 Redirect URI 생성 (환경에 따라 자동 설정)
+    const protocol = request.headers.get('x-forwarded-proto') || 'https'
+    const host = request.headers.get('host') || request.url
+    const KAKAO_REDIRECT_URI = `${protocol}://${host}/api/auth/kakao/callback`
+    
+    console.log('카카오 Redirect URI:', KAKAO_REDIRECT_URI)
 
     // 1. 카카오 액세스 토큰 받기
     const tokenResponse = await fetch('https://kauth.kakao.com/oauth/token', {
