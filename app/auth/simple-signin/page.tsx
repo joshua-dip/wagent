@@ -168,7 +168,8 @@ export default function SimpleSignInPage() {
                 onClick={() => {
                   const KAKAO_CLIENT_ID = process.env.NEXT_PUBLIC_KAKAO_CLIENT_ID || 'YOUR_KAKAO_CLIENT_ID'
                   const REDIRECT_URI = `${window.location.origin}/api/auth/kakao/callback`
-                  const kakaoAuthUrl = `https://kauth.kakao.com/oauth/authorize?client_id=${KAKAO_CLIENT_ID}&redirect_uri=${REDIRECT_URI}&response_type=code`
+                  console.log('카카오 로그인 Redirect URI:', REDIRECT_URI) // 디버깅용
+                  const kakaoAuthUrl = `https://kauth.kakao.com/oauth/authorize?client_id=${KAKAO_CLIENT_ID}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&response_type=code`
                   window.location.href = kakaoAuthUrl
                 }}
                 className="w-full h-12 bg-[#FEE500] hover:bg-[#FDD835] text-gray-900 border-0"

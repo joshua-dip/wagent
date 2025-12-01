@@ -43,7 +43,8 @@ export default function SimpleSignUpPage() {
       ? `${window.location.origin}/api/auth/kakao/callback`
       : ''
     
-    const kakaoAuthUrl = `https://kauth.kakao.com/oauth/authorize?client_id=${KAKAO_CLIENT_ID}&redirect_uri=${REDIRECT_URI}&response_type=code`
+    console.log('카카오 회원가입 Redirect URI:', REDIRECT_URI) // 디버깅용
+    const kakaoAuthUrl = `https://kauth.kakao.com/oauth/authorize?client_id=${KAKAO_CLIENT_ID}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&response_type=code`
     
     window.location.href = kakaoAuthUrl
   }
