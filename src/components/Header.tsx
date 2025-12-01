@@ -71,8 +71,8 @@ export default function Header() {
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/60 shadow-lg">
-      <div className="flex h-14 sm:h-16 items-center px-2 sm:px-4 gap-2 sm:gap-4">
-        {/* 브랜드 로고 - 반응형 */}
+      <div className="flex h-14 sm:h-16 items-center justify-between px-2 sm:px-4 lg:px-6 gap-2 sm:gap-4">
+        {/* 좌측: 브랜드 로고 */}
         <Link href="/" className="flex items-center space-x-2 group shrink-0">
           <div className="relative">
             <div className="w-7 h-7 sm:w-9 sm:h-9 bg-gradient-to-br from-emerald-500 via-teal-600 to-cyan-600 rounded-lg flex items-center justify-center shadow-md group-hover:shadow-lg transition-all duration-300">
@@ -88,24 +88,24 @@ export default function Header() {
           </div>
         </Link>
 
-        {/* 검색바 - 반응형 크기 조정 */}
-        <div className="hidden sm:flex w-40 md:w-56 lg:w-64">
+        {/* 중앙: 검색바 */}
+        <div className="hidden sm:flex flex-1 max-w-xl mx-4 lg:mx-8">
           <div className="relative w-full">
-            <Search className="absolute left-2 sm:left-3 top-1/2 transform -translate-y-1/2 h-3 w-3 sm:h-3.5 sm:w-3.5 text-gray-400" />
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
             <Input
               ref={searchInputRef}
               type="search"
-              placeholder="검색..."
-              className="pl-7 sm:pl-9 pr-7 sm:pr-10 h-8 sm:h-9 bg-gray-50 border-gray-200 rounded-lg focus:bg-white focus:shadow-md focus:border-blue-300 transition-all duration-200 text-xs sm:text-sm"
+              placeholder="검색어를 입력하세요..."
+              className="pl-10 pr-12 h-10 bg-gray-50 border-gray-200 rounded-lg focus:bg-white focus:shadow-md focus:border-blue-300 transition-all duration-200 text-sm w-full"
             />
-            <div className="absolute right-1.5 sm:right-2 top-1/2 transform -translate-y-1/2 text-xs text-gray-400 bg-gray-100 px-1 sm:px-1.5 py-0.5 rounded hidden sm:block">
+            <div className="absolute right-2 top-1/2 transform -translate-y-1/2 text-xs text-gray-400 bg-gray-100 px-2 py-0.5 rounded hidden md:block">
               ⌘K
             </div>
           </div>
         </div>
 
-        {/* 우측 네비게이션 - 반응형 */}
-        <div className="flex items-center space-x-1 sm:space-x-2 ml-auto">
+        {/* 우측: 네비게이션 */}
+        <div className="flex items-center space-x-1 sm:space-x-2 shrink-0">
           {/* 모바일 검색 아이콘 */}
           <Button variant="ghost" size="sm" className="sm:hidden p-1.5">
             <Search className="h-4 w-4" />
