@@ -62,6 +62,17 @@ export async function POST(request: NextRequest) {
       if (user && await user.comparePassword(password)) {
         console.log('일반 사용자 인증 성공:', user.email);
         
+        // 이메일 인증 확인 (운영 환경에서만)
+        if (process.env.NODE_ENV === 'production' && !user.emailVerified && user.signupMethod === 'email') {
+          return NextResponse.json(
+            { 
+              error: "이메일 인증이 필요합니다. 가입 시 발송된 인증 메일을 확인해주세요.",
+              emailNotVerified: true
+            },
+            { status: 403 }
+          );
+        }
+        
         const token = jwt.sign(
           {
             id: user._id.toString(),

@@ -99,12 +99,23 @@ NEXT_PUBLIC_BASE_URL=http://localhost:3000
 # S3_SECRET_ACCESS_KEY=your-secret-key
 # S3_REGION=ap-northeast-2
 # S3_BUCKET_NAME=wagent-products
+
+# 카카오 로그인 (https://developers.kakao.com/)
+NEXT_PUBLIC_KAKAO_CLIENT_ID=your_kakao_rest_api_key
+KAKAO_CLIENT_SECRET=your_kakao_client_secret
+NEXT_PUBLIC_KAKAO_REDIRECT_URI=http://localhost:3000/api/auth/kakao/callback
+# 운영: https://www.payperic.com/api/auth/kakao/callback
 ```
 
 **토스페이먼츠 설정 가이드:**
-- 📘 **상세 가이드**: [`TOSS_PAYMENTS_SETUP.md`](./TOSS_PAYMENTS_SETUP.md) 파일 참고
+- 📘 **상세 가이드**: [`TOSS_PAYMENTS_SETUP.md`](./docs/TOSS_PAYMENTS_SETUP.md) 파일 참고
 - 위 예시 키는 테스트용이며, 실제 운영 시 운영 키로 교체 필요
 - Payment Widget 연동 방식 사용 (결제위젯 연동 키)
+
+**카카오 로그인 설정 가이드:**
+- 📘 **상세 가이드**: [`KAKAO_LOGIN_SETUP.md`](./docs/KAKAO_LOGIN_SETUP.md) 파일 참고
+- Kakao Developers에서 REST API 키 발급 필요
+- Redirect URI 등록 필수
 
 ### 4. MongoDB 설정
 

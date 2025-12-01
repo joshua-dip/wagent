@@ -7,6 +7,7 @@ export interface IUser extends Document {
   name: string
   nickname?: string
   phone?: string
+  phoneVerified?: boolean
   birthDate?: Date
   gender?: 'male' | 'female' | 'other'
   marketingAgreed: boolean
@@ -16,6 +17,8 @@ export interface IUser extends Document {
   updatedAt: Date
   emailVerified: boolean
   isActive: boolean
+  kakaoId?: string
+  signupMethod?: 'email' | 'kakao' | 'phone'
   comparePassword(candidatePassword: string): Promise<boolean>
 }
 
@@ -49,6 +52,10 @@ const userSchema = new Schema<IUser>({
     type: String,
     trim: true,
     match: [/^01[0-9]-?[0-9]{4}-?[0-9]{4}$/, '올바른 휴대폰 번호 형식이 아닙니다']
+  },
+  phoneVerified: {
+    type: Boolean,
+    default: false
   },
   birthDate: {
     type: Date
@@ -88,6 +95,16 @@ const userSchema = new Schema<IUser>({
   isActive: {
     type: Boolean,
     default: true
+  },
+  kakaoId: {
+    type: String,
+    unique: true,
+    sparse: true // null 값 허용
+  },
+  signupMethod: {
+    type: String,
+    enum: ['email', 'kakao', 'phone'],
+    default: 'email'
   }
 }, {
   timestamps: true

@@ -12,9 +12,15 @@ export async function GET(request: NextRequest) {
     const category = searchParams.get('category');
     const isFree = searchParams.get('free'); // 무료 상품 필터
     const search = searchParams.get('search');
+    const showAll = searchParams.get('showAll'); // 관리자용: 모든 상품 표시
 
     // 필터 조건 구성
-    const filter: any = { isActive: true };
+    const filter: any = {};
+    
+    // 관리자가 아닌 경우에만 활성 상품만 필터링
+    if (showAll !== 'true') {
+      filter.isActive = true;
+    }
     
     if (category && category !== 'all') {
       filter.category = category;
@@ -37,7 +43,7 @@ export async function GET(request: NextRequest) {
 
     // 상품 조회
     const products = await Product.find(filter)
-      .select('title description price originalPrice category tags author createdAt fileSize downloadCount rating reviewCount')
+      .select('title description price originalPrice category tags author createdAt fileSize downloadCount rating reviewCount isActive')
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit)

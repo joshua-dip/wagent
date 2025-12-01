@@ -1,143 +1,162 @@
 "use client"
 
-import { useState, useEffect } from 'react'
-import { useSession } from 'next-auth/react'
-import { useRouter } from 'next/navigation'
-import Link from 'next/link'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import Layout from '@/components/Layout'
-import { 
-  Upload,
-  Package,
+import { useState, useEffect } from "react"
+import { useSession } from "next-auth/react"
+import { useSimpleAuth } from "@/hooks/useSimpleAuth"
+import { useRouter } from "next/navigation"
+import Layout from "@/components/Layout"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
+import {
   TrendingUp,
+  TrendingDown,
   Users,
+  Package,
+  ShoppingCart,
   DollarSign,
-  FileText,
-  Settings,
+  Download,
   Eye,
-  Edit,
-  Trash2,
-  Plus,
-  BarChart3,
-  Download
-} from 'lucide-react'
+  Star,
+  Calendar,
+  ArrowUpRight,
+  ArrowDownRight,
+  MoreHorizontal,
+  RefreshCw,
+  FileText,
+  CreditCard,
+  Activity
+} from "lucide-react"
+import Link from "next/link"
 
-interface AdminStats {
-  totalProducts: number
-  totalSales: number
+interface DashboardStats {
   totalRevenue: number
+  revenueGrowth: number
   totalUsers: number
-  recentProducts: any[]
-  recentPurchases: any[]
+  userGrowth: number
+  totalProducts: number
+  activeProducts: number
+  totalOrders: number
+  orderGrowth: number
+  totalDownloads: number
+  downloadGrowth: number
+}
+
+interface RecentOrder {
+  _id: string
+  userEmail: string
+  userName: string
+  totalAmount: number
+  status: string
+  createdAt: string
+  itemCount: number
+}
+
+interface TopProduct {
+  _id: string
+  title: string
+  price: number
+  downloadCount: number
+  revenue: number
+  category: string
 }
 
 export default function AdminDashboardPage() {
-  const { data: session, status } = useSession()
+  const { data: session } = useSession()
+  const simpleAuth = useSimpleAuth()
   const router = useRouter()
-  const [stats, setStats] = useState<AdminStats | null>(null)
   const [loading, setLoading] = useState(true)
+  const [stats, setStats] = useState<DashboardStats>({
+    totalRevenue: 0,
+    revenueGrowth: 0,
+    totalUsers: 0,
+    userGrowth: 0,
+    totalProducts: 0,
+    activeProducts: 0,
+    totalOrders: 0,
+    orderGrowth: 0,
+    totalDownloads: 0,
+    downloadGrowth: 0
+  })
+  const [recentOrders, setRecentOrders] = useState<RecentOrder[]>([])
+  const [topProducts, setTopProducts] = useState<TopProduct[]>([])
 
-  const isAdmin = session?.user?.email === 'wnsrb2898@naver.com'
+  const currentUser = simpleAuth.user || session?.user
+  const isAuthenticated = simpleAuth.isAuthenticated || !!session
+  const isAdmin = currentUser?.email === "wnsrb2898@naver.com" || simpleAuth.user?.role === 'admin'
 
-  // 모든 Hook은 조건부 return 전에 호출
   useEffect(() => {
-    if (isAdmin) {
-      loadAdminStats()
+    // 인증 체크가 완료된 후에만 리다이렉트
+    if (!isAuthenticated) return
+    
+    if (!isAdmin) {
+      router.push('/')
+      return
     }
-  }, [isAdmin])
+    
+    fetchDashboardData()
+  }, [isAdmin, isAuthenticated])
 
-  // 로딩 중이면 로딩 표시
-  if (status === 'loading') {
-    return <div className="min-h-screen flex items-center justify-center">로딩 중...</div>
-  }
-
-  // 로그인하지 않은 경우
-  if (!session) {
-    router.push('/auth/signin')
-    return null
-  }
-
-  // Admin 컬렉션 기반 권한 확인으로 변경 예정
-  if (!isAdmin) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Card className="w-full max-w-md">
-          <CardContent className="text-center p-6">
-            <div className="text-red-500 text-6xl mb-4">🚫</div>
-            <h2 className="text-xl font-bold text-gray-900 mb-2">관리자 전용</h2>
-            <p className="text-gray-600 mb-4">이 페이지는 관리자만 접근할 수 있습니다.</p>
-            <Button onClick={() => router.push('/')} variant="outline">
-              홈으로 돌아가기
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
-    )
-  }
-
-  const loadAdminStats = async () => {
+  const fetchDashboardData = async () => {
     try {
       setLoading(true)
       
-      // 상품 통계
-      const productsRes = await fetch('/api/products?limit=1000')
-      const productsData = await productsRes.ok ? await productsRes.json() : { products: [] }
-      
-      // 구매 통계
-      const purchasesRes = await fetch('/api/purchases?limit=1000')
-      const purchasesData = await purchasesRes.ok ? await purchasesRes.json() : { purchases: [] }
-      
-      const products = productsData.products || []
-      const purchases = purchasesData.purchases || []
-      
-      // 최근 상품 5개
-      const recentProducts = products
-        .sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-        .slice(0, 5)
-      
-      // 최근 구매 5개
-      const recentPurchases = purchases
-        .sort((a: any, b: any) => new Date(b.purchaseDate).getTime() - new Date(a.purchaseDate).getTime())
-        .slice(0, 5)
-      
-      // 총 매출 계산
-      const totalRevenue = purchases.reduce((sum: number, p: any) => sum + (p.amount || 0), 0)
-      
-      setStats({
-        totalProducts: products.length,
-        totalSales: purchases.length,
-        totalRevenue,
-        totalUsers: 0, // User API 추가 필요
-        recentProducts,
-        recentPurchases
-      })
+      // 통계 데이터 가져오기
+      const [statsRes, ordersRes, productsRes] = await Promise.all([
+        fetch('/api/admin/stats'),
+        fetch('/api/admin/recent-orders'),
+        fetch('/api/admin/top-products')
+      ])
+
+      if (statsRes.ok) {
+        const data = await statsRes.json()
+        setStats(data.stats || stats)
+      }
+
+      if (ordersRes.ok) {
+        const data = await ordersRes.json()
+        setRecentOrders(data.orders || [])
+      }
+
+      if (productsRes.ok) {
+        const data = await productsRes.json()
+        setTopProducts(data.products || [])
+      }
     } catch (error) {
-      console.error('통계 로드 오류:', error)
-      setStats({
-        totalProducts: 0,
-        totalSales: 0,
-        totalRevenue: 0,
-        totalUsers: 0,
-        recentProducts: [],
-        recentPurchases: []
-      })
+      console.error('대시보드 데이터 로드 오류:', error)
     } finally {
       setLoading(false)
     }
   }
 
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('ko-KR').format(price)
+  // 인증되지 않았으면 로딩 표시
+  if (!isAuthenticated) {
+    return (
+      <Layout>
+        <div className="flex items-center justify-center min-h-screen">
+          <div className="text-center">
+            <RefreshCw className="h-8 w-8 animate-spin mx-auto text-blue-600 mb-4" />
+            <p className="text-gray-600">인증 확인 중...</p>
+          </div>
+        </div>
+      </Layout>
+    )
   }
 
+  // 관리자가 아니면 표시하지 않음
+  if (!isAdmin) {
+    return null
+  }
+
+  // 데이터 로딩 중
   if (loading) {
     return (
       <Layout>
-        <div className="text-center py-12">
-          <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-          <p className="text-gray-600">관리자 대시보드를 불러오는 중...</p>
+        <div className="flex items-center justify-center min-h-screen">
+          <div className="text-center">
+            <RefreshCw className="h-8 w-8 animate-spin mx-auto text-blue-600 mb-4" />
+            <p className="text-gray-600">데이터를 불러오는 중...</p>
+          </div>
         </div>
       </Layout>
     )
@@ -145,319 +164,287 @@ export default function AdminDashboardPage() {
 
   return (
     <Layout>
-      <div className="bg-gradient-to-br from-blue-50 via-white to-purple-50 -m-3 sm:-m-6 min-h-full py-8 px-6 sm:px-8 lg:px-12">
+      <div className="space-y-6">
         {/* 헤더 */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900 mb-2">
-                관리자 대시보드 🛠️
-              </h1>
-              <p className="text-gray-600">PAYPERIC 디지털 마켓플레이스 관리</p>
-            </div>
-            <Link href="/admin/upload">
-              <Button className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700">
-                <Plus className="w-4 h-4 mr-2" />
-                새 상품 업로드
-              </Button>
-            </Link>
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">관리자 대시보드</h1>
+            <p className="text-gray-500 mt-1">전체 시스템 현황을 한눈에 확인하세요</p>
           </div>
+          <Button onClick={fetchDashboardData} variant="outline" className="gap-2">
+            <RefreshCw className="h-4 w-4" />
+            새로고침
+          </Button>
         </div>
 
-        {/* 빠른 통계 */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        {/* 주요 지표 카드 */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {/* 총 매출 */}
           <Card className="hover:shadow-lg transition-shadow">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-gray-600 mb-1">총 상품 수</p>
-                  <p className="text-2xl font-bold text-gray-900">{stats?.totalProducts || 0}</p>
-                </div>
-                <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                  <Package className="w-6 h-6 text-blue-600" />
-                </div>
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-medium text-gray-600">총 매출</CardTitle>
+              <div className="p-2 bg-green-100 rounded-lg">
+                <DollarSign className="h-4 w-4 text-green-600" />
               </div>
-            </CardContent>
-          </Card>
-
-          <Card className="hover:shadow-lg transition-shadow">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-gray-600 mb-1">총 판매 건수</p>
-                  <p className="text-2xl font-bold text-gray-900">{stats?.totalSales || 0}</p>
-                </div>
-                <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-                  <TrendingUp className="w-6 h-6 text-green-600" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="hover:shadow-lg transition-shadow">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-gray-600 mb-1">총 매출</p>
-                  <p className="text-2xl font-bold text-gray-900">{formatPrice(stats?.totalRevenue || 0)}원</p>
-                </div>
-                <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
-                  <DollarSign className="w-6 h-6 text-purple-600" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="hover:shadow-lg transition-shadow">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-gray-600 mb-1">총 사용자 수</p>
-                  <p className="text-2xl font-bold text-gray-900">{stats?.totalUsers || 0}</p>
-                </div>
-                <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
-                  <Users className="w-6 h-6 text-orange-600" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* 주요 관리 메뉴 */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-          {/* 상품 업로드 */}
-          <Card className="group hover:shadow-xl transition-all duration-300 border-0 bg-gradient-to-br from-blue-50 to-blue-100">
-            <CardContent className="p-6">
-              <div className="text-center">
-                <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
-                  <Upload className="w-8 h-8 text-white" />
-                </div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">상품 업로드</h3>
-                <p className="text-sm text-gray-600 mb-4">새로운 PDF 상품을 업로드하고 판매를 시작하세요</p>
-                <Link href="/admin/upload">
-                  <Button className="w-full bg-blue-600 hover:bg-blue-700">
-                    업로드하기
-                  </Button>
-                </Link>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* 상품 관리 */}
-          <Card className="group hover:shadow-xl transition-all duration-300 border-0 bg-gradient-to-br from-green-50 to-green-100">
-            <CardContent className="p-6">
-              <div className="text-center">
-                <div className="w-16 h-16 bg-gradient-to-br from-green-500 to-green-600 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
-                  <Settings className="w-8 h-8 text-white" />
-                </div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">상품 관리</h3>
-                <p className="text-sm text-gray-600 mb-4">업로드된 상품을 수정, 삭제, 관리하세요</p>
-                <Link href="/admin/products">
-                  <Button className="w-full bg-green-600 hover:bg-green-700">
-                    관리하기
-                  </Button>
-                </Link>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* 판매 분석 */}
-          <Card className="group hover:shadow-xl transition-all duration-300 border-0 bg-gradient-to-br from-purple-50 to-purple-100">
-            <CardContent className="p-6">
-              <div className="text-center">
-                <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
-                  <BarChart3 className="w-8 h-8 text-white" />
-                </div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">판매 분석</h3>
-                <p className="text-sm text-gray-600 mb-4">매출 통계와 판매 데이터를 분석하세요</p>
-                <Link href="/admin/analytics">
-                  <Button className="w-full bg-purple-600 hover:bg-purple-700">
-                    분석보기
-                  </Button>
-                </Link>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* 구매 관리 */}
-          <Card className="group hover:shadow-xl transition-all duration-300 border-0 bg-gradient-to-br from-orange-50 to-orange-100">
-            <CardContent className="p-6">
-              <div className="text-center">
-                <div className="w-16 h-16 bg-gradient-to-br from-orange-500 to-orange-600 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
-                  <Download className="w-8 h-8 text-white" />
-                </div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">구매 관리</h3>
-                <p className="text-sm text-gray-600 mb-4">모든 구매 내역과 다운로드를 관리하세요</p>
-                <Link href="/admin/purchases">
-                  <Button className="w-full bg-orange-600 hover:bg-orange-700">
-                    관리하기
-                  </Button>
-                </Link>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* 사용자 관리 */}
-          <Card className="group hover:shadow-xl transition-all duration-300 border-0 bg-gradient-to-br from-indigo-50 to-indigo-100">
-            <CardContent className="p-6">
-              <div className="text-center">
-                <div className="w-16 h-16 bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
-                  <Users className="w-8 h-8 text-white" />
-                </div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">사용자 관리</h3>
-                <p className="text-sm text-gray-600 mb-4">가입된 사용자를 조회하고 관리하세요</p>
-                <Link href="/admin/users">
-                  <Button className="w-full bg-indigo-600 hover:bg-indigo-700">
-                    관리하기
-                  </Button>
-                </Link>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* 저장소 설정 */}
-          <Card className="group hover:shadow-xl transition-all duration-300 border-0 bg-gradient-to-br from-cyan-50 to-cyan-100">
-            <CardContent className="p-6">
-              <div className="text-center">
-                <div className="w-16 h-16 bg-gradient-to-br from-cyan-500 to-cyan-600 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
-                  <FileText className="w-8 h-8 text-white" />
-                </div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">저장소 설정</h3>
-                <p className="text-sm text-gray-600 mb-4">파일 저장소 (로컬 ↔ AWS S3) 관리</p>
-                <Link href="/admin/storage-settings">
-                  <Button className="w-full bg-cyan-600 hover:bg-cyan-700">
-                    설정하기
-                  </Button>
-                </Link>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* 사이트 설정 */}
-          <Card className="group hover:shadow-xl transition-all duration-300 border-0 bg-gradient-to-br from-gray-50 to-gray-100">
-            <CardContent className="p-6">
-              <div className="text-center">
-                <div className="w-16 h-16 bg-gradient-to-br from-gray-500 to-gray-600 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
-                  <Settings className="w-8 h-8 text-white" />
-                </div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">사이트 설정</h3>
-                <p className="text-sm text-gray-600 mb-4">사이트 전반적인 설정을 관리하세요</p>
-                <Link href="/admin/settings">
-                  <Button className="w-full bg-gray-600 hover:bg-gray-700">
-                    설정하기
-                  </Button>
-                </Link>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* 최근 활동 */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* 최근 업로드된 상품 */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <FileText className="w-5 h-5" />
-                  최근 업로드된 상품
-                </div>
-                <Link href="/admin/products">
-                  <Button variant="ghost" size="sm">전체보기</Button>
-                </Link>
-              </CardTitle>
             </CardHeader>
             <CardContent>
-              {stats?.recentProducts && stats.recentProducts.length > 0 ? (
-                <div className="space-y-3">
-                  {stats.recentProducts.map((product: any) => (
-                    <div key={product._id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
-                      <div className="flex-1 min-w-0">
-                        <h4 className="font-medium text-sm text-gray-900 truncate">{product.title}</h4>
+              <div className="text-2xl font-bold text-gray-900">
+                {stats.totalRevenue.toLocaleString()}원
+              </div>
+              <div className={`flex items-center mt-2 text-sm ${
+                stats.revenueGrowth >= 0 ? 'text-green-600' : 'text-red-600'
+              }`}>
+                {stats.revenueGrowth >= 0 ? (
+                  <ArrowUpRight className="h-4 w-4 mr-1" />
+                ) : (
+                  <ArrowDownRight className="h-4 w-4 mr-1" />
+                )}
+                <span>{Math.abs(stats.revenueGrowth)}% from last month</span>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* 전체 사용자 */}
+          <Card className="hover:shadow-lg transition-shadow">
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-medium text-gray-600">전체 사용자</CardTitle>
+              <div className="p-2 bg-blue-100 rounded-lg">
+                <Users className="h-4 w-4 text-blue-600" />
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-gray-900">
+                {stats.totalUsers.toLocaleString()}명
+              </div>
+              <div className={`flex items-center mt-2 text-sm ${
+                stats.userGrowth >= 0 ? 'text-green-600' : 'text-red-600'
+              }`}>
+                {stats.userGrowth >= 0 ? (
+                  <TrendingUp className="h-4 w-4 mr-1" />
+                ) : (
+                  <TrendingDown className="h-4 w-4 mr-1" />
+                )}
+                <span>{Math.abs(stats.userGrowth)}% 신규 가입</span>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* 상품 현황 */}
+          <Card className="hover:shadow-lg transition-shadow">
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-medium text-gray-600">상품 현황</CardTitle>
+              <div className="p-2 bg-purple-100 rounded-lg">
+                <Package className="h-4 w-4 text-purple-600" />
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-gray-900">
+                {stats.totalProducts}개
+              </div>
+              <div className="flex items-center mt-2 text-sm text-gray-600">
+                <Activity className="h-4 w-4 mr-1 text-green-600" />
+                <span>활성: {stats.activeProducts}개</span>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* 총 주문 */}
+          <Card className="hover:shadow-lg transition-shadow">
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-medium text-gray-600">총 주문</CardTitle>
+              <div className="p-2 bg-orange-100 rounded-lg">
+                <ShoppingCart className="h-4 w-4 text-orange-600" />
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-gray-900">
+                {stats.totalOrders.toLocaleString()}건
+              </div>
+              <div className={`flex items-center mt-2 text-sm ${
+                stats.orderGrowth >= 0 ? 'text-green-600' : 'text-red-600'
+              }`}>
+                {stats.orderGrowth >= 0 ? (
+                  <TrendingUp className="h-4 w-4 mr-1" />
+                ) : (
+                  <TrendingDown className="h-4 w-4 mr-1" />
+                )}
+                <span>{Math.abs(stats.orderGrowth)}% 증가</span>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* 다운로드 통계 */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Download className="h-5 w-5 text-blue-600" />
+              다운로드 현황
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-3xl font-bold text-gray-900">
+                  {stats.totalDownloads.toLocaleString()}
+                </p>
+                <p className="text-sm text-gray-500 mt-1">총 다운로드 횟수</p>
+              </div>
+              <div className={`flex items-center gap-2 text-sm ${
+                stats.downloadGrowth >= 0 ? 'text-green-600' : 'text-red-600'
+              }`}>
+                {stats.downloadGrowth >= 0 ? (
+                  <TrendingUp className="h-4 w-4" />
+                ) : (
+                  <TrendingDown className="h-4 w-4" />
+                )}
+                <span className="font-semibold">{Math.abs(stats.downloadGrowth)}%</span>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* 최근 주문 */}
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle className="flex items-center gap-2">
+                  <CreditCard className="h-5 w-5 text-green-600" />
+                  최근 주문
+                </CardTitle>
+                <Link href="/admin/orders">
+                  <Button variant="ghost" size="sm">
+                    전체보기
+                    <ArrowUpRight className="h-4 w-4 ml-1" />
+                  </Button>
+                </Link>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {recentOrders.length === 0 ? (
+                  <p className="text-center text-gray-500 py-8">주문 내역이 없습니다</p>
+                ) : (
+                  recentOrders.map((order) => (
+                    <div key={order._id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                      <div className="flex-1">
+                        <p className="font-medium text-gray-900">{order.userName}</p>
+                        <p className="text-sm text-gray-500">{order.userEmail}</p>
                         <div className="flex items-center gap-2 mt-1">
+                          <Badge variant="outline" className="text-xs">
+                            {order.itemCount}개 상품
+                          </Badge>
+                          <span className="text-xs text-gray-400">
+                            {new Date(order.createdAt).toLocaleDateString()}
+                          </span>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className="font-bold text-gray-900">
+                          {order.totalAmount.toLocaleString()}원
+                        </p>
+                        <Badge className={`mt-1 ${
+                          order.status === 'CONFIRMED' ? 'bg-green-500' : 'bg-yellow-500'
+                        }`}>
+                          {order.status}
+                        </Badge>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* 인기 상품 */}
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle className="flex items-center gap-2">
+                  <Star className="h-5 w-5 text-yellow-600" />
+                  인기 상품 TOP 5
+                </CardTitle>
+                <Link href="/admin/products">
+                  <Button variant="ghost" size="sm">
+                    전체보기
+                    <ArrowUpRight className="h-4 w-4 ml-1" />
+                  </Button>
+                </Link>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {topProducts.length === 0 ? (
+                  <p className="text-center text-gray-500 py-8">상품이 없습니다</p>
+                ) : (
+                  topProducts.map((product, index) => (
+                    <div key={product._id} className="flex items-center gap-4 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                      <div className="flex-shrink-0 w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold">
+                        {index + 1}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium text-gray-900 truncate">{product.title}</p>
+                        <div className="flex items-center gap-3 mt-1">
+                          <span className="text-sm text-gray-500">
+                            <Download className="h-3 w-3 inline mr-1" />
+                            {product.downloadCount}
+                          </span>
                           <Badge variant="outline" className="text-xs">
                             {product.category}
                           </Badge>
-                          <span className="text-xs text-gray-500">
-                            {new Date(product.createdAt).toLocaleDateString('ko-KR')}
-                          </span>
                         </div>
                       </div>
-                      <div className="text-right ml-3">
-                        <p className="font-semibold text-sm text-gray-900">
-                          {formatPrice(product.price)}원
+                      <div className="text-right">
+                        <p className="font-bold text-gray-900">
+                          {product.price.toLocaleString()}원
                         </p>
-                        {product.price === 0 && (
-                          <Badge className="bg-green-500 text-xs">무료</Badge>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="text-center py-8 text-gray-500">
-                  <Package className="w-12 h-12 mx-auto mb-2 text-gray-300" />
-                  <p>아직 업로드된 상품이 없습니다</p>
-                  <Link href="/admin/upload">
-                    <Button variant="outline" className="mt-3">
-                      첫 상품 업로드하기
-                    </Button>
-                  </Link>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* 최근 구매 */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <TrendingUp className="w-5 h-5" />
-                  최근 구매 내역
-                </div>
-                <Link href="/admin/purchases">
-                  <Button variant="ghost" size="sm">전체보기</Button>
-                </Link>
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {stats?.recentPurchases && stats.recentPurchases.length > 0 ? (
-                <div className="space-y-3">
-                  {stats.recentPurchases.map((purchase: any, index: number) => (
-                    <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
-                      <div className="flex-1 min-w-0">
-                        <h4 className="font-medium text-sm text-gray-900 truncate">
-                          {purchase.productTitle || '상품명 없음'}
-                        </h4>
-                        <div className="flex items-center gap-2 mt-1">
-                          <span className="text-xs text-gray-500">
-                            {purchase.userEmail || '사용자'}
-                          </span>
-                          <span className="text-xs text-gray-400">•</span>
-                          <span className="text-xs text-gray-500">
-                            {new Date(purchase.purchaseDate).toLocaleDateString('ko-KR')}
-                          </span>
-                        </div>
-                      </div>
-                      <div className="text-right ml-3">
-                        <p className="font-semibold text-sm text-green-600">
-                          +{formatPrice(purchase.amount || 0)}원
+                        <p className="text-xs text-green-600 font-semibold">
+                          매출: {product.revenue.toLocaleString()}원
                         </p>
                       </div>
                     </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="text-center py-8 text-gray-500">
-                  <DollarSign className="w-12 h-12 mx-auto mb-2 text-gray-300" />
-                  <p>아직 구매 내역이 없습니다</p>
-                  <p className="text-sm text-gray-400">상품이 판매되면 여기에 표시됩니다</p>
-                </div>
-              )}
+                  ))
+                )}
+              </div>
             </CardContent>
           </Card>
         </div>
+
+        {/* 빠른 액션 */}
+        <Card>
+          <CardHeader>
+            <CardTitle>빠른 작업</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <Link href="/admin/upload">
+                <Button variant="outline" className="w-full h-20 flex flex-col gap-2">
+                  <FileText className="h-6 w-6" />
+                  <span>자료 업로드</span>
+                </Button>
+              </Link>
+              <Link href="/admin/products">
+                <Button variant="outline" className="w-full h-20 flex flex-col gap-2">
+                  <Package className="h-6 w-6" />
+                  <span>상품 관리</span>
+                </Button>
+              </Link>
+              <Link href="/admin/users">
+                <Button variant="outline" className="w-full h-20 flex flex-col gap-2">
+                  <Users className="h-6 w-6" />
+                  <span>사용자 관리</span>
+                </Button>
+              </Link>
+              <Link href="/admin/analytics">
+                <Button variant="outline" className="w-full h-20 flex flex-col gap-2">
+                  <Activity className="h-6 w-6" />
+                  <span>통계 분석</span>
+                </Button>
+              </Link>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </Layout>
   )

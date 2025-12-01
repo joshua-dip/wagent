@@ -6,77 +6,13 @@ import { cn } from "@/lib/utils"
 import { useSidebar } from "@/contexts/SidebarContext"
 import { useSession } from "next-auth/react"
 import { useSimpleAuth } from "@/hooks/useSimpleAuth"
+import { getFilteredMenuByRole } from "@/config/menu-config"
+import { getUserRole } from "@/utils/auth-utils"
 import { 
-  LayoutDashboard, 
-  Package, 
-  BookOpen,
-  FileText,
-  Star,
-  PenTool,
-  Settings,
-  Upload,
-  BarChart3,
-  Menu,
   ChevronLeft,
   ChevronRight,
-  Download
+  Sparkles
 } from "lucide-react"
-
-const sidebarSections = [
-  {
-    title: "메인",
-    items: [
-      {
-        title: "대시보드",
-        href: "/",
-        icon: LayoutDashboard,
-      },
-      {
-        title: "구매한 자료 다운로드",
-        href: "/my/purchases",
-        icon: Download,
-      },
-      {
-        title: "공유 자료",
-        href: "/products/free",
-        icon: Star,
-      },
-      {
-        title: "서술형 자료 맞춤 제작",
-        href: "/custom-order",
-        icon: PenTool,
-      },
-    ]
-  },
-  {
-    title: "카테고리",
-    items: [
-      {
-        title: "2025 영어모의고사",
-        href: "/products/2025-english-mock",
-        icon: FileText,
-      },
-
-      {
-        title: "EBS수능특강영어",
-        href: "/products/ebs-special-english",
-        icon: BookOpen,
-      },
-      {
-        title: "EBS수능특강영어독해",
-        href: "/products/ebs-english-reading",
-        icon: BookOpen,
-      },
-      {
-        title: "부교재자료 (쏠북링크)",
-        href: "/products/supplementary-materials",
-        icon: Package,
-      },
-    ]
-  },
-
-
-]
 
 export default function Sidebar() {
   const pathname = usePathname()
@@ -87,37 +23,11 @@ export default function Sidebar() {
   // 두 인증 시스템 중 하나라도 로그인되어 있으면 인증된 것으로 처리
   const currentUser = simpleAuth.user || session?.user
   
-  // 관리자인지 확인 (두 시스템 모두 체크)
-  const isAdmin = currentUser?.email === "wnsrb2898@naver.com" || 
-                  simpleAuth.user?.role === 'admin'
+  // 사용자 역할 결정 (중앙화된 유틸리티 함수 사용)
+  const userRole = getUserRole(currentUser?.email, simpleAuth.user?.role)
 
-  // 관리자 메뉴 섹션 (조건부)
-  const adminSection = isAdmin ? {
-    title: "관리자",
-    items: [
-      {
-        title: "관리자 대시보드",
-        href: "/admin/dashboard",
-        icon: BarChart3,
-      },
-      {
-        title: "자료 업로드",
-        href: "/admin/upload",
-        icon: Upload,
-      },
-      {
-        title: "상품 관리",
-        href: "/admin/products",
-        icon: Settings,
-      },
-    ]
-  } : null
-
-  // 전체 사이드바 섹션 (관리자 메뉴 조건부 추가)
-  const allSections = [
-    ...sidebarSections,
-    ...(adminSection ? [adminSection] : [])
-  ]
+  // 역할에 따라 필터링된 메뉴 가져오기
+  const allSections = getFilteredMenuByRole(userRole)
 
   return (
     <div className={cn(
@@ -157,13 +67,19 @@ export default function Sidebar() {
                   )} />
                   {!isCollapsed && (
                     <>
-                      <span>{item.title}</span>
-                      {/* 뱃지 (예시) */}
-                      {item.href === "/cart" && (
-                        <span className="ml-auto bg-blue-500 text-white text-xs rounded-full px-2 py-0.5">3</span>
+                      <span className="flex-1">{item.title}</span>
+                      {/* NEW 배지 */}
+                      {item.isNew && (
+                        <span className="ml-auto bg-green-500 text-white text-xs rounded-full px-2 py-0.5 flex items-center gap-1">
+                          <Sparkles className="w-2.5 h-2.5" />
+                          NEW
+                        </span>
                       )}
-                      {item.href === "/wishlist" && (
-                        <span className="ml-auto bg-red-500 text-white text-xs rounded-full px-2 py-0.5">2</span>
+                      {/* 커스텀 배지 */}
+                      {item.badge && (
+                        <span className="ml-auto bg-blue-500 text-white text-xs rounded-full px-2 py-0.5">
+                          {item.badge}
+                        </span>
                       )}
                     </>
                   )}

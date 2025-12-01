@@ -71,55 +71,19 @@ export default function EBSSpecialEnglishPage() {
     fetchProducts()
   }, [])
 
-  const sampleProducts = [
-    {
-      id: 1001,
-      title: "2025 EBS 수능특강 영어 전체 교재",
-      description: "2025학년도 EBS 수능특강 영어 교재 전체 PDF",
-      category: "textbook",
-      price: 15000,
-      originalPrice: 20000,
-      discountRate: 25,
-      isFree: false,
-      isNew: true,
-      isBestseller: true,
-      rating: 4.8,
-      reviewCount: 156,
-      downloadCount: 1200,
-      pages: 320,
-      tags: ["EBS", "수능특강", "영어", "전체교재"]
-    },
-    {
-      id: 1002,
-      title: "EBS 수능특강 영어 1-5강 단원별 자료",
-      description: "1-5강 단원별 정리 자료와 연습문제",
-      category: "chapter-materials",
-      price: 8000,
-      originalPrice: 10000,
-      discountRate: 20,
-      isFree: false,
-      isNew: false,
-      isBestseller: false,
-      rating: 4.6,
-      reviewCount: 89,
-      downloadCount: 650,
-      pages: 120,
-      tags: ["단원별", "1-5강", "연습문제"]
-    }
-  ]
-
-  // 실제 데이터와 샘플 데이터 조합 (ID 충돌 방지)
-  const allProducts = [
-    ...products.map(product => ({
-      ...product,
-      id: product._id || product.id,
-      key: `real-${product._id || product.id}`
-    })),
-    ...sampleProducts.map(product => ({
-      ...product,
-      key: `sample-${product.id}`
-    }))
-  ]
+  // API에서 가져온 실제 상품만 사용
+  const allProducts = products.map(product => ({
+    ...product,
+    id: product._id || product.id,
+    key: `real-${product._id || product.id}`,
+    // 기본값 설정
+    rating: product.rating || 0,
+    reviewCount: product.reviewCount || 0,
+    downloadCount: product.downloadCount || 0,
+    pages: product.pages || 0,
+    tags: product.tags || [],
+    isFree: product.price === 0
+  }))
   
   const filteredProducts = selectedCategory === "all" 
     ? allProducts 
