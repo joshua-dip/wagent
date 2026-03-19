@@ -14,8 +14,13 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "PAYPERIC - 디지털 자료 마켓플레이스",
-  description: "다양한 디지털 콘텐츠와 자료를 만나보세요",
+  title: "PAYPERIC - 서술형은 페이퍼릭",
+  description: "고등 영어 서술형 문제 전문, 검증된 자료로 수업을 만드세요",
+  icons: {
+    icon: "/icon.svg",
+    shortcut: "/icon.svg",
+    apple: "/icon.svg",
+  },
 };
 
 export default function RootLayout({

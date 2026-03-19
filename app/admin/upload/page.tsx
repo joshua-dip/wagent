@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useSession } from 'next-auth/react'
 import { useSimpleAuth } from '@/hooks/useSimpleAuth'
 import { useRouter } from 'next/navigation'
@@ -98,8 +98,10 @@ export default function AdminUploadPage() {
   const router = useRouter()
   const [isUploading, setIsUploading] = useState(false)
   const [uploadSuccess, setUploadSuccess] = useState(false)
+  const [uploadError, setUploadError] = useState<string | null>(null)
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [selectedMainCategory, setSelectedMainCategory] = useState<string>('')
+  const successRef = useRef<HTMLDivElement>(null)
   
   // 두 인증 시스템 중 하나라도 로그인되어 있으면 인증된 것으로 처리
   const currentUser = simpleAuth.user || session?.user
@@ -206,7 +208,8 @@ export default function AdminUploadPage() {
     }
 
     setIsUploading(true)
-    
+    setUploadError(null)
+
     try {
       const formData = new FormData()
       formData.append('file', selectedFile)
@@ -239,19 +242,21 @@ export default function AdminUploadPage() {
         setUploadSuccess(true)
         reset()
         setSelectedFile(null)
-        // 파일 input 초기화
+        setSelectedMainCategory('')
         const fileInput = document.getElementById('pdfFile') as HTMLInputElement
         if (fileInput) fileInput.value = ''
-        
-        setTimeout(() => {
-          setUploadSuccess(false)
-        }, 3000)
+        // 성공 메시지가 보이도록 맨 위로 스크롤
+        setTimeout(() => successRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100)
+        setTimeout(() => setUploadSuccess(false), 6000)
       } else {
-        alert(result.error || '업로드 중 오류가 발생했습니다.')
+        const errMsg = result.error || '업로드 중 오류가 발생했습니다.'
+        setUploadError(errMsg)
+        setTimeout(() => successRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100)
       }
     } catch (error) {
       console.error('업로드 오류:', error)
-      alert('업로드 중 오류가 발생했습니다.')
+      const errMsg = '업로드 중 오류가 발생했습니다. 네트워크를 확인해 주세요.'
+      setUploadError(errMsg)
     } finally {
       setIsUploading(false)
     }
@@ -266,16 +271,39 @@ export default function AdminUploadPage() {
           <p className="text-gray-600">새로운 PDF 상품을 업로드하고 판매하세요</p>
         </div>
 
-        {uploadSuccess && (
-          <Card className="mb-6 border-green-200 bg-green-50">
-            <CardContent className="p-4">
-              <div className="flex items-center gap-2 text-green-700">
-                <CheckCircle2 className="w-5 h-5" />
-                <span className="font-medium">상품이 성공적으로 업로드되었습니다!</span>
-              </div>
-            </CardContent>
-          </Card>
-        )}
+        <div ref={successRef} className="min-h-[1px]">
+          {uploadSuccess && (
+            <Card className="mb-6 border-green-300 bg-green-50 shadow-md">
+              <CardContent className="p-5">
+                <div className="flex items-center gap-3 text-green-800">
+                  <div className="flex-shrink-0 w-10 h-10 rounded-full bg-green-200 flex items-center justify-center">
+                    <CheckCircle2 className="w-6 h-6 text-green-600" />
+                  </div>
+                  <div>
+                    <p className="font-semibold text-lg">상품이 업로드되었습니다</p>
+                    <p className="text-sm text-green-700 mt-0.5">새 상품을 계속 등록하거나 상품 관리에서 확인할 수 있습니다.</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+          {uploadError && (
+            <Card className="mb-6 border-red-200 bg-red-50 shadow-md">
+              <CardContent className="p-5">
+                <div className="flex items-center gap-3 text-red-800">
+                  <AlertCircle className="w-10 h-10 flex-shrink-0 text-red-500" />
+                  <div className="flex-1">
+                    <p className="font-semibold">업로드 실패</p>
+                    <p className="text-sm text-red-700 mt-0.5">{uploadError}</p>
+                  </div>
+                  <Button variant="ghost" size="sm" onClick={() => setUploadError(null)} className="text-red-700 hover:text-red-900">
+                    닫기
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+        </div>
 
         <Card className="shadow-xl border-0">
           <CardHeader>

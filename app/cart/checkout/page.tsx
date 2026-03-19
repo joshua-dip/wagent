@@ -36,12 +36,8 @@ export default function CartCheckoutPage() {
   const isAuthenticated = simpleAuth.isAuthenticated || !!session
   const isAuthLoading = simpleAuth.isLoading || status === 'loading'
 
-  // 총 금액 계산
-  const calculateTotal = () => {
-    return cartItems.reduce((sum, item) => sum + item.price, 0)
-  }
-
-  const totalAmount = calculateTotal()
+  // 총 금액 계산 (price가 문자열로 저장된 경우 NaN 방지)
+  const totalAmount = cartItems.reduce((sum, item) => sum + (Number(item.price) || 0), 0)
 
   // 인증 상태 확인
   useEffect(() => {
@@ -366,7 +362,7 @@ export default function CartCheckoutPage() {
                         </div>
                         <div className="text-right ml-4">
                           <p className="font-semibold text-blue-600">
-                            {new Intl.NumberFormat('ko-KR').format(item.price)}원
+                            {new Intl.NumberFormat('ko-KR').format(Number(item.price) || 0)}원
                           </p>
                         </div>
                       </div>

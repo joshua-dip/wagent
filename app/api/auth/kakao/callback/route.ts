@@ -6,25 +6,38 @@ import jwt from 'jsonwebtoken'
 const KAKAO_CLIENT_ID = process.env.NEXT_PUBLIC_KAKAO_CLIENT_ID || ''
 const KAKAO_CLIENT_SECRET = process.env.KAKAO_CLIENT_SECRET || ''
 
+/** 배포 환경에서 리다이렉트가 localhost로 가지 않도록 기준 URL 반환 */
+function getBaseUrl(request: NextRequest): string {
+  const envUrl = process.env.NEXT_PUBLIC_BASE_URL || process.env.NEXTAUTH_URL
+  if (envUrl) {
+    const url = envUrl.replace(/\/$/, '')
+    return url
+  }
+  const u = new URL(request.url)
+  return `${u.protocol}//${u.host}`
+}
+
 export async function GET(request: NextRequest) {
   try {
+    const baseUrl = getBaseUrl(request)
     const { searchParams } = new URL(request.url)
     const code = searchParams.get('code')
     const error = searchParams.get('error')
 
     if (error) {
       console.error('카카오 로그인 에러:', error)
-      return NextResponse.redirect(new URL('/auth/simple-signin?error=kakao_auth_failed', request.url))
+      return NextResponse.redirect(`${baseUrl}/auth/simple-signin?error=kakao_auth_failed`)
     }
 
     if (!code) {
-      return NextResponse.redirect(new URL('/auth/simple-signin?error=no_code', request.url))
+      return NextResponse.redirect(`${baseUrl}/auth/simple-signin?error=no_code`)
     }
 
-    // 동적으로 Redirect URI 생성 (환경에 따라 자동 설정)
-    const protocol = request.headers.get('x-forwarded-proto') || 'https'
-    const host = request.headers.get('host') || request.url
-    const KAKAO_REDIRECT_URI = `${protocol}://${host}/api/auth/kakao/callback`
+    // Redirect URI: 배포 시 동일 도메인 사용 (request의 host가 프록시 때문에 잘못될 수 있음)
+    let protocol = request.headers.get('x-forwarded-proto') || new URL(request.url).protocol.replace(':', '')
+    if (!protocol.endsWith(':')) protocol += ':'
+    const host = request.headers.get('x-forwarded-host') || request.headers.get('host') || new URL(request.url).host
+    const KAKAO_REDIRECT_URI = `${protocol}//${host}/api/auth/kakao/callback`
     
     console.log('카카오 Redirect URI:', KAKAO_REDIRECT_URI)
 
@@ -47,7 +60,7 @@ export async function GET(request: NextRequest) {
 
     if (!tokenResponse.ok) {
       console.error('카카오 토큰 에러:', tokenData)
-      return NextResponse.redirect(new URL('/auth/simple-signin?error=token_failed', request.url))
+      return NextResponse.redirect(`${baseUrl}/auth/simple-signin?error=token_failed`)
     }
 
     const { access_token } = tokenData
@@ -63,7 +76,7 @@ export async function GET(request: NextRequest) {
 
     if (!userResponse.ok) {
       console.error('카카오 사용자 정보 에러:', kakaoUser)
-      return NextResponse.redirect(new URL('/auth/simple-signin?error=user_info_failed', request.url))
+      return NextResponse.redirect(`${baseUrl}/auth/simple-signin?error=user_info_failed`)
     }
 
     // 3. DB 연결
@@ -103,8 +116,8 @@ export async function GET(request: NextRequest) {
       { expiresIn: '7d' }
     )
 
-    // 6. 쿠키 설정 및 리다이렉트 (기존 시스템과 동일한 쿠키 이름 사용)
-    const response = NextResponse.redirect(new URL('/', request.url))
+    // 6. 쿠키 설정 및 리다이렉트 (배포 시 NEXT_PUBLIC_BASE_URL 사용해 localhost로 가지 않도록)
+    const response = NextResponse.redirect(`${baseUrl}/`)
     response.cookies.set('wagent-auth', token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
@@ -117,7 +130,8 @@ export async function GET(request: NextRequest) {
 
   } catch (error) {
     console.error('카카오 로그인 처리 중 오류:', error)
-    return NextResponse.redirect(new URL('/auth/simple-signin?error=server_error', request.url))
+    const baseUrl = getBaseUrl(request)
+    return NextResponse.redirect(`${baseUrl}/auth/simple-signin?error=server_error`)
   }
 }
 

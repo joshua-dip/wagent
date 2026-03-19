@@ -91,27 +91,25 @@ export default function Sidebar() {
         </div>
       </div>
 
-      {/* 하단 고정 접기/펼치기 버튼 */}
+      {/* 하단 고정: 사이드바 접기/펼치기 (아이콘만 보이면 의미가 불명확할 수 있어 텍스트 병기) */}
       <div className="border-t border-gray-200 p-3">
         <button
           onClick={() => setIsCollapsed(!isCollapsed)}
-          className={cn(
-            "w-full bg-white border border-gray-200 rounded-lg p-2.5 hover:bg-gray-50 hover:border-blue-300 transition-all duration-200 shadow-sm hover:shadow-md flex items-center justify-center",
-            isMobile && "bg-blue-50 border-blue-300", // 모바일에서 강조 표시
-            isCollapsed && "p-2" // 접힌 상태에서는 패딩 줄이기
-          )}
+          aria-label={isCollapsed ? "사이드바 펼치기" : "사이드바 접기"}
           title={isCollapsed ? "사이드바 펼치기" : "사이드바 접기"}
+          className={cn(
+            "w-full bg-white border border-gray-200 rounded-lg p-2.5 hover:bg-gray-50 hover:border-blue-300 transition-all duration-200 shadow-sm hover:shadow-md flex items-center justify-center gap-2",
+            isMobile && "bg-blue-50 border-blue-300",
+            isCollapsed && "p-2"
+          )}
         >
           {isCollapsed ? (
-            <ChevronRight className={cn(
-              "h-4 w-4 text-gray-600 hover:text-blue-600 transition-colors",
-              isMobile && "text-blue-600" // 모바일에서 파란색
-            )} />
+            <ChevronRight className={cn("h-4 w-4 text-gray-600 hover:text-blue-600 transition-colors", isMobile && "text-blue-600")} />
           ) : (
-            <ChevronLeft className={cn(
-              "h-4 w-4 text-gray-600 hover:text-blue-600 transition-colors",
-              isMobile && "text-blue-600" // 모바일에서 파란색
-            )} />
+            <>
+              <ChevronLeft className={cn("h-4 w-4 text-gray-600 hover:text-blue-600 transition-colors", isMobile && "text-blue-600")} />
+              <span className="text-xs font-medium text-gray-600">접기</span>
+            </>
           )}
         </button>
       </div>
