@@ -57,7 +57,7 @@ export default function ProductCheckoutPage() {
           throw new Error('상품 정보를 불러올 수 없습니다.')
         }
         const data = await response.json()
-        setProduct(data)
+        setProduct(data.product ?? data)
       } catch (err) {
         console.error('상품 로딩 오류:', err)
         setError(err instanceof Error ? err.message : '상품 정보를 불러올 수 없습니다.')
@@ -198,7 +198,7 @@ export default function ProductCheckoutPage() {
 
       const paymentMethodsWidget = paymentWidget.renderPaymentMethods(
         '#payment-method',
-        { value: product.price },
+        { value: Number(product.price) || 0 },
         { variantKey: 'DEFAULT' }
       )
       paymentMethodsWidgetRef.current = paymentMethodsWidget
@@ -233,6 +233,9 @@ export default function ProductCheckoutPage() {
       alert('결제 요청 중 오류가 발생했습니다.')
     }
   }
+
+  // API에서 price가 문자열로 올 수 있음 → 숫자로 보정해 NaN 방지
+  const priceNum = product ? Number(product.price) || 0 : 0
 
   const categories: { [key: string]: string } = {
     'shared-materials': '공유자료',
@@ -304,7 +307,7 @@ export default function ProductCheckoutPage() {
                 <h1 className="text-3xl font-bold text-gray-900">결제하기</h1>
                 {product && (
                   <p className="text-gray-600 mt-1">
-                    {product.title} • {new Intl.NumberFormat('ko-KR').format(product.price)}원
+                    {product.title} • {new Intl.NumberFormat('ko-KR').format(priceNum)}원
                   </p>
                 )}
               </div>
@@ -358,13 +361,13 @@ export default function ProductCheckoutPage() {
                       )}
                     </div>
                     <div className="text-right ml-4">
-                      {product.originalPrice && product.originalPrice > product.price && (
+                      {(Number(product.originalPrice) || 0) > priceNum && (
                         <p className="text-sm text-gray-500 line-through">
-                          {new Intl.NumberFormat('ko-KR').format(product.originalPrice)}원
+                          {new Intl.NumberFormat('ko-KR').format(Number(product.originalPrice) || 0)}원
                         </p>
                       )}
                       <p className="text-lg font-bold text-blue-600">
-                        {new Intl.NumberFormat('ko-KR').format(product.price)}원
+                        {new Intl.NumberFormat('ko-KR').format(priceNum)}원
                       </p>
                     </div>
                   </div>
@@ -373,7 +376,7 @@ export default function ProductCheckoutPage() {
                     <div className="flex justify-between items-center">
                       <span className="text-lg font-semibold text-gray-900">총 결제 금액</span>
                       <span className="text-2xl font-bold text-blue-600">
-                        {new Intl.NumberFormat('ko-KR').format(product.price)}원
+                        {new Intl.NumberFormat('ko-KR').format(priceNum)}원
                       </span>
                     </div>
                   </div>
@@ -402,7 +405,7 @@ export default function ProductCheckoutPage() {
                 onClick={handlePayment}
                 className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 py-6 text-lg font-semibold"
               >
-                {new Intl.NumberFormat('ko-KR').format(product.price)}원 결제하기
+                {new Intl.NumberFormat('ko-KR').format(priceNum)}원 결제하기
               </Button>
 
               {/* 안내 사항 */}
