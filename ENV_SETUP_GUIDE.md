@@ -137,6 +137,40 @@ STORAGE_TYPE=s3
 
 ---
 
+## 📧 회원가입 이메일 인증 (필수: 운영)
+
+이전에는 인증 메일을 **실제로 보내지 않고** 콘솔에만 출력했습니다.  
+운영(`NODE_ENV=production`)에서는 아래 중 **하나**를 반드시 설정해야 가입이 완료됩니다.
+
+### 방법 A: Resend (추천)
+
+1. [resend.com](https://resend.com) 가입 → API Key 발급  
+2. 도메인 인증 후 발신 주소 등록 (또는 테스트용 `onboarding@resend.dev`)  
+3. 배포 환경 변수:
+
+```bash
+RESEND_API_KEY=re_xxxxxxxx
+EMAIL_FROM=PAYPERIC <verify@yourdomain.com>
+```
+
+### 방법 B: SMTP (네이버·Gmail 등)
+
+네이버 메일 예시 (앱 비밀번호 사용):
+
+```bash
+SMTP_HOST=smtp.naver.com
+SMTP_PORT=465
+SMTP_SECURE=true
+SMTP_USER=your_naver_id@naver.com
+SMTP_PASS=앱비밀번호
+EMAIL_FROM=PAYPERIC <your_naver_id@naver.com>
+```
+
+- **개발**: SMTP/Resend가 없어도 가입 가능. 응답 JSON에 `verificationCode`가 포함됩니다.  
+- **운영**: 메일 발송 실패 시 가입이 **롤백**되고 503 오류가 반환됩니다.
+
+---
+
 ## ⚠️ 주의사항
 
 1. **환경 변수 파일 이름**: `.env.local` (점(.)으로 시작!)
