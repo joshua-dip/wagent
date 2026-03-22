@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { isSupabaseConfigured, createClient } from '@/lib/supabase/client'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -22,6 +23,38 @@ export default function SimpleSignInPage() {
     setMessage('')
 
     try {
+      if (isSupabaseConfigured()) {
+        const supabase = createClient()
+        const { error: sbError } = await supabase.auth.signInWithPassword({
+          email: email.trim(),
+          password,
+        })
+
+        if (!sbError) {
+          const bridge = await fetch('/api/auth/supabase-bridge', {
+            method: 'POST',
+            credentials: 'include',
+          })
+          if (bridge.ok) {
+            setMessage('로그인 성공! 리다이렉트 중...')
+            setMessageType('success')
+            window.location.href = '/'
+            return
+          }
+          const b = await bridge.json().catch(() => ({}))
+          setMessage(
+            typeof b.error === 'string'
+              ? b.error
+              : '세션 연동에 실패했습니다. 잠시 후 다시 시도해 주세요.'
+          )
+          setMessageType('error')
+          setLoading(false)
+          return
+        }
+
+        // Supabase 실패 시 기존 Mongo/관리자 로그인으로 폴백 (마이그레이션·관리자)
+      }
+
       const response = await fetch('/api/auth/simple-login', {
         method: 'POST',
         headers: {
@@ -41,7 +74,12 @@ export default function SimpleSignInPage() {
         // 로그인 성공 시 메인 페이지로 리다이렉트
         window.location.href = '/'
       } else {
-        setMessage(data.error || '로그인에 실패했습니다.')
+        setMessage(
+          data.error ||
+            (isSupabaseConfigured()
+              ? '이메일 또는 비밀번호가 올바르지 않습니다.'
+              : '로그인에 실패했습니다.')
+        )
         setMessageType('error')
         setLoading(false) // 로그인 실패 시 로딩 해제
       }

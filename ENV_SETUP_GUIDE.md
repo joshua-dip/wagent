@@ -127,6 +127,10 @@ TOSS_MID=payper8aqe
 # URLs
 NEXT_PUBLIC_BASE_URL=http://localhost:3000
 
+# Supabase Auth (이메일 가입/로그인 — 선택)
+# NEXT_PUBLIC_SUPABASE_URL=https://xxxx.supabase.co
+# NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJ...
+
 # AWS (선택)
 AWS_REGION=ap-northeast-2
 AWS_ACCESS_KEY_ID=your-key
@@ -137,9 +141,33 @@ STORAGE_TYPE=s3
 
 ---
 
-## 📧 회원가입 이메일 인증 (필수: 운영)
+## 🔐 Supabase Auth (이메일 가입·로그인)
 
-이전에는 인증 메일을 **실제로 보내지 않고** 콘솔에만 출력했습니다.  
+아래가 **모두** 설정되면 이메일 회원가입/로그인은 **Supabase Auth**로 처리됩니다.  
+(카카오 로그인은 기존과 동일.) MongoDB `User`와 `wagent-auth` JWT는 `/api/auth/supabase-bridge` 및 `/auth/callback`에서 자동 연동됩니다.
+
+```bash
+NEXT_PUBLIC_SUPABASE_URL=https://xxxx.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+```
+
+### Supabase 대시보드 설정
+
+1. **Authentication → URL Configuration**
+   - **Site URL**: 배포 도메인 (로컬: `http://localhost:3000`)
+   - **Redirect URLs**에 추가:
+     - `http://localhost:3000/auth/callback`
+     - `https://your-domain.com/auth/callback`
+2. **Authentication → Providers → Email**: 사용 ON, 필요 시 “Confirm email” 정책 확인
+3. 이메일 템플릿의 확인 링크가 위 Redirect URL로 돌아오는지 확인
+
+**비활성화**: 위 두 변수를 비우면 이전 방식(자체 API + 6자리 인증 등)으로 동작합니다.
+
+---
+
+## 📧 회원가입 이메일 인증 (Supabase 미사용 시 · 필수: 운영)
+
+`NEXT_PUBLIC_SUPABASE_URL`이 **없을 때** 기존 자체 가입 API를 씁니다.  
 운영(`NODE_ENV=production`)에서는 아래 중 **하나**를 반드시 설정해야 가입이 완료됩니다.
 
 ### 방법 A: Resend (추천)
@@ -168,6 +196,17 @@ EMAIL_FROM=PAYPERIC <your_naver_id@naver.com>
 
 - **개발**: SMTP/Resend가 없어도 가입 가능. 응답 JSON에 `verificationCode`가 포함됩니다.  
 - **운영**: 메일 발송 실패 시 가입이 **롤백**되고 503 오류가 반환됩니다.
+
+### AWS Amplify 배포 시
+
+1. **Amplify 콘솔** → 앱 → **Hosting** → **Environment variables**에 위 변수를 **그대로** 추가합니다. (`RESEND_API_KEY` 또는 `SMTP_*` 전부)
+2. **SMTP(25/465/587) 아웃바운드**가 막혀 있는 호스팅이 있습니다. 이 경우 **Resend API(HTTPS)**만 쓰는 **방법 A**를 권장합니다.
+3. 네이버는 **465(SSL)** 또는 **587(STARTTLS)** 중 하나를 쓰세요. 587 사용 시:
+   ```bash
+   SMTP_PORT=587
+   SMTP_SECURE=false
+   ```
+4. 환경 변수 저장 후 **재배포**해야 서버에 반영됩니다.
 
 ---
 

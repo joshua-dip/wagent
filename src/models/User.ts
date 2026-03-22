@@ -18,6 +18,8 @@ export interface IUser extends Document {
   emailVerified: boolean
   isActive: boolean
   kakaoId?: string
+  /** Supabase Auth `auth.users.id` — 이메일 가입·로그인 연동 */
+  supabaseUserId?: string
   signupMethod?: 'email' | 'kakao' | 'phone'
   comparePassword(candidatePassword: string): Promise<boolean>
 }
@@ -100,6 +102,11 @@ const userSchema = new Schema<IUser>({
     type: String,
     unique: true,
     sparse: true // null 값 허용
+  },
+  supabaseUserId: {
+    type: String,
+    unique: true,
+    sparse: true,
   },
   signupMethod: {
     type: String,

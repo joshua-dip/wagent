@@ -129,6 +129,9 @@ export async function POST(request: NextRequest) {
 
     if (!mailResult.ok) {
       console.error('📧 이메일 발송 실패:', mailResult.error);
+      const configMissing =
+        typeof mailResult.error === 'string' &&
+        mailResult.error.includes('미설정');
       if (isProd) {
         await EmailVerificationToken.deleteMany({ email: userDoc.email });
         if (isBrandNewUser) {
@@ -136,9 +139,11 @@ export async function POST(request: NextRequest) {
         }
         return NextResponse.json(
           {
-            error:
-              '인증 메일을 보낼 수 없습니다. 잠시 후 다시 시도해 주세요. 문제가 계속되면 고객센터로 문의해 주세요.',
+            error: configMissing
+              ? '인증 메일을 보낼 수 없습니다. 카카오로 가입하시거나, 잠시 후 다시 시도해 주세요.'
+              : '인증 메일을 보낼 수 없습니다. 잠시 후 다시 시도해 주세요. 문제가 계속되면 고객센터로 문의해 주세요.',
             details: mailResult.error,
+            mailErrorCode: configMissing ? 'CONFIG_MISSING' : 'PROVIDER_ERROR',
           },
           { status: 503 }
         );

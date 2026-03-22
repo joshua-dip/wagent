@@ -70,7 +70,13 @@ export async function sendVerificationCodeEmail(
   }
 
   const port = parseInt(process.env.SMTP_PORT || '465', 10)
-  const secure = process.env.SMTP_SECURE !== 'false' && port === 465
+  const secureExplicit = process.env.SMTP_SECURE
+  const secure =
+    secureExplicit === 'true'
+      ? true
+      : secureExplicit === 'false'
+        ? false
+        : port === 465
 
   try {
     const transporter = nodemailer.createTransport({
@@ -78,6 +84,9 @@ export async function sendVerificationCodeEmail(
       port,
       secure,
       auth: { user, pass },
+      ...(port === 587 && {
+        requireTLS: true,
+      }),
     })
 
     const from = process.env.EMAIL_FROM || `PAYPERIC <${user}>`

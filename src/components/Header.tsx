@@ -6,6 +6,7 @@ import { useSession, signOut } from "next-auth/react"
 import { ShoppingBag, Search, User, LogOut, ShoppingCart, Download, CreditCard } from "lucide-react"
 import Link from "next/link"
 import { useSimpleAuth } from "@/hooks/useSimpleAuth"
+import { isSupabaseConfigured, createClient } from "@/lib/supabase/client"
 import { useCart } from "@/contexts/CartContext"
 import { useRef, useEffect, useState } from "react"
 
@@ -186,14 +187,25 @@ export default function Header() {
 
                     <div className="border-t border-gray-100 mt-1 pt-1">
                       <button
-                        onClick={() => {
+                        onClick={async () => {
                           setIsUserMenuOpen(false)
                           if (session) {
                             signOut()
-                          } else {
-                            fetch('/api/auth/check-session', { method: 'DELETE' })
-                              .then(() => window.location.href = '/')
+                            return
                           }
+                          if (isSupabaseConfigured()) {
+                            try {
+                              const sb = createClient()
+                              await sb.auth.signOut()
+                            } catch {
+                              /* noop */
+                            }
+                          }
+                          await fetch('/api/auth/check-session', {
+                            method: 'DELETE',
+                            credentials: 'include',
+                          })
+                          window.location.href = '/'
                         }}
                         className="w-full flex items-center px-4 py-2.5 hover:bg-red-50 transition-colors cursor-pointer group"
                       >
