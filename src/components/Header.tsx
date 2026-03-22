@@ -226,7 +226,7 @@ export default function Header() {
               </Link>
               <Link href="/auth/simple-signup">
                 <Button size="sm" className="bg-gradient-to-r from-blue-500 via-indigo-600 to-purple-600 hover:from-blue-600 hover:via-indigo-700 hover:to-purple-700 shadow-md hover:shadow-lg transition-all duration-200 h-7 sm:h-8 px-2 sm:px-3 text-xs sm:text-sm">
-                  가입
+                  카카오 가입
                 </Button>
               </Link>
             </div>

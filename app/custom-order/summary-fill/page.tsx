@@ -344,7 +344,7 @@ export default function SummaryFillOrderPage() {
                           </Link>
                           <Link href="/auth/simple-signup">
                             <Button variant="outline">
-                              회원가입
+                              카카오 가입
                             </Button>
                           </Link>
                         </div>

@@ -75,7 +75,7 @@ export default function HomePage() {
                 <>
                   <Link href="/auth/simple-signup">
                     <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-gray-900 px-8 py-3 text-lg">
-                      무료 회원가입
+                      카카오로 가입
                     </Button>
                   </Link>
                   <Link href="/auth/simple-signin">
@@ -139,7 +139,7 @@ export default function HomePage() {
             {!isAuthenticated && (
               <Link href="/auth/simple-signup">
                 <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-gray-900 px-8 py-3 text-lg">
-                  무료 회원가입
+                  카카오로 가입
                 </Button>
               </Link>
             )}

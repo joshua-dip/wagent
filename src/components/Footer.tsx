@@ -68,7 +68,7 @@ export default function Footer() {
             <ul className="space-y-2 text-gray-300">
               <li>
                 <Link href="/auth/simple-signup" className="hover:text-white transition-colors">
-                  회원가입
+                  카카오 가입
                 </Link>
               </li>
               <li>
