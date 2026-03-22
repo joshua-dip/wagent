@@ -9,10 +9,10 @@ export default function PrivacyPage() {
       <div className="max-w-4xl mx-auto">
         {/* 헤더 */}
         <div className="mb-8">
-          <Link href="/auth/signup">
+          <Link href="/auth/simple-signup">
             <Button variant="outline" className="mb-4">
               <ArrowLeft className="w-4 h-4 mr-2" />
-              회원가입으로 돌아가기
+              가입 페이지로
             </Button>
           </Link>
           
@@ -212,9 +212,9 @@ export default function PrivacyPage() {
 
         {/* 하단 링크 */}
         <div className="mt-8 text-center">
-          <Link href="/auth/signup">
+          <Link href="/auth/simple-signup">
             <Button className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white">
-              회원가입 계속하기
+              가입 계속하기
             </Button>
           </Link>
         </div>
