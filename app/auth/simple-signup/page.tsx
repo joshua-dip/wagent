@@ -20,11 +20,13 @@ import {
   Lock,
 } from "lucide-react"
 import Link from "next/link"
+import { isSupabaseConfigured, createClient } from "@/lib/supabase/client"
 
-type SignupMethod = "initial" | "email" | "verify"
+type SignupMethod = "initial" | "email" | "verify" | "supabase_email_sent"
 
 export default function SimpleSignUpPage() {
   const router = useRouter()
+  const supabaseEnabled = isSupabaseConfigured()
   const [signupMethod, setSignupMethod] = useState<SignupMethod>("initial")
   const [formData, setFormData] = useState({
     email: "",
@@ -120,6 +122,53 @@ export default function SimpleSignUpPage() {
     setMessage("")
 
     try {
+      if (supabaseEnabled) {
+        const supabase = createClient()
+        const origin =
+          typeof window !== "undefined" ? window.location.origin : ""
+        const { data, error } = await supabase.auth.signUp({
+          email: formData.email.trim().toLowerCase(),
+          password: formData.password,
+          options: {
+            emailRedirectTo: origin ? `${origin}/auth/callback` : undefined,
+            data: { full_name: formData.name.trim() },
+          },
+        })
+
+        if (error) {
+          setMessage(error.message || "회원가입에 실패했습니다.")
+          setMessageType("error")
+          setLoading(false)
+          return
+        }
+
+        if (data.session) {
+          const bridge = await fetch("/api/auth/supabase-bridge", {
+            method: "POST",
+            credentials: "include",
+          })
+          if (bridge.ok) {
+            setMessage("가입 완료! 이동 중…")
+            setMessageType("success")
+            window.location.href = "/"
+            return
+          }
+          setMessage("세션 연동에 실패했습니다. 로그인에서 다시 시도해 주세요.")
+          setMessageType("error")
+          setLoading(false)
+          return
+        }
+
+        setSavedEmail(formData.email.trim())
+        setSignupMethod("supabase_email_sent")
+        setMessage(
+          "인증 메일을 보냈습니다. 메일의 링크를 눌러 가입을 완료한 뒤 로그인해 주세요."
+        )
+        setMessageType("success")
+        setLoading(false)
+        return
+      }
+
       const res = await fetch("/api/auth/simple-signup", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -200,7 +249,13 @@ export default function SimpleSignUpPage() {
   }
 
   const stepIndex =
-    signupMethod === "initial" ? 0 : signupMethod === "email" ? 1 : 2
+    signupMethod === "initial"
+      ? 0
+      : signupMethod === "email"
+        ? 1
+        : signupMethod === "verify"
+          ? 2
+          : 2
 
   return (
     <div className="min-h-screen relative overflow-hidden flex flex-col items-center justify-center p-4 sm:p-6">
@@ -240,7 +295,7 @@ export default function SimpleSignUpPage() {
         </header>
 
         {/* 단계 표시 (이메일 가입 플로우) */}
-        {signupMethod !== "initial" && (
+        {signupMethod !== "initial" && signupMethod !== "supabase_email_sent" && (
           <div className="flex items-center justify-center gap-2 mb-5 text-xs font-medium">
             <span
               className={`px-2.5 py-1 rounded-full ${
@@ -285,7 +340,11 @@ export default function SimpleSignUpPage() {
                 <ul className="text-left text-sm text-slate-600 space-y-2 pt-4 max-w-xs mx-auto">
                   <li className="flex gap-2 items-start">
                     <CheckCircle2 className="w-4 h-4 text-teal-600 shrink-0 mt-0.5" />
-                    <span>이메일 인증 후 안전하게 로그인</span>
+                    <span>
+                      {supabaseEnabled
+                        ? "메일 링크로 인증 후 로그인"
+                        : "이메일 인증 후 안전하게 로그인"}
+                    </span>
                   </li>
                   <li className="flex gap-2 items-start">
                     <BookOpen className="w-4 h-4 text-teal-600 shrink-0 mt-0.5" />
@@ -304,8 +363,35 @@ export default function SimpleSignUpPage() {
                   이메일 회원가입
                 </CardTitle>
                 <p className="text-sm text-slate-500">
-                  가입 후 메일로 온 <strong className="text-slate-700">6자리 숫자</strong>를
-                  입력하면 완료돼요.
+                  {supabaseEnabled ? (
+                    <>
+                      가입 후 메일의 <strong className="text-slate-700">확인 링크</strong>를
+                      눌러 주세요.
+                    </>
+                  ) : (
+                    <>
+                      가입 후 메일로 온{" "}
+                      <strong className="text-slate-700">6자리 숫자</strong>를 입력하면
+                      완료돼요.
+                    </>
+                  )}
+                </p>
+              </>
+            )}
+            {signupMethod === "supabase_email_sent" && (
+              <>
+                <div className="mx-auto w-12 h-12 rounded-full bg-teal-100 flex items-center justify-center mb-2">
+                  <Mail className="w-6 h-6 text-teal-700" />
+                </div>
+                <CardTitle className="text-xl font-bold text-slate-900">
+                  메일함을 확인해 주세요
+                </CardTitle>
+                <p className="text-sm text-slate-600 break-all px-1">
+                  <span className="font-semibold text-slate-900">{savedEmail}</span>
+                  <br />
+                  <span className="text-slate-500">
+                    로 인증 메일을 보냈어요. 링크를 누르면 가입이 완료됩니다.
+                  </span>
                 </p>
               </>
             )}
@@ -426,7 +512,9 @@ export default function SimpleSignUpPage() {
                     required
                   />
                   <p className="text-xs text-slate-500">
-                    6자리 인증번호가 이 주소로 발송됩니다.
+                    {supabaseEnabled
+                      ? "인증 링크가 이 주소로 발송됩니다."
+                      : "6자리 인증번호가 이 주소로 발송됩니다."}
                   </p>
                 </div>
 
@@ -526,6 +614,38 @@ export default function SimpleSignUpPage() {
                   )}
                 </Button>
               </form>
+            )}
+
+            {signupMethod === "supabase_email_sent" && (
+              <div className="space-y-5">
+                {message && (
+                  <div
+                    className={`flex items-start gap-2.5 p-3.5 rounded-xl text-sm ${
+                      messageType === "success"
+                        ? "bg-emerald-50 text-emerald-800 border border-emerald-200/80"
+                        : "bg-red-50 text-red-800 border border-red-200/80"
+                    }`}
+                  >
+                    {messageType === "success" ? (
+                      <CheckCircle2 className="w-5 h-5 shrink-0 mt-0.5" />
+                    ) : (
+                      <AlertCircle className="w-5 h-5 shrink-0 mt-0.5" />
+                    )}
+                    <span>{message}</span>
+                  </div>
+                )}
+                <Button
+                  type="button"
+                  className="w-full h-12 rounded-xl bg-gradient-to-r from-teal-600 to-cyan-600 hover:from-teal-700 hover:to-cyan-700 text-white font-semibold shadow-md"
+                  onClick={() => router.push("/auth/simple-signin")}
+                >
+                  로그인 페이지로
+                </Button>
+                <p className="text-center text-xs text-slate-500 leading-relaxed">
+                  메일이 보이지 않으면{" "}
+                  <strong className="text-slate-600">스팸·프로모션함</strong>을 확인해 주세요.
+                </p>
+              </div>
             )}
 
             {signupMethod === "verify" && (

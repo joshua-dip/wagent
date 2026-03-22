@@ -30,12 +30,13 @@ export function useSimpleAuth(): AuthState {
         credentials: 'include'
       })
 
-      if (response.ok) {
-        const data = await response.json()
+      const data = await response.json().catch(() => ({ authenticated: false }))
+
+      if (response.ok && data.authenticated && data.user) {
         setAuthState({
           user: data.user,
           isLoading: false,
-          isAuthenticated: data.authenticated
+          isAuthenticated: true
         })
       } else {
         setAuthState({
