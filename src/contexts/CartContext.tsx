@@ -1,6 +1,17 @@
 "use client"
 
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react'
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  useMemo,
+  ReactNode,
+} from "react"
+import { useSession } from "next-auth/react"
+import { useSimpleAuth } from "@/hooks/useSimpleAuth"
+
+const LEGACY_CART_KEY = "payperic-cart"
 
 export interface CartItem {
   productId: string
@@ -15,7 +26,7 @@ export interface CartItem {
 interface CartContextType {
   cartItems: CartItem[]
   cartCount: number
-  addToCart: (item: Omit<CartItem, 'quantity'>) => void
+  addToCart: (item: Omit<CartItem, "quantity">) => void
   removeFromCart: (productId: string) => void
   clearCart: () => void
   isInCart: (productId: string) => boolean
@@ -23,51 +34,99 @@ interface CartContextType {
 
 const CartContext = createContext<CartContextType | undefined>(undefined)
 
+/**
+ * 로그인 시 이메일 기준으로 한 키만 사용 (JWT/NextAuth 로드 순서가 달라도 같은 장바구니).
+ * 비로그인은 게스트 전용 → 회원가입·로그인 후에는 빈 장바구니에서 시작.
+ */
+function getCartStorageKey(params: {
+  authLoading: boolean
+  simpleUserId?: string | null
+  simpleEmail?: string | null
+  sessionEmail?: string | null
+}): string | null {
+  if (params.authLoading) return null
+  const email =
+    params.simpleEmail?.toLowerCase() ||
+    params.sessionEmail?.toLowerCase() ||
+    null
+  if (email) return `payperic-cart:email:${email}`
+  if (params.simpleUserId) return `payperic-cart:user:${params.simpleUserId}`
+  return "payperic-cart:guest"
+}
+
 export function CartProvider({ children }: { children: ReactNode }) {
+  const { data: session, status } = useSession()
+  const simpleAuth = useSimpleAuth()
+
+  const authLoading = simpleAuth.isLoading || status === "loading"
+
+  const storageKey = useMemo(
+    () =>
+      getCartStorageKey({
+        authLoading,
+        simpleUserId: simpleAuth.user?.id,
+        simpleEmail: simpleAuth.user?.email,
+        sessionEmail: session?.user?.email ?? undefined,
+      }),
+    [
+      authLoading,
+      simpleAuth.user?.id,
+      simpleAuth.user?.email,
+      session?.user?.email,
+    ]
+  )
+
   const [cartItems, setCartItems] = useState<CartItem[]>([])
-  const [isInitialized, setIsInitialized] = useState(false)
+  /** storageKey에 맞는 장바구니를 메모리에 반영했을 때만 true → 키 바뀐 직전 저장 방지 */
+  const [hydratedForKey, setHydratedForKey] = useState<string | null>(null)
 
-  // localStorage에서 장바구니 로드
+  // 키가 바뀌면 해당 키의 localStorage에서만 로드
   useEffect(() => {
+    if (storageKey === null) {
+      setCartItems([])
+      setHydratedForKey(null)
+      return
+    }
+
     try {
-      const savedCart = localStorage.getItem('payperic-cart')
-      if (savedCart) {
-        setCartItems(JSON.parse(savedCart))
+      let raw = localStorage.getItem(storageKey)
+      if (!raw && storageKey === "payperic-cart:guest") {
+        const legacy = localStorage.getItem(LEGACY_CART_KEY)
+        if (legacy) {
+          raw = legacy
+          localStorage.setItem(storageKey, legacy)
+          localStorage.removeItem(LEGACY_CART_KEY)
+        }
       }
-    } catch (error) {
-      console.error('장바구니 로드 오류:', error)
-    } finally {
-      setIsInitialized(true)
+      setCartItems(raw ? JSON.parse(raw) : [])
+    } catch (e) {
+      console.error("장바구니 로드 오류:", e)
+      setCartItems([])
     }
-  }, [])
+    setHydratedForKey(storageKey)
+  }, [storageKey])
 
-  // cartItems 변경 시 localStorage에 저장
   useEffect(() => {
-    if (isInitialized) {
-      try {
-        localStorage.setItem('payperic-cart', JSON.stringify(cartItems))
-      } catch (error) {
-        console.error('장바구니 저장 오류:', error)
-      }
+    if (storageKey === null || hydratedForKey !== storageKey) return
+    try {
+      localStorage.setItem(storageKey, JSON.stringify(cartItems))
+    } catch (e) {
+      console.error("장바구니 저장 오류:", e)
     }
-  }, [cartItems, isInitialized])
+  }, [cartItems, storageKey, hydratedForKey])
 
-  const addToCart = (item: Omit<CartItem, 'quantity'>) => {
-    setCartItems(prevItems => {
-      const existingItem = prevItems.find(i => i.productId === item.productId)
-      
-      if (existingItem) {
-        // 디지털 상품이므로 이미 장바구니에 있으면 추가하지 않음
-        return prevItems
-      } else {
-        // 새 상품 추가 (수량은 항상 1)
-        return [...prevItems, { ...item, quantity: 1 }]
-      }
+  const addToCart = (item: Omit<CartItem, "quantity">) => {
+    setCartItems((prevItems) => {
+      const existingItem = prevItems.find((i) => i.productId === item.productId)
+      if (existingItem) return prevItems
+      return [...prevItems, { ...item, quantity: 1 }]
     })
   }
 
   const removeFromCart = (productId: string) => {
-    setCartItems(prevItems => prevItems.filter(item => item.productId !== productId))
+    setCartItems((prevItems) =>
+      prevItems.filter((item) => item.productId !== productId)
+    )
   }
 
   const clearCart = () => {
@@ -75,10 +134,9 @@ export function CartProvider({ children }: { children: ReactNode }) {
   }
 
   const isInCart = (productId: string) => {
-    return cartItems.some(item => item.productId === productId)
+    return cartItems.some((item) => item.productId === productId)
   }
 
-  // 디지털 상품이므로 수량이 아닌 개수로 계산
   const cartCount = cartItems.length
 
   return (
@@ -100,8 +158,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
 export function useCart() {
   const context = useContext(CartContext)
   if (context === undefined) {
-    throw new Error('useCart must be used within a CartProvider')
+    throw new Error("useCart must be used within a CartProvider")
   }
   return context
 }
-

@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import connectDB from "@/lib/db";
 import User from "@/models/User";
 import EmailVerificationToken from "@/models/EmailVerificationToken";
-import crypto from 'crypto';
+import { sendVerificationCodeEmail } from "@/lib/email";
 
 export async function POST(request: NextRequest) {
   console.log('간단한 회원가입 API 시작 - 환경:', process.env.NODE_ENV);
@@ -60,65 +60,119 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 이메일 중복 체크
+    // 이메일 중복 처리: 인증 완료·카카오 가입만 '사용 중', 미인증 이메일 가입은 재전송
     console.log('이메일 중복 체크:', email.toLowerCase());
     const existingUser = await User.findOne({ email: email.toLowerCase() });
-    
+
+    let userDoc: InstanceType<typeof User>;
+    let isBrandNewUser = true;
+
     if (existingUser) {
-      console.log('이메일 중복:', email);
-      return NextResponse.json(
-        { error: "이미 사용 중인 이메일입니다." },
-        { status: 409 }
-      );
+      if (existingUser.kakaoId) {
+        return NextResponse.json(
+          {
+            error:
+              '이 이메일은 카카오로 이미 가입되어 있습니다. 카카오 로그인을 이용해 주세요.',
+          },
+          { status: 409 }
+        );
+      }
+      if (existingUser.emailVerified) {
+        return NextResponse.json(
+          { error: '이미 사용 중인 이메일입니다.' },
+          { status: 409 }
+        );
+      }
+      // 이메일 인증 전 이탈 → 같은 이메일로 다시 가입 시 정보 갱신 + 인증번호 재발송
+      console.log('미인증 계정 재가입(재전송):', email);
+      isBrandNewUser = false;
+      existingUser.name = name;
+      existingUser.password = password;
+      existingUser.termsAgreed = true;
+      existingUser.privacyAgreed = true;
+      await existingUser.save();
+      userDoc = existingUser;
+    } else {
+      console.log('새 사용자 생성 중...');
+      const newUser = new User({
+        email: email.toLowerCase(),
+        password: password,
+        name: name,
+        termsAgreed: true,
+        privacyAgreed: true,
+        marketingAgreed: false,
+        isActive: true,
+      });
+      await newUser.save();
+      console.log('사용자 저장 완료:', newUser.email);
+      userDoc = newUser;
     }
 
-    // 새 사용자 생성
-    console.log('새 사용자 생성 중...');
-    const newUser = new User({
-      email: email.toLowerCase(),
-      password: password, // User 모델에서 자동 해시화
-      name: name,
-      termsAgreed: true,
-      privacyAgreed: true,
-      marketingAgreed: false,
-      isActive: true
-    });
-
-    await newUser.save();
-    console.log('사용자 저장 완료:', newUser.email);
-
-    // 6자리 인증번호 생성
     const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
-    const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10분 후
+    const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
 
-    // 기존 인증번호 삭제 (같은 이메일)
-    await EmailVerificationToken.deleteMany({ email: newUser.email });
+    await EmailVerificationToken.deleteMany({ email: userDoc.email });
 
-    // 새 인증번호 저장
     await EmailVerificationToken.create({
-      email: newUser.email,
+      email: userDoc.email,
       code: verificationCode,
       expiresAt,
       attempts: 0,
     });
 
-    // TODO: 실제 이메일 발송 (Nodemailer, SendGrid 등)
-    console.log('📧 이메일 인증번호:', verificationCode);
-    console.log('✅ 회원가입 완료 - 이메일 인증 필요');
+    const isProd = process.env.NODE_ENV === 'production';
+    const mailResult = await sendVerificationCodeEmail(
+      userDoc.email,
+      userDoc.name,
+      verificationCode
+    );
 
-    return NextResponse.json({
-      success: true,
-      message: "회원가입이 완료되었습니다! 이메일로 발송된 인증번호를 입력해주세요.",
-      user: {
-        email: newUser.email,
-        name: newUser.name,
-        created: true
+    if (!mailResult.ok) {
+      console.error('📧 이메일 발송 실패:', mailResult.error);
+      if (isProd) {
+        await EmailVerificationToken.deleteMany({ email: userDoc.email });
+        if (isBrandNewUser) {
+          await User.findByIdAndDelete(userDoc._id);
+        }
+        return NextResponse.json(
+          {
+            error:
+              '인증 메일을 보낼 수 없습니다. 잠시 후 다시 시도해 주세요. 문제가 계속되면 고객센터로 문의해 주세요.',
+            details: mailResult.error,
+          },
+          { status: 503 }
+        );
+      }
+      console.log('📧 (개발) 인증번호 콘솔:', verificationCode);
+    } else {
+      console.log('📧 이메일 인증번호 발송 완료:', userDoc.email);
+    }
+
+    const successMessage = isBrandNewUser
+      ? mailResult.ok
+        ? '회원가입이 완료되었습니다! 이메일로 발송된 인증번호를 입력해 주세요.'
+        : '회원가입이 완료되었습니다. (개발: 메일 미설정) 아래 인증번호를 입력해 주세요.'
+      : mailResult.ok
+        ? '이전에 인증을 완료하지 않은 계정입니다. 인증번호를 다시 보냈습니다. 메일함을 확인해 주세요.'
+        : '(개발) 인증번호를 다시 생성했습니다. 아래 번호를 입력해 주세요.';
+
+    return NextResponse.json(
+      {
+        success: true,
+        message: successMessage,
+        resumedSignup: !isBrandNewUser,
+        user: {
+          email: userDoc.email,
+          name: userDoc.name,
+          created: isBrandNewUser,
+        },
+        emailSent: mailResult.ok,
+        ...(process.env.NODE_ENV === 'development' && {
+          verificationCode,
+        }),
       },
-      // 개발 환경에서만 인증번호 노출
-      ...(process.env.NODE_ENV === 'development' && {
-        verificationCode
-      })
-    }, { status: 201 });
+      { status: 201 }
+    );
 
   } catch (error) {
     console.error('간단한 회원가입 오류:', error);
