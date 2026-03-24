@@ -160,7 +160,7 @@ export default function AdminUploadPage() {
 
   // 로그인하지 않은 경우
   if (!isAuthenticated) {
-    router.push('/auth/simple-signin')
+    router.push('/auth/admin-signin?next=/admin/upload')
     return null
   }
 
