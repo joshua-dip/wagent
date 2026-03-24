@@ -62,7 +62,7 @@ interface TopProduct {
 }
 
 export default function AdminDashboardPage() {
-  const { data: session } = useSession()
+  const { data: session, status } = useSession()
   const simpleAuth = useSimpleAuth()
   const router = useRouter()
   const [loading, setLoading] = useState(true)
@@ -86,16 +86,20 @@ export default function AdminDashboardPage() {
   const isAdmin = currentUser?.email === "wnsrb2898@naver.com" || simpleAuth.user?.role === 'admin'
 
   useEffect(() => {
-    // 인증 체크가 완료된 후에만 리다이렉트
-    if (!isAuthenticated) return
-    
+    if (simpleAuth.isLoading || status === 'loading') return
+
+    if (!isAuthenticated) {
+      router.push('/auth/admin-signin?next=/admin/dashboard')
+      return
+    }
+
     if (!isAdmin) {
       router.push('/')
       return
     }
-    
+
     fetchDashboardData()
-  }, [isAdmin, isAuthenticated])
+  }, [isAdmin, isAuthenticated, router, simpleAuth.isLoading, status])
 
   const fetchDashboardData = async () => {
     try {
@@ -129,8 +133,7 @@ export default function AdminDashboardPage() {
     }
   }
 
-  // 인증되지 않았으면 로딩 표시
-  if (!isAuthenticated) {
+  if (simpleAuth.isLoading || status === 'loading' || !isAuthenticated) {
     return (
       <Layout>
         <div className="flex items-center justify-center min-h-screen">

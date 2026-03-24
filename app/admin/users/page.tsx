@@ -42,7 +42,7 @@ interface User {
 }
 
 export default function AdminUsersPage() {
-  const { data: session } = useSession()
+  const { data: session, status } = useSession()
   const simpleAuth = useSimpleAuth()
   const router = useRouter()
   const [loading, setLoading] = useState(true)
@@ -62,13 +62,18 @@ export default function AdminUsersPage() {
   const isAdmin = currentUser?.email === "wnsrb2898@naver.com" || simpleAuth.user?.role === 'admin'
 
   useEffect(() => {
-    if (!isAuthenticated) return
+    if (simpleAuth.isLoading || status === 'loading') return
+
+    if (!isAuthenticated) {
+      router.push('/auth/admin-signin?next=/admin/users')
+      return
+    }
     if (!isAdmin) {
       router.push('/')
       return
     }
     fetchUsers()
-  }, [isAdmin, isAuthenticated])
+  }, [isAdmin, isAuthenticated, router, simpleAuth.isLoading, status])
 
   useEffect(() => {
     filterUsers()
@@ -170,8 +175,17 @@ export default function AdminUsersPage() {
     }
   }
 
-  if (!isAuthenticated || !isAdmin) {
-    return null
+  if (simpleAuth.isLoading || status === 'loading' || !isAuthenticated || !isAdmin) {
+    return (
+      <Layout>
+        <div className="flex items-center justify-center min-h-screen">
+          <div className="text-center">
+            <RefreshCw className="h-8 w-8 animate-spin mx-auto text-blue-600 mb-4" />
+            <p className="text-gray-600">인증 확인 중...</p>
+          </div>
+        </div>
+      </Layout>
+    )
   }
 
   if (loading) {

@@ -30,9 +30,8 @@ export default function StorageSettingsPage() {
     return <div className="min-h-screen flex items-center justify-center">로딩 중...</div>
   }
 
-  // 로그인하지 않은 경우
   if (!session) {
-    router.push('/auth/signin')
+    router.push('/auth/admin-signin?next=/admin/storage-settings')
     return null
   }
 
