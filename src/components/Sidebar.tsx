@@ -56,14 +56,14 @@ export default function Sidebar() {
                     "flex items-center rounded-lg px-3 py-2.5 text-sm font-medium transition-all hover:bg-white hover:shadow-sm group",
                     isCollapsed ? "justify-center" : "space-x-3",
                     pathname === item.href 
-                      ? "bg-white shadow-sm text-blue-600 border-r-2 border-blue-600" 
+                      ? "bg-white shadow-sm text-emerald-600 border-r-2 border-emerald-600" 
                       : "text-gray-700 hover:text-gray-900"
                   )}
                   title={isCollapsed ? item.title : undefined}
                 >
                   <item.icon className={cn(
                     "h-4 w-4 flex-shrink-0",
-                    pathname === item.href ? "text-blue-600" : "text-gray-500"
+                    pathname === item.href ? "text-emerald-600" : "text-gray-500"
                   )} />
                   {!isCollapsed && (
                     <>
@@ -98,16 +98,16 @@ export default function Sidebar() {
           aria-label={isCollapsed ? "사이드바 펼치기" : "사이드바 접기"}
           title={isCollapsed ? "사이드바 펼치기" : "사이드바 접기"}
           className={cn(
-            "w-full bg-white border border-gray-200 rounded-lg p-2.5 hover:bg-gray-50 hover:border-blue-300 transition-all duration-200 shadow-sm hover:shadow-md flex items-center justify-center gap-2",
-            isMobile && "bg-blue-50 border-blue-300",
+            "w-full bg-white border border-gray-200 rounded-lg p-2.5 hover:bg-gray-50 hover:border-emerald-300 transition-all duration-200 shadow-sm hover:shadow-md flex items-center justify-center gap-2",
+            isMobile && "bg-emerald-50 border-emerald-300",
             isCollapsed && "p-2"
           )}
         >
           {isCollapsed ? (
-            <ChevronRight className={cn("h-4 w-4 text-gray-600 hover:text-blue-600 transition-colors", isMobile && "text-blue-600")} />
+            <ChevronRight className={cn("h-4 w-4 text-gray-600 hover:text-emerald-600 transition-colors", isMobile && "text-emerald-600")} />
           ) : (
             <>
-              <ChevronLeft className={cn("h-4 w-4 text-gray-600 hover:text-blue-600 transition-colors", isMobile && "text-blue-600")} />
+              <ChevronLeft className={cn("h-4 w-4 text-gray-600 hover:text-emerald-600 transition-colors", isMobile && "text-emerald-600")} />
               <span className="text-xs font-medium text-gray-600">접기</span>
             </>
           )}

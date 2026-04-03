@@ -1,31 +1,29 @@
 "use client"
 
-import { useState, useEffect } from 'react'
-import { useSession } from 'next-auth/react'
-import { useRouter } from 'next/navigation'
-import { useParams } from 'next/navigation'
-import { useSimpleAuth } from '@/hooks/useSimpleAuth'
-import { useCart } from '@/contexts/CartContext'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { 
-  Download, 
-  FileText, 
-  User, 
+import { useState, useEffect } from "react"
+import { useSession } from "next-auth/react"
+import { useRouter, useParams } from "next/navigation"
+import { useSimpleAuth } from "@/hooks/useSimpleAuth"
+import { useCart } from "@/contexts/CartContext"
+import { Card, CardContent } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
+import {
+  Download,
+  FileText,
+  User,
   Calendar,
-  Eye,
-  Star,
   Gift,
-  DollarSign,
-  Tag,
   ArrowLeft,
   AlertCircle,
   CheckCircle2,
   ShoppingCart,
-  Check
-} from 'lucide-react'
-import Layout from '@/components/Layout'
-import PaymentButton from '@/components/PaymentButton'
+  Check,
+  Loader2,
+  CreditCard,
+} from "lucide-react"
+import Layout from "@/components/Layout"
+import { cn } from "@/lib/utils"
 
 interface Product {
   _id: string
@@ -44,6 +42,30 @@ interface Product {
   originalFileName: string
 }
 
+const CATEGORY_LABELS: Record<string, string> = {
+  "shared-materials": "공유자료",
+  "original-translation": "원문과 해석",
+  "lecture-material": "강의용자료",
+  "class-material": "수업용자료",
+  "line-translation": "한줄해석",
+  "english-writing": "영작하기",
+  "translation-writing": "해석쓰기",
+  "workbook-blanks": "워크북",
+  "order-questions": "글의순서",
+  "insertion-questions": "문장삽입",
+  "grade1-material": "고1",
+  "grade2-material": "고2",
+  "grade3-material": "고3",
+}
+
+function formatFileSize(bytes: number) {
+  if (bytes === 0) return "0 B"
+  const k = 1024
+  const sizes = ["B", "KB", "MB", "GB"]
+  const i = Math.floor(Math.log(bytes) / Math.log(k))
+  return `${parseFloat((bytes / Math.pow(k, i)).toFixed(1))} ${sizes[i]}`
+}
+
 export default function ProductDetailPage() {
   const { data: session, status } = useSession()
   const simpleAuth = useSimpleAuth()
@@ -52,416 +74,324 @@ export default function ProductDetailPage() {
   const params = useParams()
   const productId = params.id as string
 
-  // 두 인증 시스템 통합
   const currentUser = simpleAuth.user || session?.user
   const isAuthenticated = simpleAuth.isAuthenticated || !!session
   const authLoading = simpleAuth.isLoading || status === "loading"
+  const isAdmin = currentUser?.email === "wnsrb2898@naver.com" ||
+                  (simpleAuth.user as any)?.role === "admin"
 
   const [product, setProduct] = useState<Product | null>(null)
   const [loading, setLoading] = useState(true)
   const [downloading, setDownloading] = useState(false)
-  const [downloadMessage, setDownloadMessage] = useState('')
-
-  // 상품 정보 조회
-  const fetchProduct = async () => {
-    try {
-      setLoading(true)
-      const response = await fetch(`/api/products/${productId}`)
-      const data = await response.json()
-
-      if (response.ok) {
-        setProduct(data.product)
-      } else {
-        console.error('상품 조회 오류:', data.error)
-        router.push('/products/free')
-      }
-    } catch (error) {
-      console.error('상품 조회 오류:', error)
-      router.push('/products/free')
-    } finally {
-      setLoading(false)
-    }
-  }
+  const [toast, setToast] = useState<{ type: "success" | "error"; message: string } | null>(null)
 
   useEffect(() => {
-    if (productId) {
-      fetchProduct()
-    }
+    if (!productId) return
+    ;(async () => {
+      try {
+        setLoading(true)
+        const res = await fetch(`/api/products/${productId}`)
+        const data = await res.json()
+        if (res.ok) setProduct(data.product)
+        else router.push("/")
+      } catch {
+        router.push("/")
+      } finally {
+        setLoading(false)
+      }
+    })()
   }, [productId])
 
-  // 다운로드 처리
+  const showToast = (type: "success" | "error", message: string) => {
+    setToast({ type, message })
+    setTimeout(() => setToast(null), 4000)
+  }
+
   const handleDownload = async () => {
-    if (!isAuthenticated) {
-      router.push('/auth/simple-signin')
-      return
-    }
-
+    if (!isAuthenticated) { router.push("/auth/simple-signin"); return }
     if (!product) return
-
     try {
       setDownloading(true)
-      setDownloadMessage('')
-
-      const response = await fetch(`/api/products/${productId}/download`)
-      const data = await response.json()
-
-      if (response.ok) {
-        if (data.downloadUrl) {
-          // S3 다운로드 URL로 리다이렉트
-          window.open(data.downloadUrl, '_blank')
-          setDownloadMessage('다운로드가 시작되었습니다!')
-        } else {
-          // 로컬 파일 다운로드 (직접 다운로드)
-          const downloadResponse = await fetch(`/api/products/${productId}/download`)
-          if (downloadResponse.ok) {
-            const blob = await downloadResponse.blob()
-            const url = window.URL.createObjectURL(blob)
-            const a = document.createElement('a')
-            a.href = url
-            a.download = product.originalFileName
-            document.body.appendChild(a)
-            a.click()
-            window.URL.revokeObjectURL(url)
-            document.body.removeChild(a)
-            setDownloadMessage('다운로드가 완료되었습니다!')
-          } else {
-            const errorData = await downloadResponse.json()
-            setDownloadMessage(errorData.error || '다운로드 중 오류가 발생했습니다.')
-          }
-        }
-
-        // 다운로드 카운트 업데이트 (UI)
-        setProduct(prev => prev ? { ...prev, downloadCount: prev.downloadCount + 1 } : null)
+      const res = await fetch(`/api/products/${productId}/download`)
+      const data = await res.json()
+      if (res.ok && data.downloadUrl) {
+        window.open(data.downloadUrl, "_blank")
+        showToast("success", "다운로드가 시작되었습니다")
+        setProduct((p) => p ? { ...p, downloadCount: p.downloadCount + 1 } : null)
       } else {
-        setDownloadMessage(data.error || '다운로드 중 오류가 발생했습니다.')
+        showToast("error", data.error || "다운로드 중 오류가 발생했습니다")
       }
-    } catch (error) {
-      console.error('다운로드 오류:', error)
-      setDownloadMessage('다운로드 중 오류가 발생했습니다.')
+    } catch {
+      showToast("error", "다운로드 중 오류가 발생했습니다")
     } finally {
       setDownloading(false)
-      
-      // 메시지 자동 숨김
-      setTimeout(() => {
-        setDownloadMessage('')
-      }, 5000)
     }
   }
 
-  // 파일 크기 포맷
-  const formatFileSize = (bytes: number) => {
-    if (bytes === 0) return '0 Bytes'
-    const k = 1024
-    const sizes = ['Bytes', 'KB', 'MB', 'GB']
-    const i = Math.floor(Math.log(bytes) / Math.log(k))
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
-  }
-
-  // 카테고리 한글 변환
-  const getCategoryLabel = (category: string) => {
-    const categoryMap: { [key: string]: string } = {
-      development: '개발',
-      design: '디자인', 
-      business: '비즈니스',
-      education: '교육',
-      ebook: '전자책',
-      template: '템플릿',
-      other: '기타'
-    }
-    return categoryMap[category] || category
-  }
-
-  if (status === 'loading' || loading) {
+  /* ── Loading ── */
+  if (authLoading || loading) {
     return (
       <Layout>
-        <div className="min-h-screen flex items-center justify-center">
-          <div className="text-center">
-            <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-            <p className="text-gray-600">자료 정보를 불러오는 중...</p>
-          </div>
+        <div className="flex items-center justify-center py-32">
+          <Loader2 className="h-8 w-8 text-emerald-500 animate-spin" />
         </div>
       </Layout>
     )
   }
 
+  /* ── Not found ── */
   if (!product) {
     return (
       <Layout>
-        <div className="min-h-screen flex items-center justify-center">
-          <Card className="w-full max-w-md">
-            <CardContent className="text-center p-6">
-              <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
-              <h2 className="text-xl font-bold text-gray-900 mb-2">자료를 찾을 수 없습니다</h2>
-              <p className="text-gray-600 mb-4">요청하신 자료가 존재하지 않거나 삭제되었습니다.</p>
-              <Button onClick={() => router.push('/products/free')} variant="outline">
-                무료 자료 목록으로 돌아가기
-              </Button>
-            </CardContent>
-          </Card>
+        <div className="flex flex-col items-center justify-center py-32 text-center">
+          <AlertCircle className="h-12 w-12 text-slate-300 mb-4" />
+          <h2 className="text-lg font-semibold text-slate-900 mb-1">자료를 찾을 수 없습니다</h2>
+          <p className="text-sm text-slate-500 mb-6">요청하신 자료가 존재하지 않거나 삭제되었습니다.</p>
+          <Button variant="outline" onClick={() => router.push("/")} className="border-emerald-200 text-emerald-800 hover:bg-emerald-50">
+            홈으로 돌아가기
+          </Button>
         </div>
       </Layout>
     )
   }
 
   const isFree = product.price === 0
+  const discount =
+    product.originalPrice && product.originalPrice > product.price
+      ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)
+      : null
 
   return (
     <Layout>
-      <div className="space-y-8">
-        {/* 뒤로가기 */}
-        <Button 
-          variant="ghost" 
-          onClick={() => router.push('/products/free')}
-          className="mb-4"
-        >
-          <ArrowLeft className="w-4 h-4 mr-2" />
-          무료 자료 목록으로
-        </Button>
+      <div className="-mx-3 -mt-4 sm:-mx-6 sm:-mt-6 min-h-full bg-gradient-to-b from-slate-50 via-white to-slate-50/50">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+          {/* Toast */}
+          {toast && (
+            <div
+              className={cn(
+                "fixed top-20 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 rounded-xl px-5 py-3 text-sm font-medium shadow-lg transition-all",
+                toast.type === "success"
+                  ? "bg-emerald-600 text-white"
+                  : "bg-red-600 text-white"
+              )}
+            >
+              {toast.type === "success" ? <CheckCircle2 className="h-4 w-4" /> : <AlertCircle className="h-4 w-4" />}
+              {toast.message}
+            </div>
+          )}
 
-        {/* 다운로드 메시지 */}
-        {downloadMessage && (
-          <Card className={`border-2 ${downloadMessage.includes('오류') ? 'border-red-200 bg-red-50' : 'border-green-200 bg-green-50'}`}>
-            <CardContent className="p-4">
-              <div className={`flex items-center gap-2 ${downloadMessage.includes('오류') ? 'text-red-700' : 'text-green-700'}`}>
-                {downloadMessage.includes('오류') ? (
-                  <AlertCircle className="w-5 h-5" />
-                ) : (
-                  <CheckCircle2 className="w-5 h-5" />
-                )}
-                <span className="font-medium">{downloadMessage}</span>
-              </div>
-            </CardContent>
-          </Card>
-        )}
+          {/* Back */}
+          <button
+            type="button"
+            onClick={() => router.back()}
+            className="inline-flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-900 transition-colors mb-6"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            뒤로가기
+          </button>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* 메인 콘텐츠 */}
-          <div className="lg:col-span-2 space-y-6">
-            {/* 제목 및 기본 정보 */}
-            <Card className="shadow-lg">
-              <CardHeader>
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-3">
-                      <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
-                        isFree 
-                          ? 'bg-gradient-to-r from-green-500 to-emerald-500' 
-                          : 'bg-gradient-to-r from-blue-500 to-purple-500'
-                      }`}>
-                        <FileText className="w-6 h-6 text-white" />
-                      </div>
-                      <div>
-                        <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-                          isFree 
-                            ? 'bg-green-100 text-green-700' 
-                            : 'bg-blue-100 text-blue-700'
-                        }`}>
-                          {isFree ? '무료' : '유료'}
-                        </span>
-                        <div className="text-sm text-gray-500 mt-1">
-                          {getCategoryLabel(product.category)}
-                        </div>
-                      </div>
-                    </div>
-                    <CardTitle className="text-2xl leading-tight mb-2">
-                      {product.title}
-                    </CardTitle>
-                    <div className="flex items-center gap-4 text-sm text-gray-500">
-                      <div className="flex items-center gap-1">
-                        <User className="w-4 h-4" />
-                        <span>{product.author}</span>
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <Calendar className="w-4 h-4" />
-                        <span>{new Date(product.createdAt).toLocaleDateString()}</span>
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <Download className="w-4 h-4" />
-                        <span>{product.downloadCount}회 다운로드</span>
-                      </div>
-                    </div>
-                  </div>
-                  {!isFree && (
-                    <div className="text-right">
-                      <div className="text-2xl font-bold text-blue-600">
-                        {product.price.toLocaleString()}원
-                      </div>
-                      {product.originalPrice && product.originalPrice > product.price && (
-                        <div className="text-sm text-gray-500 line-through">
-                          {product.originalPrice.toLocaleString()}원
-                        </div>
-                      )}
-                    </div>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
+            {/* ── Main ── */}
+            <div className="lg:col-span-2 space-y-5">
+              {/* Header card */}
+              <div className="rounded-2xl border border-slate-200/80 bg-white p-5 sm:p-7">
+                <div className="flex flex-wrap items-center gap-2 mb-3">
+                  <Badge className={cn(
+                    "rounded-full text-xs font-medium border-0",
+                    isFree ? "bg-emerald-100 text-emerald-800" : "bg-teal-100 text-teal-800"
+                  )}>
+                    {isFree ? "무료" : "유료"}
+                  </Badge>
+                  <Badge variant="secondary" className="rounded-full text-xs bg-slate-100 text-slate-600 border-0">
+                    {CATEGORY_LABELS[product.category] || product.category}
+                  </Badge>
+                  {discount && (
+                    <Badge className="rounded-full text-xs bg-rose-100 text-rose-700 border-0">
+                      {discount}% 할인
+                    </Badge>
                   )}
                 </div>
-              </CardHeader>
-            </Card>
 
-            {/* 설명 */}
-            <Card className="shadow-lg">
-              <CardHeader>
-                <CardTitle className="text-lg">자료 설명</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="prose max-w-none">
-                  <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">
-                    {product.description}
-                  </p>
+                <h1 className="text-xl sm:text-2xl font-bold text-slate-900 leading-tight mb-4">
+                  {product.title}
+                </h1>
+
+                <div className="flex flex-wrap items-center gap-x-5 gap-y-1.5 text-sm text-slate-500">
+                  <span className="inline-flex items-center gap-1.5">
+                    <User className="h-3.5 w-3.5" />
+                    {product.author}
+                  </span>
+                  <span className="inline-flex items-center gap-1.5">
+                    <Calendar className="h-3.5 w-3.5" />
+                    {new Date(product.createdAt).toLocaleDateString("ko-KR")}
+                  </span>
                 </div>
-              </CardContent>
-            </Card>
+              </div>
 
-            {/* 태그 */}
-            {product.tags && product.tags.length > 0 && (
-              <Card className="shadow-lg">
-                <CardHeader>
-                  <CardTitle className="text-lg flex items-center gap-2">
-                    <Tag className="w-5 h-5" />
-                    태그
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex flex-wrap gap-2">
-                    {product.tags.map((tag, index) => (
-                      <span 
-                        key={index}
-                        className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1 rounded-full text-sm transition-colors cursor-pointer"
-                      >
-                        #{tag}
-                      </span>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-          </div>
+              {/* Description */}
+              <div className="rounded-2xl border border-slate-200/80 bg-white p-5 sm:p-7">
+                <h2 className="text-base font-semibold text-slate-900 mb-3">자료 설명</h2>
+                <p className="text-slate-600 text-[15px] leading-relaxed whitespace-pre-wrap">
+                  {product.description}
+                </p>
+              </div>
 
-          {/* 사이드바 */}
-          <div className="space-y-6">
-            {/* 다운로드/구매 카드 */}
-            <Card className="shadow-lg sticky top-6">
-              <CardHeader>
-                <CardTitle className="text-lg">
-                  {isFree ? '무료 다운로드' : '구매하기'}
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
+              {/* Tags */}
+              {product.tags?.length > 0 && (
+                <div className="flex flex-wrap gap-2">
+                  {product.tags.map((tag) => (
+                    <span
+                      key={tag}
+                      className="rounded-full bg-emerald-50 text-emerald-700 px-3 py-1 text-xs font-medium"
+                    >
+                      #{tag}
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* ── Sidebar ── */}
+            <div className="space-y-4 lg:sticky lg:top-6 lg:self-start">
+              {/* Action card */}
+              <div className="rounded-2xl border border-slate-200/80 bg-white p-5 sm:p-6">
                 {isFree ? (
+                  /* Free product */
                   <>
-                    <div className="text-center py-4">
-                      <Gift className="w-12 h-12 text-green-500 mx-auto mb-3" />
-                      <p className="text-lg font-semibold text-green-700 mb-1">무료 제공!</p>
-                      <p className="text-sm text-gray-600">로그인 후 바로 다운로드하세요</p>
+                    <div className="flex items-center gap-3 mb-5">
+                      <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-emerald-400 to-teal-500 text-white shadow-sm">
+                        <Gift className="h-5 w-5" />
+                      </div>
+                      <div>
+                        <p className="text-lg font-bold text-slate-900">무료</p>
+                        <p className="text-xs text-slate-500">로그인 후 바로 다운로드</p>
+                      </div>
                     </div>
-                    
+
                     {isAuthenticated ? (
-                      <Button 
+                      <Button
                         onClick={handleDownload}
                         disabled={downloading}
-                        className="w-full py-3 text-lg font-semibold bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600"
+                        className="w-full h-12 text-base font-semibold bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 border-0 shadow-md shadow-emerald-900/10"
                       >
                         {downloading ? (
-                          <div className="flex items-center gap-2">
-                            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                            다운로드 중...
-                          </div>
+                          <><Loader2 className="h-4 w-4 mr-2 animate-spin" />다운로드 중…</>
                         ) : (
-                          <div className="flex items-center gap-2">
-                            <Download className="w-5 h-5" />
-                            지금 다운로드
-                          </div>
+                          <><Download className="h-4 w-4 mr-2" />다운로드</>
                         )}
                       </Button>
                     ) : (
-                      <Button 
-                        onClick={() => router.push('/auth/simple-signin')}
-                        className="w-full py-3 text-lg font-semibold bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600"
+                      <Button
+                        onClick={() => router.push("/auth/simple-signin")}
+                        className="w-full h-12 text-base font-semibold bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 border-0 shadow-md shadow-emerald-900/10"
                       >
                         로그인 후 다운로드
                       </Button>
                     )}
                   </>
                 ) : (
+                  /* Paid product */
                   <>
-                    <div className="text-center py-4">
-                      <DollarSign className="w-12 h-12 text-blue-500 mx-auto mb-3" />
-                      <p className="text-2xl font-bold text-gray-900 mb-1">
+                    <div className="flex items-baseline gap-2 mb-1">
+                      <span className="text-2xl font-bold text-slate-900">
                         {product.price.toLocaleString()}원
-                      </p>
+                      </span>
                       {product.originalPrice && product.originalPrice > product.price && (
-                        <p className="text-sm text-gray-500 line-through">
-                          정가 {product.originalPrice.toLocaleString()}원
-                        </p>
+                        <span className="text-sm text-slate-400 line-through">
+                          {product.originalPrice.toLocaleString()}원
+                        </span>
                       )}
                     </div>
-                    
-                    {/* 장바구니 담기 버튼 */}
-                    {isInCart(product._id) ? (
-                      <Button
-                        className="w-full py-3 bg-gray-100 text-gray-700 hover:bg-gray-200 mb-2"
-                        onClick={() => router.push('/cart')}
-                      >
-                        <Check className="w-5 h-5 mr-2" />
-                        장바구니에 담김
-                      </Button>
-                    ) : (
-                      <Button
-                        variant="outline"
-                        className="w-full py-3 border-2 border-blue-500 text-blue-600 hover:bg-blue-50 mb-2"
-                        onClick={() => {
-                          addToCart({
-                            productId: product._id,
-                            title: product.title,
-                            price: product.price,
-                            originalPrice: product.originalPrice,
-                            category: product.category
-                          })
-                          setDownloadMessage('장바구니에 담았습니다!')
-                          setTimeout(() => setDownloadMessage(''), 3000)
-                        }}
-                      >
-                        <ShoppingCart className="w-5 h-5 mr-2" />
-                        장바구니 담기
-                      </Button>
-                    )}
+                    <p className="text-xs text-slate-500 mb-5">결제 후 즉시 다운로드</p>
 
-                    <PaymentButton
-                      productId={product._id}
-                      productTitle={product.title}
-                      price={product.price}
-                      isAuthenticated={isAuthenticated}
-                    />
-                    
-                    <div className="text-xs text-gray-500 text-center mt-2">
-                      안전한 결제 시스템으로 보호됩니다
+                    <div className="space-y-2.5">
+                      {isAdmin ? (
+                        <Button
+                          onClick={handleDownload}
+                          disabled={downloading}
+                          className="w-full h-12 text-base font-semibold bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 border-0 shadow-md shadow-emerald-900/10"
+                        >
+                          {downloading ? (
+                            <><Loader2 className="h-4 w-4 mr-2 animate-spin" />다운로드 중…</>
+                          ) : (
+                            <><Download className="h-4 w-4 mr-2" />관리자 다운로드</>
+                          )}
+                        </Button>
+                      ) : (
+                        <>
+                          <Button
+                            onClick={() => {
+                              if (!isAuthenticated) { router.push("/auth/simple-signin"); return }
+                              router.push(`/products/${product._id}/checkout`)
+                            }}
+                            className="w-full h-12 text-base font-semibold bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 border-0 shadow-md shadow-emerald-900/10"
+                          >
+                            <CreditCard className="h-4 w-4 mr-2" />
+                            {product.price.toLocaleString()}원 결제하기
+                          </Button>
+
+                          {isInCart(product._id) ? (
+                            <Button
+                              variant="outline"
+                              className="w-full h-11 border-slate-200 text-slate-600 hover:bg-slate-50"
+                              onClick={() => router.push("/cart")}
+                            >
+                              <Check className="h-4 w-4 mr-2" />
+                              장바구니에 담김
+                            </Button>
+                          ) : (
+                            <Button
+                              variant="outline"
+                              className="w-full h-11 border-emerald-200 text-emerald-700 hover:bg-emerald-50"
+                              onClick={() => {
+                                addToCart({
+                                  productId: product._id,
+                                  title: product.title,
+                                  price: product.price,
+                                  originalPrice: product.originalPrice,
+                                  category: product.category,
+                                })
+                                showToast("success", "장바구니에 담았습니다")
+                              }}
+                            >
+                              <ShoppingCart className="h-4 w-4 mr-2" />
+                              장바구니 담기
+                            </Button>
+                          )}
+                        </>
+                      )}
                     </div>
+
+                    {!isAdmin && (
+                      <p className="text-[11px] text-slate-400 text-center mt-3">
+                        안전한 결제 시스템으로 보호됩니다
+                      </p>
+                    )}
                   </>
                 )}
-              </CardContent>
-            </Card>
+              </div>
 
-            {/* 파일 정보 */}
-            <Card className="shadow-lg">
-              <CardHeader>
-                <CardTitle className="text-lg">파일 정보</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <div className="flex justify-between items-center">
-                  <span className="text-gray-600">파일 형식</span>
-                  <span className="font-medium">PDF</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-gray-600">파일 크기</span>
-                  <span className="font-medium">{formatFileSize(product.fileSize)}</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-gray-600">파일명</span>
-                  <span className="font-medium text-sm truncate ml-2">
-                    {product.originalFileName}
-                  </span>
-                </div>
-              </CardContent>
-            </Card>
+              {/* File info */}
+              <div className="rounded-2xl border border-slate-200/80 bg-white p-5">
+                <h3 className="text-sm font-semibold text-slate-900 mb-3">파일 정보</h3>
+                <dl className="space-y-2 text-sm">
+                  <div className="flex justify-between">
+                    <dt className="text-slate-500">형식</dt>
+                    <dd className="font-medium text-slate-700">PDF</dd>
+                  </div>
+                  <div className="flex justify-between">
+                    <dt className="text-slate-500">크기</dt>
+                    <dd className="font-medium text-slate-700">{formatFileSize(product.fileSize)}</dd>
+                  </div>
+                  <div className="flex justify-between">
+                    <dt className="text-slate-500">파일명</dt>
+                    <dd className="font-medium text-slate-700 text-right truncate max-w-[160px]">
+                      {product.originalFileName}
+                    </dd>
+                  </div>
+                </dl>
+              </div>
+            </div>
           </div>
         </div>
       </div>

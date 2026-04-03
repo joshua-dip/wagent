@@ -1,16 +1,11 @@
 import { 
-  LayoutDashboard, 
-  Package, 
-  BookOpen,
-  FileText,
+  Home,
   Star,
   PenTool,
   Settings,
   Upload,
   BarChart3,
   Download,
-  ShoppingCart,
-  User,
   LucideIcon
 } from "lucide-react"
 
@@ -44,37 +39,19 @@ export const menuConfig: MenuSection[] = [
     title: "메인",
     items: [
       {
-        title: "대시보드",
+        title: "홈",
         href: "/",
-        icon: LayoutDashboard,
-        // 모든 사용자가 볼 수 있음
+        icon: Home,
       },
       {
-        title: "구매한 자료 다운로드",
+        title: "구매한 자료",
         href: "/my/purchases",
         icon: Download,
-        // 모든 사용자가 볼 수 있음
       },
       {
-        title: "공유 자료",
+        title: "무료 자료",
         href: "/products/free",
         icon: Star,
-        // 모든 사용자가 볼 수 있음
-      },
-    ]
-  },
-
-  // ===================================
-  // 카테고리 (모든 사용자)
-  // ===================================
-  {
-    title: "카테고리",
-    items: [
-      {
-        title: "2025 영어모의고사",
-        href: "/products/2025-english-mock",
-        icon: FileText,
-        // 모든 사용자가 볼 수 있음
       },
     ]
   },
@@ -90,40 +67,6 @@ export const menuConfig: MenuSection[] = [
         title: "서술형 자료 맞춤 제작",
         href: "/custom-order",
         icon: PenTool,
-        roles: ['admin'],
-      },
-    ]
-  },
-
-  // ===================================
-  // 관리자 전용 - 추가 카테고리
-  // ===================================
-  {
-    title: "전체 카테고리",
-    roles: ['admin'], // 관리자만 이 섹션을 볼 수 있음
-    items: [
-      {
-        title: "2025 영어모의고사",
-        href: "/products/2025-english-mock",
-        icon: FileText,
-        roles: ['admin'],
-      },
-      {
-        title: "EBS수능특강영어",
-        href: "/products/ebs-special-english",
-        icon: BookOpen,
-        roles: ['admin'],
-      },
-      {
-        title: "EBS수능특강영어독해",
-        href: "/products/ebs-english-reading",
-        icon: BookOpen,
-        roles: ['admin'],
-      },
-      {
-        title: "부교재자료 (쏠북링크)",
-        href: "/products/supplementary-materials",
-        icon: Package,
         roles: ['admin'],
       },
     ]

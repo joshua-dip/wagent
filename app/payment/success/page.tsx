@@ -71,10 +71,10 @@ function PaymentSuccessContent() {
   if (confirming) {
     return (
       <Layout>
-        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-50">
+        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-emerald-50 to-teal-50">
           <Card className="w-full max-w-md">
             <CardContent className="text-center py-12">
-              <Loader2 className="w-16 h-16 text-blue-600 mx-auto mb-4 animate-spin" />
+              <Loader2 className="w-16 h-16 text-emerald-600 mx-auto mb-4 animate-spin" />
               <h2 className="text-2xl font-bold text-gray-900 mb-2">결제 처리 중...</h2>
               <p className="text-gray-600">잠시만 기다려주세요.</p>
             </CardContent>
@@ -145,7 +145,7 @@ function PaymentSuccessContent() {
                       {purchaseInfo.map((purchase: any, index: number) => (
                         <div key={index} className="flex justify-between items-center py-2 border-b last:border-0">
                           <span className="font-medium text-gray-900">{purchase.productTitle}</span>
-                          <span className="text-blue-600 font-semibold">
+                          <span className="text-emerald-600 font-semibold">
                             {new Intl.NumberFormat('ko-KR').format(purchase.amount)}원
                           </span>
                         </div>
@@ -155,7 +155,7 @@ function PaymentSuccessContent() {
                     <div className="pt-4 border-t">
                       <div className="flex justify-between items-center">
                         <span className="text-lg font-semibold text-gray-900">총 결제 금액</span>
-                        <span className="text-2xl font-bold text-blue-600">
+                        <span className="text-2xl font-bold text-emerald-600">
                           {new Intl.NumberFormat('ko-KR').format(
                             purchaseInfo.reduce((sum: number, p: any) => sum + p.amount, 0)
                           )}원
@@ -186,7 +186,7 @@ function PaymentSuccessContent() {
                     
                     <div>
                       <p className="text-sm text-gray-500">결제 금액</p>
-                      <p className="font-bold text-blue-600 text-lg">
+                      <p className="font-bold text-emerald-600 text-lg">
                         {new Intl.NumberFormat('ko-KR').format(purchaseInfo.amount)}원
                       </p>
                     </div>
@@ -208,9 +208,9 @@ function PaymentSuccessContent() {
             )}
 
             {/* 다음 단계 안내 */}
-            <div className="bg-blue-50 rounded-lg border border-blue-200 p-6">
-              <h3 className="text-lg font-semibold text-blue-900 mb-2">다음 단계</h3>
-              <ul className="space-y-2 text-blue-800">
+            <div className="bg-emerald-50 rounded-lg border border-emerald-200 p-6">
+              <h3 className="text-lg font-semibold text-emerald-900 mb-2">다음 단계</h3>
+              <ul className="space-y-2 text-emerald-800">
                 <li className="flex items-start gap-2">
                   <CheckCircle2 className="w-5 h-5 mt-0.5 flex-shrink-0" />
                   <span>구매한 자료는 마이페이지에서 언제든지 다운로드할 수 있습니다.</span>
@@ -230,7 +230,7 @@ function PaymentSuccessContent() {
             <div className="flex flex-col sm:flex-row gap-3 pt-4">
               {purchaseInfo && !Array.isArray(purchaseInfo) && (
                 <Button 
-                  className="flex-1 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700"
+                  className="flex-1 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700"
                   onClick={() => router.push(`/products/${purchaseInfo.productId}`)}
                 >
                   <Download className="w-4 h-4 mr-2" />
@@ -265,10 +265,10 @@ export default function PaymentSuccessPage() {
   return (
     <Suspense fallback={
       <Layout>
-        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-50">
+        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-emerald-50 to-teal-50">
           <Card className="w-full max-w-md">
             <CardContent className="text-center py-12">
-              <Loader2 className="w-16 h-16 text-blue-600 mx-auto mb-4 animate-spin" />
+              <Loader2 className="w-16 h-16 text-emerald-600 mx-auto mb-4 animate-spin" />
               <h2 className="text-2xl font-bold text-gray-900 mb-2">로딩 중...</h2>
               <p className="text-gray-600">잠시만 기다려주세요.</p>
             </CardContent>

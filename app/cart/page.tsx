@@ -53,18 +53,6 @@ export default function CartPage() {
       return
     }
 
-    // 디버깅 로그
-    console.log('인증 상태:', {
-      simpleAuthLoading: simpleAuth.isLoading,
-      simpleAuthAuthenticated: simpleAuth.isAuthenticated,
-      simpleAuthUser: simpleAuth.user,
-      sessionStatus: status,
-      sessionExists: !!session,
-      sessionUser: session?.user,
-      finalAuthenticated: isAuthenticated,
-      finalUser: currentUser
-    })
-
     if (!isAuthenticated) {
       if (confirm('로그인이 필요합니다. 로그인 페이지로 이동하시겠습니까?')) {
         router.push('/auth/simple-signin')
@@ -106,13 +94,13 @@ export default function CartPage() {
 
   return (
     <Layout>
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 py-8 px-4">
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-50/50 py-8 px-4">
         <div className="max-w-6xl mx-auto">
           {/* 헤더 */}
           <div className="mb-8">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-3">
-                <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg">
+                <div className="w-12 h-12 bg-gradient-to-r from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center shadow-lg">
                   <ShoppingCart className="w-6 h-6 text-white" />
                 </div>
                 <div>
@@ -158,7 +146,7 @@ export default function CartPage() {
                     홈으로
                   </Button>
                   <Button
-                    className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700"
+                    className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700"
                     onClick={() => router.push('/products')}
                   >
                     <FileText className="w-4 h-4 mr-2" />
@@ -215,7 +203,7 @@ export default function CartPage() {
                           <div className="flex items-center justify-between mt-4">
                             {/* 디지털 상품 안내 */}
                             <div className="text-sm text-gray-500">
-                              <span className="bg-blue-50 text-blue-700 px-2 py-1 rounded">
+                              <span className="bg-emerald-50 text-emerald-700 px-2 py-1 rounded">
                                 디지털 상품 • 1회 구매
                               </span>
                             </div>
@@ -227,7 +215,7 @@ export default function CartPage() {
                                   {new Intl.NumberFormat('ko-KR').format(item.originalPrice)}원
                                 </p>
                               )}
-                              <p className="text-lg font-bold text-blue-600">
+                              <p className="text-lg font-bold text-emerald-600">
                                 {new Intl.NumberFormat('ko-KR').format(item.price)}원
                               </p>
                             </div>
@@ -262,7 +250,7 @@ export default function CartPage() {
                       <div className="pt-3 border-t">
                         <div className="flex justify-between items-center">
                           <span className="text-lg font-semibold">총 결제 금액</span>
-                          <span className="text-2xl font-bold text-blue-600">
+                          <span className="text-2xl font-bold text-emerald-600">
                             {new Intl.NumberFormat('ko-KR').format(calculateTotal())}원
                           </span>
                         </div>
@@ -281,7 +269,7 @@ export default function CartPage() {
                     )}
 
                     <Button
-                      className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 py-6 text-lg font-semibold"
+                      className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 py-6 text-lg font-semibold"
                       onClick={handleCheckout}
                       disabled={isAuthLoading}
                     >

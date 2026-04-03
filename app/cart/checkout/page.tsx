@@ -25,6 +25,7 @@ export default function CartCheckoutPage() {
   
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [errorMessage, setErrorMessage] = useState('')
   const [orderId, setOrderId] = useState<string>('')
   const [authChecked, setAuthChecked] = useState(false)
   
@@ -43,37 +44,23 @@ export default function CartCheckoutPage() {
   useEffect(() => {
     // NextAuth 세션 또는 SimpleAuth가 로딩 중이면 대기
     if (isAuthLoading) {
-      console.log('인증 로딩 중...', { 
-        simpleAuthLoading: simpleAuth.isLoading, 
-        sessionStatus: status 
-      })
       return
     }
 
-    // 인증 확인 완료
-    console.log('인증 확인 완료:', {
-      simpleAuth: simpleAuth.isAuthenticated,
-      session: !!session,
-      user: currentUser,
-      isAuthenticated
-    })
-    
     setAuthChecked(true)
 
     // 인증 체크
     if (!isAuthenticated) {
-      console.log('인증 실패 - 로그인 페이지로 리다이렉트')
-      alert('로그인이 필요합니다.')
-      router.push('/auth/simple-signin')
-      return
+      setErrorMessage('로그인이 필요합니다. 잠시 후 로그인 페이지로 이동합니다.')
+      const id = window.setTimeout(() => router.push('/auth/simple-signin'), 1800)
+      return () => clearTimeout(id)
     }
 
     // 장바구니가 비어있는지 체크
     if (cartItems.length === 0) {
-      console.log('장바구니 비어있음')
-      alert('장바구니가 비어있습니다.')
-      router.push('/cart')
-      return
+      setErrorMessage('장바구니가 비어 있습니다. 잠시 후 장바구니로 이동합니다.')
+      const id = window.setTimeout(() => router.push('/cart'), 1800)
+      return () => clearTimeout(id)
     }
   }, [isAuthLoading, isAuthenticated, cartItems.length, router, simpleAuth.isLoading, status, simpleAuth.isAuthenticated, session, currentUser])
 
@@ -84,11 +71,7 @@ export default function CartCheckoutPage() {
       return
     }
 
-    // 장바구니가 비어있으면 장바구니 페이지로 리다이렉트
     if (cartItems.length === 0) {
-      console.log('장바구니 비어있음 - 리다이렉트')
-      alert('장바구니가 비어있습니다.')
-      router.push('/cart')
       return
     }
 
@@ -102,7 +85,6 @@ export default function CartCheckoutPage() {
       const random3 = Math.floor(Math.random() * 10000).toString().padStart(4, '0')
       const newOrderId = `CART_${timestamp}_${microseconds.slice(-6)}_${random1}_${random2}_${random3}`
       
-      console.log('새 주문 ID 생성:', newOrderId)
       setOrderId(newOrderId)
 
       // 주문 정보를 서버에 저장
@@ -125,11 +107,8 @@ export default function CartCheckoutPage() {
           console.error('주문 정보 저장 실패:', data)
           if (data.error?.includes('duplicate') || data.error?.includes('중복')) {
             // 중복 orderId인 경우 페이지 새로고침
-            console.log('중복 orderId 감지 - 페이지 새로고침')
             window.location.reload()
           }
-        } else {
-          console.log('주문 정보 저장 성공:', data)
         }
       } catch (error) {
         console.error('주문 정보 저장 오류:', error)
@@ -238,8 +217,9 @@ export default function CartCheckoutPage() {
   }
 
   const handlePayment = async () => {
+    setErrorMessage('')
     if (!paymentWidgetRef.current) {
-      alert('결제 위젯이 초기화되지 않았습니다.')
+      setErrorMessage('결제 위젯이 초기화되지 않았습니다.')
       return
     }
 
@@ -261,7 +241,7 @@ export default function CartCheckoutPage() {
       })
     } catch (err) {
       console.error('결제 요청 오류:', err)
-      alert('결제 요청 중 오류가 발생했습니다.')
+      setErrorMessage('결제 요청 중 오류가 발생했습니다.')
     }
   }
 
@@ -289,8 +269,16 @@ export default function CartCheckoutPage() {
 
   return (
     <Layout>
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 py-8 px-4">
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-50/50 py-8 px-4">
         <div className="max-w-4xl mx-auto">
+          {errorMessage ? (
+            <div
+              role="alert"
+              className="mb-6 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900"
+            >
+              {errorMessage}
+            </div>
+          ) : null}
           {/* 헤더 */}
           <div className="mb-8">
             <Button
@@ -303,7 +291,7 @@ export default function CartCheckoutPage() {
             </Button>
             
             <div className="flex items-center gap-3">
-              <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg">
+              <div className="w-12 h-12 bg-gradient-to-r from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center shadow-lg">
                 <ShoppingCart className="w-6 h-6 text-white" />
               </div>
               <div>
@@ -335,7 +323,7 @@ export default function CartCheckoutPage() {
             /* 로딩 화면 */
             <Card className="shadow-lg">
               <CardContent className="text-center py-16">
-                <Loader2 className="w-16 h-16 text-blue-600 mx-auto mb-4 animate-spin" />
+                <Loader2 className="w-16 h-16 text-emerald-600 mx-auto mb-4 animate-spin" />
                 <h3 className="text-xl font-semibold text-gray-900 mb-2">
                   결제 준비 중...
                 </h3>
@@ -361,7 +349,7 @@ export default function CartCheckoutPage() {
                           </Badge>
                         </div>
                         <div className="text-right ml-4">
-                          <p className="font-semibold text-blue-600">
+                          <p className="font-semibold text-emerald-600">
                             {new Intl.NumberFormat('ko-KR').format(Number(item.price) || 0)}원
                           </p>
                         </div>
@@ -372,7 +360,7 @@ export default function CartCheckoutPage() {
                   <div className="mt-4 pt-4 border-t">
                     <div className="flex justify-between items-center">
                       <span className="text-lg font-semibold text-gray-900">총 결제 금액</span>
-                      <span className="text-2xl font-bold text-blue-600">
+                      <span className="text-2xl font-bold text-emerald-600">
                         {new Intl.NumberFormat('ko-KR').format(totalAmount)}원
                       </span>
                     </div>
@@ -400,7 +388,7 @@ export default function CartCheckoutPage() {
               {/* 결제하기 버튼 */}
               <Button
                 onClick={handlePayment}
-                className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 py-6 text-lg font-semibold"
+                className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 py-6 text-lg font-semibold"
               >
                 {new Intl.NumberFormat('ko-KR').format(totalAmount)}원 결제하기
               </Button>
@@ -410,7 +398,7 @@ export default function CartCheckoutPage() {
                 <p className="text-sm text-gray-600">
                   • 디지털 상품은 결제 후 즉시 다운로드가 가능합니다.<br />
                   • 결제 후 구매 내역은 마이페이지에서 확인하실 수 있습니다.<br />
-                  • 환불 정책은 <a href="/refund-policy" className="text-blue-600 underline">환불 규정</a>을 참고해주세요.
+                  • 환불 정책은 <a href="/refund-policy" className="text-emerald-600 underline">환불 규정</a>을 참고해주세요.
                 </p>
               </div>
             </div>

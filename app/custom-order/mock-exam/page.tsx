@@ -58,14 +58,13 @@ export default function MockExamOrderPage() {
       return
     }
     alert("모의고사 제작 신청이 접수되었습니다. 24시간 내에 연락드리겠습니다.")
-    console.log("모의고사 제작 신청:", formData)
   }
 
   return (
     <Layout>
-      <div className="bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 -m-3 sm:-m-6 min-h-full">
+      <div className="bg-gradient-to-br from-emerald-50/70 via-teal-50/40 to-slate-50 -m-3 sm:-m-6 min-h-full">
         {/* 헤더 섹션 */}
-        <section className="relative overflow-hidden bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 text-white py-16">
+        <section className="relative overflow-hidden bg-gradient-to-r from-emerald-600 via-teal-500 to-emerald-700 text-white py-16">
           <div className="absolute inset-0 bg-black/10"></div>
           <div className="relative px-6 sm:px-8 lg:px-12">
             <div className="flex items-center mb-6">
@@ -85,21 +84,21 @@ export default function MockExamOrderPage() {
               <h1 className="text-4xl md:text-5xl font-bold mb-4">
                 모의고사 제작 신청
               </h1>
-              <p className="text-xl text-blue-100 mb-6 max-w-2xl mx-auto">
+              <p className="text-xl text-emerald-50/95 mb-6 max-w-2xl mx-auto">
                 맞춤형 영어 모의고사를 <span className="text-yellow-300 font-semibold">전문 교사가 직접 제작</span>해드립니다
               </p>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-2xl mx-auto">
                 <div className="bg-white/10 rounded-lg p-4 backdrop-blur-sm">
                   <div className="text-2xl font-bold">3-5일</div>
-                  <div className="text-sm text-blue-100">제작 기간</div>
+                  <div className="text-sm text-emerald-50/95">제작 기간</div>
                 </div>
                 <div className="bg-white/10 rounded-lg p-4 backdrop-blur-sm">
                   <div className="text-2xl font-bold">50,000원~</div>
-                  <div className="text-sm text-blue-100">기본 가격</div>
+                  <div className="text-sm text-emerald-50/95">기본 가격</div>
                 </div>
                 <div className="bg-white/10 rounded-lg p-4 backdrop-blur-sm">
                   <div className="text-2xl font-bold">100%</div>
-                  <div className="text-sm text-blue-100">맞춤 제작</div>
+                  <div className="text-sm text-emerald-50/95">맞춤 제작</div>
                 </div>
               </div>
             </div>
@@ -129,7 +128,7 @@ export default function MockExamOrderPage() {
                         value={formData.name}
                         onChange={handleInputChange}
                         required
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                         placeholder="이름을 입력하세요"
                       />
                     </div>
@@ -144,7 +143,7 @@ export default function MockExamOrderPage() {
                         value={formData.email}
                         onChange={handleInputChange}
                         required
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                         placeholder="이메일을 입력하세요"
                       />
                     </div>
@@ -161,7 +160,7 @@ export default function MockExamOrderPage() {
                         name="phone"
                         value={formData.phone}
                         onChange={handleInputChange}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                         placeholder="연락처를 입력하세요"
                       />
                     </div>
@@ -174,7 +173,7 @@ export default function MockExamOrderPage() {
                         value={formData.grade}
                         onChange={handleInputChange}
                         required
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                       >
                         <option value="">학년을 선택하세요</option>
                         <option value="grade1">고1</option>
@@ -195,7 +194,7 @@ export default function MockExamOrderPage() {
                         value={formData.examType}
                         onChange={handleInputChange}
                         required
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                       >
                         <option value="">시험 유형을 선택하세요</option>
                         <option value="monthly">월별 모의고사</option>
@@ -214,7 +213,7 @@ export default function MockExamOrderPage() {
                         value={formData.difficulty}
                         onChange={handleInputChange}
                         required
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                       >
                         <option value="">난이도를 선택하세요</option>
                         <option value="basic">기초</option>
@@ -233,7 +232,7 @@ export default function MockExamOrderPage() {
                       name="questionCount"
                       value={formData.questionCount}
                       onChange={handleInputChange}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                     >
                       <option value="">문항 수를 선택하세요</option>
                       <option value="20">20문항</option>
@@ -253,7 +252,7 @@ export default function MockExamOrderPage() {
                       value={formData.title}
                       onChange={handleInputChange}
                       required
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                       placeholder="예: 2025년 3월 고2 영어 모의고사"
                     />
                   </div>
@@ -268,7 +267,7 @@ export default function MockExamOrderPage() {
                       onChange={handleInputChange}
                       required
                       rows={5}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                       placeholder="출제 범위, 특별 요구사항, 참고할 교재나 기출문제 등을 상세히 입력해주세요"
                     />
                   </div>
@@ -285,7 +284,7 @@ export default function MockExamOrderPage() {
                         value={formData.deadline}
                         onChange={handleInputChange}
                         required
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                       />
                     </div>
                     <div>
@@ -298,7 +297,7 @@ export default function MockExamOrderPage() {
                         value={formData.budget}
                         onChange={handleInputChange}
                         required
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                       >
                         <option value="">예산 범위를 선택하세요</option>
                         <option value="50000-80000">5만원 - 8만원</option>
@@ -319,7 +318,7 @@ export default function MockExamOrderPage() {
                       value={formData.additionalRequests}
                       onChange={handleInputChange}
                       rows={3}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                       placeholder="해설 포함 여부, 문제 형식, 기타 요청사항 등을 입력해주세요"
                     />
                   </div>
@@ -329,7 +328,7 @@ export default function MockExamOrderPage() {
                     {isAuthenticated ? (
                       <Button 
                         type="submit"
-                        className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white py-4 text-lg font-semibold"
+                        className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white py-4 text-lg font-semibold"
                       >
                         모의고사 제작 신청하기
                       </Button>
@@ -338,7 +337,7 @@ export default function MockExamOrderPage() {
                         <p className="text-gray-600 mb-4">모의고사 제작 신청을 위해 로그인이 필요합니다.</p>
                         <div className="flex gap-4 justify-center">
                           <Link href="/auth/simple-signin">
-                            <Button className="bg-blue-600 hover:bg-blue-700">
+                            <Button className="bg-emerald-600 hover:bg-emerald-700">
                               로그인
                             </Button>
                           </Link>
@@ -382,7 +381,7 @@ export default function MockExamOrderPage() {
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center">
-                    <FileText className="h-5 w-5 mr-2 text-blue-600" />
+                    <FileText className="h-5 w-5 mr-2 text-emerald-600" />
                     제작 과정
                   </CardTitle>
                 </CardHeader>

@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import { useSession } from "next-auth/react"
 import { useSimpleAuth } from "@/hooks/useSimpleAuth"
 import { useRouter } from "next/navigation"
-import Layout from "@/components/Layout"
+import AdminLayout from "@/components/AdminLayout"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -177,27 +177,27 @@ export default function AdminUsersPage() {
 
   if (simpleAuth.isLoading || status === 'loading' || !isAuthenticated || !isAdmin) {
     return (
-      <Layout>
+      <AdminLayout>
         <div className="flex items-center justify-center min-h-screen">
           <div className="text-center">
-            <RefreshCw className="h-8 w-8 animate-spin mx-auto text-blue-600 mb-4" />
+            <RefreshCw className="h-8 w-8 animate-spin mx-auto text-emerald-600 mb-4" />
             <p className="text-gray-600">인증 확인 중...</p>
           </div>
         </div>
-      </Layout>
+      </AdminLayout>
     )
   }
 
   if (loading) {
     return (
-      <Layout>
+      <AdminLayout>
         <div className="flex items-center justify-center min-h-screen">
           <div className="text-center">
-            <RefreshCw className="h-8 w-8 animate-spin mx-auto text-blue-600 mb-4" />
+            <RefreshCw className="h-8 w-8 animate-spin mx-auto text-emerald-600 mb-4" />
             <p className="text-gray-600">사용자 목록을 불러오는 중...</p>
           </div>
         </div>
-      </Layout>
+      </AdminLayout>
     )
   }
 
@@ -209,7 +209,7 @@ export default function AdminUsersPage() {
   }
 
   return (
-    <Layout>
+    <AdminLayout>
       <div className="space-y-6">
         {/* 헤더 */}
         <div className="flex items-center justify-between">
@@ -232,7 +232,7 @@ export default function AdminUsersPage() {
                   <p className="text-sm text-gray-600">전체 사용자</p>
                   <p className="text-2xl font-bold text-gray-900">{stats.total}</p>
                 </div>
-                <Users className="h-8 w-8 text-blue-600" />
+                <Users className="h-8 w-8 text-emerald-600" />
               </div>
             </CardContent>
           </Card>
@@ -266,9 +266,9 @@ export default function AdminUsersPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-gray-600">이메일 인증</p>
-                  <p className="text-2xl font-bold text-purple-600">{stats.verified}</p>
+                  <p className="text-2xl font-bold text-teal-600">{stats.verified}</p>
                 </div>
-                <CheckCircle className="h-8 w-8 text-purple-600" />
+                <CheckCircle className="h-8 w-8 text-teal-600" />
               </div>
             </CardContent>
           </Card>
@@ -335,10 +335,10 @@ export default function AdminUsersPage() {
                   >
                     <div className="flex items-center gap-4 flex-1">
                       <div className={`w-12 h-12 rounded-full flex items-center justify-center ${
-                        user.isActive ? 'bg-blue-100' : 'bg-gray-300'
+                        user.isActive ? 'bg-emerald-100' : 'bg-gray-300'
                       }`}>
                         <Users className={`h-6 w-6 ${
-                          user.isActive ? 'text-blue-600' : 'text-gray-600'
+                          user.isActive ? 'text-emerald-600' : 'text-gray-600'
                         }`} />
                       </div>
                       
@@ -351,7 +351,7 @@ export default function AdminUsersPage() {
                             </Badge>
                           )}
                           {user.email === "wnsrb2898@naver.com" && (
-                            <Badge className="text-xs bg-purple-600">
+                            <Badge className="text-xs bg-teal-600">
                               <Shield className="h-3 w-3 mr-1" />
                               관리자
                             </Badge>
@@ -504,7 +504,7 @@ export default function AdminUsersPage() {
           </div>
         )}
       </div>
-    </Layout>
+    </AdminLayout>
   )
 }
 
