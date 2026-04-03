@@ -33,7 +33,7 @@ export default function PaymentButton({
 
   return (
     <Button
-      className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white py-6 text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-200"
+      className="w-full bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white py-6 text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-200"
       onClick={handlePayment}
       disabled={loading}
     >

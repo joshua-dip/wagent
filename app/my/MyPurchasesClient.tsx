@@ -117,7 +117,7 @@ export function MyPurchasesClient({ copy = defaultCopy }: { copy?: MyPurchasesCo
       <Layout>
         <div className="min-h-screen flex items-center justify-center">
           <div className="text-center">
-            <Loader2 className="w-12 h-12 animate-spin mx-auto mb-4 text-blue-500" />
+            <Loader2 className="w-12 h-12 animate-spin mx-auto mb-4 text-emerald-500" />
             <p className="text-gray-600">{copy.loadingText}</p>
           </div>
         </div>
@@ -133,7 +133,7 @@ export function MyPurchasesClient({ copy = defaultCopy }: { copy?: MyPurchasesCo
 
   return (
     <Layout>
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 py-8 px-4">
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-50/50 py-8 px-4">
         <div className="max-w-6xl mx-auto">
           <div className="mb-8">
             <Link href="/user-dashboard">
@@ -144,7 +144,7 @@ export function MyPurchasesClient({ copy = defaultCopy }: { copy?: MyPurchasesCo
             </Link>
 
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg">
+              <div className="w-12 h-12 bg-gradient-to-r from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center shadow-lg">
                 <HeaderIcon className="w-6 h-6 text-white" />
               </div>
               <div>
@@ -174,7 +174,7 @@ export function MyPurchasesClient({ copy = defaultCopy }: { copy?: MyPurchasesCo
                 <h3 className="text-xl font-semibold text-gray-900 mb-2">{copy.emptyTitle}</h3>
                 <p className="text-gray-600 mb-6">{copy.emptyDescription}</p>
                 <Link href="/products">
-                  <Button className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700">
+                  <Button className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700">
                     <FileText className="w-4 h-4 mr-2" />
                     상품 둘러보기
                   </Button>
@@ -189,8 +189,8 @@ export function MyPurchasesClient({ copy = defaultCopy }: { copy?: MyPurchasesCo
                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                       <div className="flex-1">
                         <div className="flex items-start gap-3 mb-3">
-                          <div className="w-12 h-12 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                            <FileText className="w-6 h-6 text-blue-600" />
+                          <div className="w-12 h-12 bg-gradient-to-br from-emerald-100 to-teal-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                            <FileText className="w-6 h-6 text-emerald-600" />
                           </div>
                           <div className="flex-1 min-w-0">
                             <h3 className="font-semibold text-lg text-gray-900 mb-1">
@@ -206,7 +206,7 @@ export function MyPurchasesClient({ copy = defaultCopy }: { copy?: MyPurchasesCo
                               <span className="text-gray-400">•</span>
                               <div className="flex items-center gap-1">
                                 <DollarSign className="w-4 h-4" />
-                                <span className="font-semibold text-blue-600">
+                                <span className="font-semibold text-emerald-600">
                                   {new Intl.NumberFormat("ko-KR").format(purchase.amount)}원
                                 </span>
                               </div>
@@ -241,7 +241,7 @@ export function MyPurchasesClient({ copy = defaultCopy }: { copy?: MyPurchasesCo
                         <Button
                           onClick={() => handleDownload(purchase.productId)}
                           disabled={purchase.downloadCount >= purchase.maxDownloads}
-                          className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700"
+                          className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700"
                         >
                           <Download className="w-4 h-4 mr-2" />
                           다운로드
@@ -260,11 +260,11 @@ export function MyPurchasesClient({ copy = defaultCopy }: { copy?: MyPurchasesCo
           )}
 
           {purchases.length > 0 && (
-            <Card className="mt-6 bg-blue-50 border-blue-200">
+            <Card className="mt-6 bg-emerald-50 border-emerald-200">
               <CardContent className="pt-6">
                 <div className="flex items-start gap-3">
-                  <AlertCircle className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
-                  <div className="text-sm text-blue-800">
+                  <AlertCircle className="w-5 h-5 text-emerald-600 flex-shrink-0 mt-0.5" />
+                  <div className="text-sm text-emerald-800">
                     <p className="font-semibold mb-1">다운로드 안내</p>
                     <ul className="list-disc list-inside space-y-1">
                       <li>

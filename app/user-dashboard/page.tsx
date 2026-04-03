@@ -33,7 +33,7 @@ export default function UserDashboard() {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4 text-blue-500" />
+          <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4 text-emerald-500" />
           <p className="text-gray-600">로딩 중...</p>
         </div>
       </div>
@@ -79,7 +79,7 @@ export default function UserDashboard() {
                 <li>
                   <Link
                     href="/my/purchases"
-                    className="flex items-center justify-between py-3 text-gray-700 hover:text-blue-600 transition-colors border-b border-gray-100 last:border-0"
+                    className="flex items-center justify-between py-3 text-gray-700 hover:text-emerald-600 transition-colors border-b border-gray-100 last:border-0"
                   >
                     <span className="flex items-center gap-2">
                       <Download className="w-4 h-4 text-gray-400" />
@@ -91,7 +91,7 @@ export default function UserDashboard() {
                 <li>
                   <Link
                     href="/products/free"
-                    className="flex items-center justify-between py-3 text-gray-700 hover:text-blue-600 transition-colors border-b border-gray-100 last:border-0"
+                    className="flex items-center justify-between py-3 text-gray-700 hover:text-emerald-600 transition-colors border-b border-gray-100 last:border-0"
                   >
                     <span className="flex items-center gap-2">
                       <Star className="w-4 h-4 text-gray-400" />
@@ -114,7 +114,7 @@ export default function UserDashboard() {
                 <li>
                   <Link
                     href="/my/orders"
-                    className="flex items-center justify-between py-3 text-gray-700 hover:text-blue-600 transition-colors border-b border-gray-100 last:border-0"
+                    className="flex items-center justify-between py-3 text-gray-700 hover:text-emerald-600 transition-colors border-b border-gray-100 last:border-0"
                   >
                     <span className="flex items-center gap-2">
                       <CreditCard className="w-4 h-4 text-gray-400" />
@@ -126,7 +126,7 @@ export default function UserDashboard() {
                 <li>
                   <Link
                     href="/terms"
-                    className="flex items-center justify-between py-3 text-gray-700 hover:text-blue-600 transition-colors border-b border-gray-100 last:border-0"
+                    className="flex items-center justify-between py-3 text-gray-700 hover:text-emerald-600 transition-colors border-b border-gray-100 last:border-0"
                   >
                     <span className="flex items-center gap-2">
                       <FileText className="w-4 h-4 text-gray-400" />
@@ -138,7 +138,7 @@ export default function UserDashboard() {
                 <li>
                   <a
                     href="mailto:payperic@naver.com"
-                    className="flex items-center justify-between py-3 text-gray-700 hover:text-blue-600 transition-colors border-b border-gray-100 last:border-0"
+                    className="flex items-center justify-between py-3 text-gray-700 hover:text-emerald-600 transition-colors border-b border-gray-100 last:border-0"
                   >
                     <span className="flex items-center gap-2">
                       <User className="w-4 h-4 text-gray-400" />

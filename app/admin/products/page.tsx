@@ -6,11 +6,13 @@ import { useSimpleAuth } from '@/hooks/useSimpleAuth'
 import { useRouter } from 'next/navigation'
 import { isAdminUser } from '@/utils/auth-utils'
 import Link from 'next/link'
-import Layout from '@/components/Layout'
+import AdminLayout from '@/components/AdminLayout'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Textarea } from '@/components/ui/textarea'
 import { 
   Search,
   Plus,
@@ -86,6 +88,16 @@ export default function AdminProductsPage() {
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc')
   const [showActiveOnly, setShowActiveOnly] = useState(false)
   const [editingProduct, setEditingProduct] = useState<string | null>(null)
+  const [editDraft, setEditDraft] = useState<{
+    title: string
+    description: string
+    price: string
+    originalPrice: string
+    category: string
+    author: string
+    tagsStr: string
+  } | null>(null)
+  const [savingEdit, setSavingEdit] = useState(false)
   
   // 두 인증 시스템 중 하나라도 로그인되어 있으면 인증된 것으로 처리
   const currentUser = simpleAuth.user || session?.user
@@ -101,15 +113,45 @@ export default function AdminProductsPage() {
     }
   }, [searchTerm, selectedCategory, isAdmin, isAuthenticated])
 
+  useEffect(() => {
+    if (!editingProduct) {
+      setEditDraft(null)
+      return
+    }
+    const p = products.find((x) => x._id === editingProduct)
+    if (!p) return
+    setEditDraft({
+      title: p.title,
+      description: p.description,
+      price: String(p.price),
+      originalPrice: p.originalPrice != null ? String(p.originalPrice) : '',
+      category: p.category,
+      author: p.author,
+      tagsStr: p.tags.join(', '),
+    })
+  }, [editingProduct, products])
+
+  useEffect(() => {
+    if (!editingProduct) return
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setEditingProduct(null)
+        setEditDraft(null)
+      }
+    }
+    document.addEventListener('keydown', onKey)
+    return () => document.removeEventListener('keydown', onKey)
+  }, [editingProduct])
+
   // 로딩 중이면 로딩 표시
   if (status === 'loading' || simpleAuth.isLoading) {
     return (
-      <Layout>
+      <AdminLayout>
         <div className="text-center py-12">
-          <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+          <div className="w-8 h-8 border-4 border-emerald-600 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
           <p className="text-gray-600">로딩 중...</p>
         </div>
-      </Layout>
+      </AdminLayout>
     )
   }
 
@@ -122,7 +164,7 @@ export default function AdminProductsPage() {
   // 관리자가 아닌 경우
   if (!isAdmin) {
     return (
-      <Layout>
+      <AdminLayout>
         <div className="text-center py-12">
           <Card className="w-full max-w-md mx-auto">
             <CardContent className="text-center p-6">
@@ -135,7 +177,7 @@ export default function AdminProductsPage() {
             </CardContent>
           </Card>
         </div>
-      </Layout>
+      </AdminLayout>
     )
   }
 
@@ -228,6 +270,63 @@ export default function AdminProductsPage() {
     } catch (error) {
       console.error('일괄 상태 변경 오류:', error)
       alert('일괄 상태 변경 중 오류가 발생했습니다.')
+    }
+  }
+
+  const closeEditModal = () => {
+    setEditingProduct(null)
+    setEditDraft(null)
+  }
+
+  const handleSaveEdit = async () => {
+    if (!editingProduct || !editDraft) return
+    const price = parseInt(editDraft.price, 10)
+    if (Number.isNaN(price) || price < 0) {
+      alert('유효한 가격을 입력해 주세요.')
+      return
+    }
+    let originalPriceSend: number | null
+    if (editDraft.originalPrice.trim() === '') {
+      originalPriceSend = null
+    } else {
+      const o = parseInt(editDraft.originalPrice, 10)
+      if (Number.isNaN(o) || o < 0) {
+        alert('정가는 올바른 숫자로 입력해 주세요.')
+        return
+      }
+      originalPriceSend = o
+    }
+    const tags = editDraft.tagsStr
+      .split(',')
+      .map((t) => t.trim())
+      .filter(Boolean)
+
+    setSavingEdit(true)
+    try {
+      const response = await fetch(`/api/products/${editingProduct}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: editDraft.title.trim(),
+          description: editDraft.description.trim(),
+          price,
+          originalPrice: originalPriceSend,
+          category: editDraft.category,
+          tags,
+          author: editDraft.author.trim(),
+        }),
+      })
+      const data = await response.json().catch(() => ({}))
+      if (response.ok) {
+        closeEditModal()
+        loadProducts()
+      } else {
+        alert(typeof data.error === 'string' ? data.error : '상품 수정에 실패했습니다.')
+      }
+    } catch {
+      alert('상품 수정 중 오류가 발생했습니다.')
+    } finally {
+      setSavingEdit(false)
     }
   }
 
@@ -324,17 +423,17 @@ export default function AdminProductsPage() {
 
   if (loading) {
     return (
-      <Layout>
+      <AdminLayout>
         <div className="text-center py-12">
-          <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+          <div className="w-8 h-8 border-4 border-emerald-600 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
           <p className="text-gray-600">상품 목록을 불러오는 중...</p>
         </div>
-      </Layout>
+      </AdminLayout>
     )
   }
 
   return (
-    <Layout>
+    <AdminLayout>
       <div className="-m-3 sm:-m-6 min-h-full bg-gray-50 p-6">
         {/* 헤더 */}
         <div className="mb-6">
@@ -353,7 +452,7 @@ export default function AdminProductsPage() {
                 새로고침
               </Button>
               <Link href="/admin/upload">
-                <Button className="bg-blue-600 hover:bg-blue-700">
+                <Button className="bg-emerald-600 hover:bg-emerald-700">
                   <Plus className="w-4 h-4 mr-2" />
                   새 상품 업로드
                 </Button>
@@ -442,10 +541,10 @@ export default function AdminProductsPage() {
         </Card>
         {/* 일괄 작업 툴바 */}
         {selectedProducts.length > 0 && (
-          <Card className="mb-4 border-blue-200 bg-blue-50">
+          <Card className="mb-4 border-emerald-200 bg-emerald-50">
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
-                <span className="text-sm text-blue-700 font-medium">
+                <span className="text-sm text-emerald-700 font-medium">
                   {selectedProducts.length}개 상품 선택됨
                 </span>
                 <div className="flex gap-2">
@@ -537,7 +636,7 @@ export default function AdminProductsPage() {
 
             {/* 상품 목록 */}
             {sortedAndFilteredProducts.map(product => (
-              <Card key={product._id} className={`hover:shadow-md transition-all ${selectedProducts.includes(product._id) ? 'ring-2 ring-blue-200 bg-blue-50' : ''}`}>
+              <Card key={product._id} className={`hover:shadow-md transition-all ${selectedProducts.includes(product._id) ? 'ring-2 ring-emerald-200 bg-emerald-50' : ''}`}>
                 <CardContent className="p-4">
                   <div className="flex items-start gap-4">
                     {/* 체크박스 */}
@@ -606,7 +705,7 @@ export default function AdminProductsPage() {
                     </div>
 
                     {/* 액션 버튼 */}
-                    <div className="flex items-center gap-1">
+                    <div className="flex items-center gap-1 shrink-0 relative z-10">
                       <Button
                         variant="outline"
                         size="sm"
@@ -622,10 +721,12 @@ export default function AdminProductsPage() {
                         </Button>
                       </Link>
                       
-                      <Button 
-                        variant="outline" 
+                      <Button
+                        type="button"
+                        variant="outline"
                         size="sm"
                         onClick={() => setEditingProduct(product._id)}
+                        aria-label="상품 수정"
                       >
                         <Edit className="w-4 h-4" />
                       </Button>
@@ -654,7 +755,7 @@ export default function AdminProductsPage() {
           <CardContent>
             <div className="grid grid-cols-2 md:grid-cols-5 gap-4 text-center">
               <div>
-                <div className="text-2xl font-bold text-blue-600">{products.length}</div>
+                <div className="text-2xl font-bold text-emerald-600">{products.length}</div>
                 <div className="text-sm text-gray-600">총 상품</div>
               </div>
               <div>
@@ -676,7 +777,7 @@ export default function AdminProductsPage() {
                 <div className="text-sm text-gray-600">총 다운로드</div>
               </div>
               <div>
-                <div className="text-2xl font-bold text-purple-600">
+                <div className="text-2xl font-bold text-teal-600">
                   {products.filter(p => p.price === 0).length}
                 </div>
                 <div className="text-sm text-gray-600">무료 상품</div>
@@ -684,7 +785,114 @@ export default function AdminProductsPage() {
             </div>
           </CardContent>
         </Card>
+
+        {/* 상품 수정 모달 */}
+        {editingProduct && editDraft && (
+          <div
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50"
+            role="presentation"
+            onClick={closeEditModal}
+          >
+            <div
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="edit-product-title"
+              className="bg-white rounded-lg shadow-xl max-w-lg w-full max-h-[90vh] overflow-y-auto p-6"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <h2 id="edit-product-title" className="text-lg font-semibold text-gray-900 mb-4">
+                상품 수정
+              </h2>
+              <div className="space-y-4">
+                <div>
+                  <Label htmlFor="edit-title">제목</Label>
+                  <Input
+                    id="edit-title"
+                    value={editDraft.title}
+                    onChange={(e) => setEditDraft((d) => (d ? { ...d, title: e.target.value } : d))}
+                    className="mt-1"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="edit-desc">설명</Label>
+                  <Textarea
+                    id="edit-desc"
+                    value={editDraft.description}
+                    onChange={(e) => setEditDraft((d) => (d ? { ...d, description: e.target.value } : d))}
+                    className="mt-1 min-h-[100px]"
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <Label htmlFor="edit-price">판매가 (원)</Label>
+                    <Input
+                      id="edit-price"
+                      type="number"
+                      min={0}
+                      value={editDraft.price}
+                      onChange={(e) => setEditDraft((d) => (d ? { ...d, price: e.target.value } : d))}
+                      className="mt-1"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="edit-original">정가 (원, 비우면 없음)</Label>
+                    <Input
+                      id="edit-original"
+                      type="number"
+                      min={0}
+                      value={editDraft.originalPrice}
+                      onChange={(e) => setEditDraft((d) => (d ? { ...d, originalPrice: e.target.value } : d))}
+                      className="mt-1"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <Label htmlFor="edit-category">카테고리</Label>
+                  <select
+                    id="edit-category"
+                    value={editDraft.category}
+                    onChange={(e) => setEditDraft((d) => (d ? { ...d, category: e.target.value } : d))}
+                    className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                  >
+                    {Object.entries(categories).map(([key, label]) => (
+                      <option key={key} value={key}>
+                        {label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <Label htmlFor="edit-author">저자</Label>
+                  <Input
+                    id="edit-author"
+                    value={editDraft.author}
+                    onChange={(e) => setEditDraft((d) => (d ? { ...d, author: e.target.value } : d))}
+                    className="mt-1"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="edit-tags">태그 (쉼표로 구분)</Label>
+                  <Input
+                    id="edit-tags"
+                    value={editDraft.tagsStr}
+                    onChange={(e) => setEditDraft((d) => (d ? { ...d, tagsStr: e.target.value } : d))}
+                    className="mt-1"
+                    placeholder="예: 모의고사, 영어"
+                  />
+                </div>
+              </div>
+              <div className="flex justify-end gap-2 mt-6">
+                <Button type="button" variant="outline" onClick={closeEditModal} disabled={savingEdit}>
+                  취소
+                </Button>
+                <Button type="button" onClick={handleSaveEdit} disabled={savingEdit}>
+                  {savingEdit ? '저장 중…' : '저장'}
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
-    </Layout>
+    </AdminLayout>
   )
 }

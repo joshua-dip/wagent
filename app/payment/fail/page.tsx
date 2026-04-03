@@ -63,7 +63,7 @@ function PaymentFailContent() {
             {/* 액션 버튼 */}
             <div className="flex flex-col gap-3 pt-4">
               <Button 
-                className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700"
+                className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700"
                 onClick={() => router.back()}
               >
                 <RefreshCw className="w-4 h-4 mr-2" />

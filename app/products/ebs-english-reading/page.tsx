@@ -7,15 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import Layout from "@/components/Layout"
-import { 
-  FileText, 
-  Star, 
-  Download, 
-  ShoppingCart, 
-  Eye,
-  Calendar,
-  BookOpen
-} from "lucide-react"
+import { FileText, Download, ShoppingCart, Eye } from "lucide-react"
 import Link from "next/link"
 
 export default function EBSEnglishReadingPage() {
@@ -101,7 +93,7 @@ export default function EBSEnglishReadingPage() {
     return (
       <Layout>
         <div className="text-center py-12">
-          <div className="w-8 h-8 border-4 border-purple-600 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+          <div className="w-8 h-8 border-4 border-teal-600 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
           <p className="text-gray-600">상품을 불러오는 중...</p>
         </div>
       </Layout>
@@ -112,29 +104,15 @@ export default function EBSEnglishReadingPage() {
     <Layout>
       <div className="bg-gray-50 -m-3 sm:-m-6 min-h-full">
       {/* 헤더 섹션 */}
-      <div className="bg-gradient-to-r from-purple-600 to-pink-600 text-white py-12">
+      <div className="bg-gradient-to-r from-teal-600 to-pink-600 text-white py-12">
         <div className="px-6 sm:px-8 lg:px-12">
           <div className="flex items-center mb-4">
             <FileText className="h-8 w-8 mr-3" />
             <h1 className="text-3xl font-bold">EBS 수능특강 영어독해</h1>
           </div>
-          <p className="text-xl text-purple-100 mb-6">
+          <p className="text-xl text-teal-100">
             2025학년도 EBS 수능특강 영어독해연습 완벽 대비 자료
           </p>
-          <div className="flex items-center space-x-6 text-purple-100">
-            <div className="flex items-center">
-              <BookOpen className="h-5 w-5 mr-2" />
-              <span>{allProducts.length}개 상품</span>
-            </div>
-            <div className="flex items-center">
-              <Star className="h-5 w-5 mr-2 text-yellow-400" />
-              <span>평균 4.7점</span>
-            </div>
-            <div className="flex items-center">
-              <Download className="h-5 w-5 mr-2" />
-              <span>누적 다운로드 2,000+</span>
-            </div>
-          </div>
         </div>
       </div>
 
@@ -155,7 +133,7 @@ export default function EBSEnglishReadingPage() {
                       onClick={() => setSelectedCategory(category.id)}
                       className={`w-full text-left px-3 py-2 rounded-lg transition-colors ${
                         selectedCategory === category.id
-                          ? 'bg-purple-100 text-purple-800 font-medium'
+                          ? 'bg-teal-100 text-teal-800 font-medium'
                           : 'hover:bg-gray-100 text-gray-700'
                       }`}
                     >
@@ -194,7 +172,7 @@ export default function EBSEnglishReadingPage() {
                           <Badge className="bg-green-500 text-white text-xs">무료</Badge>
                         )}
                         {product.isNew && (
-                          <Badge className="bg-blue-500 text-white text-xs">NEW</Badge>
+                          <Badge className="bg-emerald-500 text-white text-xs">NEW</Badge>
                         )}
                         {product.isBestseller && (
                           <Badge className="bg-red-500 text-white text-xs">베스트</Badge>
@@ -260,7 +238,7 @@ export default function EBSEnglishReadingPage() {
                         className={`flex-1 ${
                           (product.isFree === true || product.price === 0)
                             ? 'bg-green-600 hover:bg-green-700'
-                            : 'bg-purple-600 hover:bg-purple-700'
+                            : 'bg-teal-600 hover:bg-teal-700'
                         }`}
                         onClick={() => handlePurchase(product.id)}
                       >

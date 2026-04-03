@@ -53,12 +53,11 @@ export default function WorksheetOrderPage() {
       return
     }
     alert("워크시트 제작 신청이 접수되었습니다. 24시간 내에 연락드리겠습니다.")
-    console.log("워크시트 제작 신청:", formData)
   }
 
   return (
     <Layout>
-      <div className="bg-gradient-to-br from-green-50 via-emerald-50 to-teal-50 -m-3 sm:-m-6 min-h-full">
+      <div className="bg-gradient-to-br from-emerald-50/70 via-teal-50/40 to-slate-50 -m-3 sm:-m-6 min-h-full">
         {/* 헤더 섹션 */}
         <section className="relative overflow-hidden bg-gradient-to-r from-green-600 via-emerald-600 to-teal-600 text-white py-16">
           <div className="absolute inset-0 bg-black/10"></div>
@@ -80,7 +79,7 @@ export default function WorksheetOrderPage() {
               <h1 className="text-4xl md:text-5xl font-bold mb-4">
                 워크시트 제작 신청
               </h1>
-              <p className="text-xl text-green-100 mb-6 max-w-2xl mx-auto">
+              <p className="text-xl text-emerald-50/95 mb-6 max-w-2xl mx-auto">
                 수업에 바로 활용할 수 있는 <span className="text-yellow-300 font-semibold">맞춤형 워크시트</span>를 제작해드립니다
               </p>
             </div>

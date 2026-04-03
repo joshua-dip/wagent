@@ -62,8 +62,11 @@ export async function GET(
       return NextResponse.json({ error: "상품을 찾을 수 없습니다." }, { status: 404 });
     }
 
-    // 무료 상품이 아닌 경우 구매 확인
-    if (product.price > 0) {
+    const isAdmin = currentUser.email === "wnsrb2898@naver.com" ||
+                    currentUser.role === "admin"
+
+    // 무료 상품이 아닌 경우 구매 확인 (관리자는 건너뜀)
+    if (product.price > 0 && !isAdmin) {
       // Purchase 테이블에서 구매 내역 확인
       const purchase = await Purchase.findOne({
         productId: id,

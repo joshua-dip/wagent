@@ -1,180 +1,106 @@
 "use client"
 
 import Link from "next/link"
-import { 
-  Facebook,
-  Twitter,
-  Instagram,
-  Youtube
-} from "lucide-react"
+import { Mail, Phone, MessageCircle } from "lucide-react"
+
+const KAKAO_URL =
+  process.env.NEXT_PUBLIC_KAKAO_CHANNEL_CHAT_URL ?? "https://pf.kakao.com/_qxbvtn/chat"
 
 export default function Footer() {
   const currentYear = new Date().getFullYear()
 
   return (
-    <footer className="bg-gray-900 text-white">
-      {/* 메인 푸터 콘텐츠 */}
-      <div className="px-6 sm:px-8 lg:px-12 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-          {/* 회사 정보 */}
-          <div className="space-y-4">
-            <div className="flex items-center space-x-3">
-              <div className="w-8 h-8 bg-gradient-to-r from-emerald-500 to-teal-600 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-lg">P</span>
+    <footer className="border-t border-slate-200 bg-slate-50 text-slate-600">
+      <div className="max-w-6xl mx-auto px-5 sm:px-8 py-10 sm:py-12">
+        {/* 상단: 브랜드 + 링크 */}
+        <div className="flex flex-col sm:flex-row sm:items-start gap-8 sm:gap-12 mb-8">
+          {/* 브랜드 */}
+          <div className="shrink-0">
+            <div className="flex items-center gap-2 mb-2">
+              <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-emerald-400 to-teal-500 flex items-center justify-center text-white font-bold text-sm shadow-sm">
+                P
               </div>
-              <h3 className="text-xl font-bold">PAYPERIC</h3>
+              <span className="font-bold text-slate-900 text-lg tracking-tight">PAYPERIC</span>
             </div>
-            <p className="text-gray-300 leading-relaxed">
-              영어 교육 전문가들이 제작한 고품질 학습 자료를 맞춤형으로 이용해보세요.
-              선생님의 수업 목적과 학생 수준에 꼭 맞는 자료를 주문 제작해드립니다.
+            <p className="text-sm text-slate-500 max-w-[240px] leading-relaxed">
+              고등 영어 서술형 자료를 한곳에서 구매하고 바로 다운로드하세요.
             </p>
           </div>
 
-          {/* 서비스 */}
-          <div className="space-y-4">
-            <h4 className="text-lg font-semibold">서비스</h4>
-            <ul className="space-y-2 text-gray-300">
-              <li>
-                <Link href="/products/2025-english-mock" className="hover:text-white transition-colors">
-                  2025 영어모의고사
-                </Link>
-              </li>
-              <li>
-                <Link href="/products/2024-english-mock" className="hover:text-white transition-colors">
-                  2024 영어모의고사
-                </Link>
-              </li>
-              <li>
-                <Link href="/products/ebs-special-english" className="hover:text-white transition-colors">
-                  EBS수능특강영어
-                </Link>
-              </li>
-              <li>
-                <Link href="/products/free" className="hover:text-white transition-colors">
-                  무료 자료
-                </Link>
-              </li>
-              <li>
-                <Link href="/custom-order" className="hover:text-white transition-colors">
-                  주문 제작
-                </Link>
-              </li>
-            </ul>
-          </div>
+          {/* 링크 그룹 */}
+          <div className="flex flex-wrap gap-x-12 gap-y-6 text-sm">
+            <div>
+              <h4 className="font-semibold text-slate-900 mb-2.5">서비스</h4>
+              <ul className="space-y-1.5">
+                <li>
+                  <Link href="/" className="hover:text-emerald-700 transition-colors">서술형 자료</Link>
+                </li>
+                <li>
+                  <Link href="/products/free" className="hover:text-emerald-700 transition-colors">무료 자료</Link>
+                </li>
+                <li>
+                  <Link href="/my/purchases" className="hover:text-emerald-700 transition-colors">구매 내역</Link>
+                </li>
+              </ul>
+            </div>
 
-          {/* 고객 지원 */}
-          <div className="space-y-4">
-            <h4 className="text-lg font-semibold">고객 지원</h4>
-            <ul className="space-y-2 text-gray-300">
-              <li>
-                <Link href="/auth/simple-signup" className="hover:text-white transition-colors">
-                  카카오 가입
-                </Link>
-              </li>
-              <li>
-                <Link href="/auth/simple-signin" className="hover:text-white transition-colors">
-                  로그인
-                </Link>
-              </li>
-              <li>
-                <a href="mailto:payperic@naver.com" className="hover:text-white transition-colors">
-                  고객 문의
-                </a>
-              </li>
-              <li>
-                <a href="tel:010-7927-0806" className="hover:text-white transition-colors">
-                  전화 상담
-                </a>
-              </li>
-            </ul>
-          </div>
+            <div>
+              <h4 className="font-semibold text-slate-900 mb-2.5">고객 지원</h4>
+              <ul className="space-y-1.5">
+                <li>
+                  <a
+                    href={KAKAO_URL}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 hover:text-emerald-700 transition-colors"
+                  >
+                    <MessageCircle className="w-3.5 h-3.5" />
+                    카카오톡 문의
+                  </a>
+                </li>
+                <li>
+                  <a href="mailto:payperic@naver.com" className="inline-flex items-center gap-1.5 hover:text-emerald-700 transition-colors">
+                    <Mail className="w-3.5 h-3.5" />
+                    payperic@naver.com
+                  </a>
+                </li>
+                <li>
+                  <a href="tel:010-7927-0806" className="inline-flex items-center gap-1.5 hover:text-emerald-700 transition-colors">
+                    <Phone className="w-3.5 h-3.5" />
+                    010-7927-0806
+                  </a>
+                </li>
+              </ul>
+            </div>
 
-          {/* 법적 정보 */}
-          <div className="space-y-4">
-            <h4 className="text-lg font-semibold">법적 정보</h4>
-            <ul className="space-y-2 text-gray-300">
-              <li>
-                <Link href="/terms" className="hover:text-white transition-colors">
-                  이용약관
-                </Link>
-              </li>
-              <li>
-                <Link href="/privacy" className="hover:text-white transition-colors">
-                  개인정보처리방침
-                </Link>
-              </li>
-              <li>
-                <Link href="/refund-policy" className="hover:text-white transition-colors">
-                  환불정책
-                </Link>
-              </li>
-            </ul>
-            
-            {/* 소셜 미디어 */}
-            <div className="pt-4">
-              <h5 className="text-sm font-medium mb-3">소셜 미디어</h5>
-              <div className="flex space-x-3">
-                <a 
-                  href="#" 
-                  className="w-8 h-8 bg-gray-800 rounded-full flex items-center justify-center hover:bg-blue-600 transition-colors"
-                  aria-label="Facebook"
-                >
-                  <Facebook className="h-4 w-4" />
-                </a>
-                <a 
-                  href="#" 
-                  className="w-8 h-8 bg-gray-800 rounded-full flex items-center justify-center hover:bg-blue-400 transition-colors"
-                  aria-label="Twitter"
-                >
-                  <Twitter className="h-4 w-4" />
-                </a>
-                <a 
-                  href="#" 
-                  className="w-8 h-8 bg-gray-800 rounded-full flex items-center justify-center hover:bg-pink-600 transition-colors"
-                  aria-label="Instagram"
-                >
-                  <Instagram className="h-4 w-4" />
-                </a>
-                <a 
-                  href="#" 
-                  className="w-8 h-8 bg-gray-800 rounded-full flex items-center justify-center hover:bg-red-600 transition-colors"
-                  aria-label="YouTube"
-                >
-                  <Youtube className="h-4 w-4" />
-                </a>
-              </div>
+            <div>
+              <h4 className="font-semibold text-slate-900 mb-2.5">정책</h4>
+              <ul className="space-y-1.5">
+                <li>
+                  <Link href="/terms" className="hover:text-emerald-700 transition-colors">이용약관</Link>
+                </li>
+                <li>
+                  <Link href="/privacy" className="hover:text-emerald-700 transition-colors">개인정보처리방침</Link>
+                </li>
+                <li>
+                  <Link href="/refund-policy" className="hover:text-emerald-700 transition-colors">환불정책</Link>
+                </li>
+              </ul>
             </div>
           </div>
         </div>
-      </div>
 
-      {/* 하단 저작권 */}
-      <div className="border-t border-gray-800">
-        <div className="px-6 sm:px-8 lg:px-12 py-6">
-          <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
-            <div className="text-gray-400 text-sm">
-              <p>© {currentYear} <span className="font-semibold text-white">페이퍼릭 (Payperic)</span>. All rights reserved.</p>
-              <p className="mt-1">
-                대표자: 박준규 | 사업자등록번호: 246-47-01070 | 통신판매사업신고: 제 2025-부산해운대-1495 호
-              </p>
-              <p className="mt-1">
-                주소: 부산광역시 해운대구 센텀중앙로 48, 1304호(우동, 에이스하이테크21) | 전화: 010-7927-0806
-              </p>
-            </div>
-            <div className="flex items-center space-x-6 text-sm text-gray-400">
-              <Link href="/terms" className="hover:text-white transition-colors">
-                이용약관
-              </Link>
-              <Link href="/privacy" className="hover:text-white transition-colors">
-                개인정보처리방침
-              </Link>
-              <Link href="/refund-policy" className="hover:text-white transition-colors">
-                환불정책
-              </Link>
-              <span className="text-gray-600">|</span>
-              <span>Payperic</span>
-            </div>
-          </div>
+        {/* 구분선 + 사업자 정보 */}
+        <div className="border-t border-slate-200 pt-6 text-xs text-slate-400 space-y-1">
+          <p>
+            © {currentYear} 페이퍼릭 (Payperic). All rights reserved.
+          </p>
+          <p>
+            대표자: 박준규 · 사업자등록번호: 246-47-01070 · 통신판매업신고: 제 2025-부산해운대-1495호
+          </p>
+          <p>
+            부산광역시 해운대구 센텀중앙로 48, 1304호(우동, 에이스하이테크21)
+          </p>
         </div>
       </div>
     </footer>

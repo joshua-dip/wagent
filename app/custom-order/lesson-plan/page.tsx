@@ -49,14 +49,13 @@ export default function LessonPlanOrderPage() {
       return
     }
     alert("수업 계획서 제작 신청이 접수되었습니다. 24시간 내에 연락드리겠습니다.")
-    console.log("수업 계획서 제작 신청:", formData)
   }
 
   return (
     <Layout>
-      <div className="bg-gradient-to-br from-purple-50 via-violet-50 to-indigo-50 -m-3 sm:-m-6 min-h-full">
+      <div className="bg-gradient-to-br from-emerald-50/70 via-teal-50/40 to-slate-50 -m-3 sm:-m-6 min-h-full">
         {/* 헤더 섹션 */}
-        <section className="relative overflow-hidden bg-gradient-to-r from-purple-600 via-violet-600 to-indigo-600 text-white py-16">
+        <section className="relative overflow-hidden bg-gradient-to-r from-emerald-600 via-teal-500 to-emerald-700 text-white py-16">
           <div className="absolute inset-0 bg-black/10"></div>
           <div className="relative px-6 sm:px-8 lg:px-12">
             <div className="flex items-center mb-6">
@@ -76,7 +75,7 @@ export default function LessonPlanOrderPage() {
               <h1 className="text-4xl md:text-5xl font-bold mb-4">
                 수업 계획서 제작 신청
               </h1>
-              <p className="text-xl text-purple-100 mb-6 max-w-2xl mx-auto">
+              <p className="text-xl text-emerald-50/95 mb-6 max-w-2xl mx-auto">
                 체계적이고 완성도 높은 <span className="text-yellow-300 font-semibold">수업 계획서와 교안</span>을 제작해드립니다
               </p>
             </div>
@@ -105,7 +104,7 @@ export default function LessonPlanOrderPage() {
                         value={formData.name}
                         onChange={handleInputChange}
                         required
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                         placeholder="이름을 입력하세요"
                       />
                     </div>
@@ -120,7 +119,7 @@ export default function LessonPlanOrderPage() {
                         value={formData.email}
                         onChange={handleInputChange}
                         required
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                         placeholder="이메일을 입력하세요"
                       />
                     </div>
@@ -136,7 +135,7 @@ export default function LessonPlanOrderPage() {
                         value={formData.grade}
                         onChange={handleInputChange}
                         required
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                       >
                         <option value="">학년을 선택하세요</option>
                         <option value="grade1">고1</option>
@@ -153,7 +152,7 @@ export default function LessonPlanOrderPage() {
                         value={formData.lessonCount}
                         onChange={handleInputChange}
                         required
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                       >
                         <option value="">수업 차시를 선택하세요</option>
                         <option value="1-5">1-5차시</option>
@@ -169,7 +168,7 @@ export default function LessonPlanOrderPage() {
                     {isAuthenticated ? (
                       <Button 
                         type="submit"
-                        className="w-full bg-gradient-to-r from-purple-600 to-violet-600 hover:from-purple-700 hover:to-violet-700 text-white py-4 text-lg font-semibold"
+                        className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white py-4 text-lg font-semibold"
                       >
                         수업 계획서 제작 신청하기
                       </Button>
@@ -178,7 +177,7 @@ export default function LessonPlanOrderPage() {
                         <p className="text-gray-600 mb-4">수업 계획서 제작 신청을 위해 로그인이 필요합니다.</p>
                         <div className="flex gap-4 justify-center">
                           <Link href="/auth/simple-signin">
-                            <Button className="bg-purple-600 hover:bg-purple-700">
+                            <Button className="bg-emerald-600 hover:bg-emerald-700">
                               로그인
                             </Button>
                           </Link>

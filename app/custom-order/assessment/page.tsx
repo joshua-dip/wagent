@@ -48,14 +48,13 @@ export default function AssessmentOrderPage() {
       return
     }
     alert("평가 도구 제작 신청이 접수되었습니다. 24시간 내에 연락드리겠습니다.")
-    console.log("평가 도구 제작 신청:", formData)
   }
 
   return (
     <Layout>
-      <div className="bg-gradient-to-br from-amber-50 via-yellow-50 to-orange-50 -m-3 sm:-m-6 min-h-full">
+      <div className="bg-gradient-to-br from-emerald-50/70 via-teal-50/40 to-slate-50 -m-3 sm:-m-6 min-h-full">
         {/* 헤더 섹션 */}
-        <section className="relative overflow-hidden bg-gradient-to-r from-amber-600 via-yellow-600 to-orange-600 text-white py-16">
+        <section className="relative overflow-hidden bg-gradient-to-r from-emerald-600 via-teal-500 to-emerald-700 text-white py-16">
           <div className="absolute inset-0 bg-black/10"></div>
           <div className="relative px-6 sm:px-8 lg:px-12">
             <div className="flex items-center mb-6">
@@ -75,7 +74,7 @@ export default function AssessmentOrderPage() {
               <h1 className="text-4xl md:text-5xl font-bold mb-4">
                 평가 도구 제작 신청
               </h1>
-              <p className="text-xl text-amber-100 mb-6 max-w-2xl mx-auto">
+              <p className="text-xl text-emerald-50/95 mb-6 max-w-2xl mx-auto">
                 체계적이고 공정한 <span className="text-yellow-300 font-semibold">평가 도구와 루브릭</span>을 제작해드립니다
               </p>
             </div>
@@ -102,7 +101,7 @@ export default function AssessmentOrderPage() {
                         value={formData.assessmentType}
                         onChange={handleInputChange}
                         required
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                       >
                         <option value="">평가 유형을 선택하세요</option>
                         <option value="rubric">루브릭</option>
@@ -121,7 +120,7 @@ export default function AssessmentOrderPage() {
                         value={formData.grade}
                         onChange={handleInputChange}
                         required
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                       >
                         <option value="">학년을 선택하세요</option>
                         <option value="grade1">고1</option>
@@ -136,7 +135,7 @@ export default function AssessmentOrderPage() {
                     {isAuthenticated ? (
                       <Button 
                         type="submit"
-                        className="w-full bg-gradient-to-r from-amber-600 to-yellow-600 hover:from-amber-700 hover:to-yellow-700 text-white py-4 text-lg font-semibold"
+                        className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white py-4 text-lg font-semibold"
                       >
                         평가 도구 제작 신청하기
                       </Button>
@@ -145,7 +144,7 @@ export default function AssessmentOrderPage() {
                         <p className="text-gray-600 mb-4">평가 도구 제작 신청을 위해 로그인이 필요합니다.</p>
                         <div className="flex gap-4 justify-center">
                           <Link href="/auth/simple-signin">
-                            <Button className="bg-amber-600 hover:bg-amber-700">
+                            <Button className="bg-emerald-600 hover:bg-emerald-700">
                               로그인
                             </Button>
                           </Link>

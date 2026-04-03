@@ -26,7 +26,7 @@ export default function SimpleSignInPage() {
           <h2 className="text-4xl font-bold bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 bg-clip-text text-transparent">
             PAYPERIC
           </h2>
-          <p className="mt-3 text-lg text-gray-600">디지털 마켓플레이스에 오신 것을 환영합니다</p>
+          <p className="mt-3 text-lg text-gray-600">고등 영어 서술형 자료, 한곳에서</p>
         </div>
 
         <Card className="shadow-2xl border-0 bg-white/80 backdrop-blur-sm">

@@ -11,7 +11,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
-import Layout from '@/components/Layout'
+import AdminLayout from '@/components/AdminLayout'
 import { 
   Upload, 
   FileText, 
@@ -100,6 +100,7 @@ export default function AdminUploadPage() {
   const [uploadSuccess, setUploadSuccess] = useState(false)
   const [uploadError, setUploadError] = useState<string | null>(null)
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
+  const [fileError, setFileError] = useState<string | null>(null)
   const [selectedMainCategory, setSelectedMainCategory] = useState<string>('')
   const successRef = useRef<HTMLDivElement>(null)
   
@@ -126,9 +127,9 @@ export default function AdminUploadPage() {
     }
   })
 
-  // 무료 상품 체크 시 가격을 자동으로 0으로 설정
   const watchIsFree = watch('isFree')
   const watchCategory = watch('category')
+  const watchTags = watch('tags')
   
   useEffect(() => {
     if (watchIsFree) {
@@ -137,7 +138,6 @@ export default function AdminUploadPage() {
     }
   }, [watchIsFree, setValue])
 
-  // 공유자료 카테고리 선택 시 자동으로 무료로 설정
   useEffect(() => {
     if (watchCategory === 'shared-materials') {
       setValue('isFree', true)
@@ -146,15 +146,24 @@ export default function AdminUploadPage() {
     }
   }, [watchCategory, setValue])
 
+  useEffect(() => {
+    const tags = (watchTags || '').split(',').map(t => t.trim()).filter(Boolean)
+    if (tags.includes('빈칸재배열형')) {
+      setValue('isFree', true)
+      setValue('price', 0)
+      setValue('originalPrice', undefined)
+    }
+  }, [watchTags, setValue])
+
   // 로딩 중이면 로딩 표시
   if (status === 'loading' || simpleAuth.isLoading) {
     return (
-      <Layout>
+      <AdminLayout>
         <div className="text-center py-12">
-          <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+          <div className="w-8 h-8 border-4 border-emerald-600 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
           <p className="text-gray-600">로딩 중...</p>
         </div>
-      </Layout>
+      </AdminLayout>
     )
   }
 
@@ -167,7 +176,7 @@ export default function AdminUploadPage() {
   // 관리자가 아닌 경우
   if (!isAdmin) {
     return (
-      <Layout>
+      <AdminLayout>
         <div className="flex items-center justify-center py-20">
           <Card className="w-full max-w-md">
             <CardContent className="text-center p-6">
@@ -180,7 +189,7 @@ export default function AdminUploadPage() {
             </CardContent>
           </Card>
         </div>
-      </Layout>
+      </AdminLayout>
     )
   }
 
@@ -188,27 +197,29 @@ export default function AdminUploadPage() {
     const file = e.target.files?.[0]
     if (file) {
       if (file.type !== 'application/pdf') {
-        alert('PDF 파일만 업로드 가능합니다.')
+        setFileError('PDF 파일만 업로드 가능합니다.')
         e.target.value = ''
         return
       }
       if (file.size > 50 * 1024 * 1024) {
-        alert('파일 크기는 50MB를 초과할 수 없습니다.')
+        setFileError('파일 크기는 50MB를 초과할 수 없습니다.')
         e.target.value = ''
         return
       }
+      setFileError(null)
       setSelectedFile(file)
     }
   }
 
   const onSubmit = async (data: Omit<ProductFormData, 'pdfFile'>) => {
     if (!selectedFile) {
-      alert('PDF 파일을 선택해주세요.')
+      setFileError('PDF 파일을 선택해주세요.')
       return
     }
 
     setIsUploading(true)
     setUploadError(null)
+    setFileError(null)
 
     try {
       const formData = new FormData()
@@ -240,6 +251,7 @@ export default function AdminUploadPage() {
 
       if (response.ok) {
         setUploadSuccess(true)
+        setFileError(null)
         reset()
         setSelectedFile(null)
         setSelectedMainCategory('')
@@ -263,8 +275,8 @@ export default function AdminUploadPage() {
   }
 
   return (
-    <Layout>
-      <div className="bg-gradient-to-br from-blue-50 via-white to-purple-50 -m-3 sm:-m-6 min-h-full py-8 px-6 sm:px-8 lg:px-12">
+    <AdminLayout>
+      <div className="bg-white -m-3 sm:-m-6 min-h-full py-8 px-6 sm:px-8 lg:px-12">
       <div className="max-w-4xl mx-auto">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">상품 업로드</h1>
@@ -307,7 +319,7 @@ export default function AdminUploadPage() {
 
         <Card className="shadow-xl border-0">
           <CardHeader>
-            <CardTitle className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+            <CardTitle className="text-2xl font-bold bg-gradient-to-r from-emerald-500 to-teal-500 bg-clip-text text-transparent">
               새 상품 등록
             </CardTitle>
           </CardHeader>
@@ -319,7 +331,7 @@ export default function AdminUploadPage() {
                   <Upload className="w-4 h-4" />
                   PDF 파일 <span className="text-red-500">*</span>
                 </label>
-                <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-blue-400 transition-colors">
+                <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-emerald-400 transition-colors">
                   <input
                     id="pdfFile"
                     type="file"
@@ -345,6 +357,12 @@ export default function AdminUploadPage() {
                     )}
                   </label>
                 </div>
+                {fileError && (
+                  <p className="text-red-500 text-sm mt-2 flex items-center gap-1.5">
+                    <AlertCircle className="w-4 h-4 flex-shrink-0" />
+                    {fileError}
+                  </p>
+                )}
               </div>
 
               {/* 제목 */}
@@ -436,7 +454,7 @@ export default function AdminUploadPage() {
                       setSelectedMainCategory(e.target.value)
                       setValue('category', '') // 하위 카테고리 초기화
                     }}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500"
                   >
                     <option value="">메인 카테고리 선택</option>
                     {mainCategories.map(cat => (
@@ -452,7 +470,7 @@ export default function AdminUploadPage() {
                   <select
                     {...register('category')}
                     disabled={!selectedMainCategory}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
                   >
                     <option value="">
                       {selectedMainCategory ? '세부 유형 선택' : '먼저 메인 카테고리를 선택하세요'}
@@ -486,18 +504,61 @@ export default function AdminUploadPage() {
                   <Tag className="w-4 h-4" />
                   태그 (선택사항)
                 </label>
+                <div className="space-y-2">
+                  <div className="flex flex-wrap gap-1.5">
+                    {['고1', '고2', '고3'].map(tag => {
+                      const current = (watch('tags') || '').split(',').map(t => t.trim()).filter(Boolean)
+                      const active = current.includes(tag)
+                      return (
+                        <button
+                          key={tag}
+                          type="button"
+                          onClick={() => {
+                            const next = active ? current.filter(t => t !== tag) : [...current, tag]
+                            setValue('tags', next.join(', '))
+                          }}
+                          className={`px-3 py-1 rounded-full text-xs font-semibold border transition-colors ${
+                            active
+                              ? 'bg-emerald-100 border-emerald-300 text-emerald-800'
+                              : 'bg-slate-50 border-slate-200 text-slate-500 hover:border-emerald-300 hover:text-emerald-700'
+                          }`}
+                        >{tag}</button>
+                      )
+                    })}
+                    <span className="w-px h-5 bg-slate-200 self-center mx-1" />
+                    {['빈칸재배열형(주제)', '빈칸재배열형(어법)', '요약문조건영작형'].map(tag => {
+                      const current = (watch('tags') || '').split(',').map(t => t.trim()).filter(Boolean)
+                      const active = current.includes(tag)
+                      return (
+                        <button
+                          key={tag}
+                          type="button"
+                          onClick={() => {
+                            const next = active ? current.filter(t => t !== tag) : [...current, tag]
+                            setValue('tags', next.join(', '))
+                          }}
+                          className={`px-3 py-1 rounded-full text-xs font-semibold border transition-colors ${
+                            active
+                              ? 'bg-teal-100 border-teal-300 text-teal-800'
+                              : 'bg-slate-50 border-slate-200 text-slate-500 hover:border-teal-300 hover:text-teal-700'
+                          }`}
+                        >{tag}</button>
+                      )
+                    })}
+                  </div>
+                </div>
                 <Input
                   {...register('tags')}
-                  placeholder="태그를 쉼표(,)로 구분하여 입력하세요. 예: React, JavaScript, 튜토리얼"
+                  placeholder="태그를 쉼표(,)로 구분하여 입력하세요. 예: 고1, 빈칸재배열형, 18번"
                 />
-                <p className="text-sm text-gray-500">검색에 도움이 되는 키워드를 입력하세요</p>
+                <p className="text-sm text-gray-500">프리셋을 클릭하거나 직접 입력하세요</p>
               </div>
 
               {/* 제출 버튼 */}
               <Button
                 type="submit"
                 disabled={isUploading}
-                className="w-full py-3 text-lg font-semibold bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white"
+                className="w-full py-3 text-lg font-semibold bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white"
               >
                 {isUploading ? (
                   <div className="flex items-center gap-2">
@@ -513,6 +574,6 @@ export default function AdminUploadPage() {
         </Card>
       </div>
       </div>
-    </Layout>
+    </AdminLayout>
   )
 }

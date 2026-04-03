@@ -59,7 +59,6 @@ export default function MultipleChoiceOrderPage() {
       return
     }
     alert("객관식 자료 제작 신청이 접수되었습니다. 24시간 내에 연락드리겠습니다.")
-    console.log("객관식 자료 제작 신청:", formData)
   }
 
   const questionTypes = [
@@ -87,9 +86,9 @@ export default function MultipleChoiceOrderPage() {
 
   return (
     <Layout>
-      <div className="bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 -m-3 sm:-m-6 min-h-full">
+      <div className="bg-gradient-to-br from-emerald-50/70 via-teal-50/40 to-slate-50 -m-3 sm:-m-6 min-h-full">
         {/* 헤더 섹션 */}
-        <section className="relative overflow-hidden bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 text-white py-16">
+        <section className="relative overflow-hidden bg-gradient-to-r from-emerald-600 via-teal-500 to-emerald-700 text-white py-16">
           <div className="absolute inset-0 bg-black/10"></div>
           <div className="relative px-6 sm:px-8 lg:px-12">
             <div className="flex items-center mb-6">
@@ -109,7 +108,7 @@ export default function MultipleChoiceOrderPage() {
               <h1 className="text-4xl md:text-5xl font-bold mb-4">
                 객관식 자료 맞춤 제작
               </h1>
-              <p className="text-xl text-blue-100 mb-6 max-w-2xl mx-auto">
+              <p className="text-xl text-emerald-50/95 mb-6 max-w-2xl mx-auto">
                 수업과 평가에 최적화된 <span className="text-yellow-300 font-semibold">맞춤형 객관식 문제</span>를 제작해드립니다
               </p>
             </div>
@@ -171,7 +170,7 @@ export default function MultipleChoiceOrderPage() {
                           value={formData.name}
                           onChange={handleInputChange}
                           required
-                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                           placeholder="홍길동"
                         />
                       </div>
@@ -185,7 +184,7 @@ export default function MultipleChoiceOrderPage() {
                           value={formData.email}
                           onChange={handleInputChange}
                           required
-                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                           placeholder="example@email.com"
                         />
                       </div>
@@ -199,7 +198,7 @@ export default function MultipleChoiceOrderPage() {
                           value={formData.phone}
                           onChange={handleInputChange}
                           required
-                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                           placeholder="010-1234-5678"
                         />
                       </div>
@@ -222,7 +221,7 @@ export default function MultipleChoiceOrderPage() {
                           value={formData.questionType}
                           onChange={handleInputChange}
                           required
-                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                         >
                           <option value="">문제 유형을 선택하세요</option>
                           <option value="reading-main">독해 - 주제/제목</option>
@@ -244,7 +243,7 @@ export default function MultipleChoiceOrderPage() {
                           value={formData.sourceType}
                           onChange={handleInputChange}
                           required
-                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                         >
                           <option value="">출처를 선택하세요</option>
                           <option value="mock-exam">모의고사 기출</option>
@@ -264,7 +263,7 @@ export default function MultipleChoiceOrderPage() {
                           onChange={handleInputChange}
                           required
                           min="1"
-                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                           placeholder="10"
                         />
                       </div>
@@ -277,7 +276,7 @@ export default function MultipleChoiceOrderPage() {
                           value={formData.grade}
                           onChange={handleInputChange}
                           required
-                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                         >
                           <option value="">학년을 선택하세요</option>
                           <option value="grade1">고1</option>
@@ -296,7 +295,7 @@ export default function MultipleChoiceOrderPage() {
                         value={formData.difficulty}
                         onChange={handleInputChange}
                         required
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                       >
                         <option value="">난이도를 선택하세요</option>
                         <option value="easy">하 (기본 개념 확인)</option>
@@ -314,7 +313,7 @@ export default function MultipleChoiceOrderPage() {
                         name="topic"
                         value={formData.topic}
                         onChange={handleInputChange}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                         placeholder="예: 환경, 기술, 인문학 등"
                       />
                     </div>
@@ -336,7 +335,7 @@ export default function MultipleChoiceOrderPage() {
                         onChange={handleInputChange}
                         required
                         rows={5}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                         placeholder="예: 2024년 9월 모의고사 22-25번을 활용한 독해 문제 10개 제작. 원문의 난이도는 유지하되, 선지와 오답을 새롭게 구성해주세요."
                       />
                     </div>
@@ -353,7 +352,7 @@ export default function MultipleChoiceOrderPage() {
                           value={formData.deadline}
                           onChange={handleInputChange}
                           required
-                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                         />
                       </div>
                       <div>
@@ -366,7 +365,7 @@ export default function MultipleChoiceOrderPage() {
                           name="budget"
                           value={formData.budget}
                           onChange={handleInputChange}
-                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                           placeholder="예: 50,000원"
                         />
                       </div>
@@ -381,7 +380,7 @@ export default function MultipleChoiceOrderPage() {
                         value={formData.additionalRequests}
                         onChange={handleInputChange}
                         rows={3}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                         placeholder="해설지 포함 여부, 특정 문법 사항 포함/제외, 특정 어휘 수준 등 추가 요청사항을 입력해주세요."
                       />
                     </div>
@@ -392,7 +391,7 @@ export default function MultipleChoiceOrderPage() {
                     {isAuthenticated ? (
                       <Button 
                         type="submit"
-                        className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white py-4 text-lg font-semibold"
+                        className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white py-4 text-lg font-semibold"
                       >
                         객관식 자료 제작 신청하기
                       </Button>
@@ -401,7 +400,7 @@ export default function MultipleChoiceOrderPage() {
                         <p className="text-gray-600 mb-4">객관식 자료 제작 신청을 위해 로그인이 필요합니다.</p>
                         <div className="flex gap-4 justify-center">
                           <Link href="/auth/simple-signin">
-                            <Button className="bg-blue-600 hover:bg-blue-700">
+                            <Button className="bg-emerald-600 hover:bg-emerald-700">
                               로그인
                             </Button>
                           </Link>
@@ -425,19 +424,19 @@ export default function MultipleChoiceOrderPage() {
               <CardContent>
                 <ul className="space-y-2 text-gray-700">
                   <li className="flex items-start">
-                    <span className="text-blue-600 mr-2">•</span>
+                    <span className="text-emerald-600 mr-2">•</span>
                     <span>신청서 접수 후 24시간 내에 상세 견적을 제공해드립니다.</span>
                   </li>
                   <li className="flex items-start">
-                    <span className="text-blue-600 mr-2">•</span>
+                    <span className="text-emerald-600 mr-2">•</span>
                     <span>문항 수와 난이도에 따라 제작 기간과 비용이 달라질 수 있습니다.</span>
                   </li>
                   <li className="flex items-start">
-                    <span className="text-blue-600 mr-2">•</span>
+                    <span className="text-emerald-600 mr-2">•</span>
                     <span>저작권이 있는 자료의 경우, 교육용 목적으로만 사용 가능합니다.</span>
                   </li>
                   <li className="flex items-start">
-                    <span className="text-blue-600 mr-2">•</span>
+                    <span className="text-emerald-600 mr-2">•</span>
                     <span>완성된 자료는 PDF 형식으로 제공되며, 해설 포함 여부는 선택 가능합니다.</span>
                   </li>
                 </ul>
