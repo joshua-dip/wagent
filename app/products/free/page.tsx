@@ -12,13 +12,13 @@ import {
   User,
   Calendar,
   Gift,
-  Sparkles,
   ArrowRight,
   CheckCircle2,
   Loader2,
 } from "lucide-react"
 import Layout from "@/components/Layout"
 import { cn } from "@/lib/utils"
+import { fileFormatsSummary } from "@/lib/productFileFormats"
 
 interface Product {
   _id: string
@@ -34,6 +34,9 @@ interface Product {
   downloadCount: number
   rating: number
   reviewCount: number
+  originalFileName?: string
+  hwpFilePath?: string
+  hwpOriginalFileName?: string
 }
 
 interface ApiResponse {
@@ -55,14 +58,15 @@ interface ApiResponse {
 }
 
 const CATEGORY_LABELS: Record<string, string> = {
-  "shared-materials": "공유자료",
   "original-translation": "원문과 해석",
   "lecture-material": "강의용자료",
   "class-material": "수업용자료",
   "line-translation": "한줄해석",
   "english-writing": "영작하기",
   "translation-writing": "해석쓰기",
-  "workbook-blanks": "워크북",
+  "workbook-blanks": "워크북 빈칸쓰기",
+  "workbook-word-order": "워크북 낱말배열",
+  "workbook-grammar-choice": "워크북 어법 양자택일",
   "order-questions": "글의순서",
   "insertion-questions": "문장삽입",
 }
@@ -78,15 +82,56 @@ function getVisiblePages(current: number, total: number): number[] {
   return pages
 }
 
+/** examRound 쿼리 값 — API `MOCK_EXAM_TITLE_NEEDLES`와 동일 키 */
+const MOCK_EXAM_FILTERS = [
+  { value: "all", label: "전체" },
+  { value: "26-03", label: "26년 3월 모의고사" },
+  { value: "26-06", label: "26년 6월 모의고사" },
+  { value: "26-09", label: "26년 9월 모의고사" },
+  { value: "25-06", label: "25년 6월 모의고사" },
+  { value: "25-10", label: "25년 10월 모의고사" },
+]
+
+const GRADE_FILTERS = [
+  { value: "all", label: "전체" },
+  { value: "1", label: "고1" },
+  { value: "2", label: "고2" },
+  { value: "3", label: "고3" },
+]
+
+const FILE_FORMAT_FILTERS = [
+  { value: "all" as const, label: "전체" },
+  { value: "pdf" as const, label: "PDF만" },
+  { value: "hwp" as const, label: "HWP만" },
+]
+
+const SORT_FILTERS = [
+  { value: "latest" as const, label: "최신순" },
+  { value: "questionAsc" as const, label: "낮은 번호 먼저" },
+  { value: "questionDesc" as const, label: "높은 번호 먼저" },
+]
+
 export default function FreeProductsPage() {
   const { status } = useSession()
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
   const [selectedCategory, setSelectedCategory] = useState("all")
+  const [selectedMockExam, setSelectedMockExam] = useState("all")
+  const [selectedGrade, setSelectedGrade] = useState("all")
+  const [fileFormat, setFileFormat] = useState<"all" | "pdf" | "hwp">("all")
+  const [sortBy, setSortBy] = useState<"latest" | "questionAsc" | "questionDesc">("latest")
   const [pagination, setPagination] = useState<ApiResponse["pagination"] | null>(null)
   const [currentPage, setCurrentPage] = useState(1)
 
-  const fetchProducts = useCallback(async (page: number, category: string) => {
+  const fetchProducts = useCallback(
+    async (
+      page: number,
+      category: string,
+      mockExam: string,
+      grade: string,
+      format: "all" | "pdf" | "hwp",
+      sort: "latest" | "questionAsc" | "questionDesc"
+    ) => {
     try {
       setLoading(true)
       const params = new URLSearchParams({
@@ -95,6 +140,18 @@ export default function FreeProductsPage() {
         free: "true",
         ...(category !== "all" && { category }),
       })
+      if (mockExam !== "all") {
+        params.set("examRound", mockExam)
+      }
+      if (grade !== "all") {
+        params.set("grade", grade)
+      }
+      if (format !== "all") {
+        params.set("fileFormat", format)
+      }
+      if (sort !== "latest") {
+        params.set("sortBy", sort)
+      }
 
       const response = await fetch(`/api/products?${params}`)
       const data: ApiResponse = await response.json()
@@ -113,27 +170,56 @@ export default function FreeProductsPage() {
     } finally {
       setLoading(false)
     }
-  }, [])
+  },
+    []
+  )
 
   useEffect(() => {
-    fetchProducts(1, "all")
+    fetchProducts(1, "all", "all", "all", "all", "latest")
   }, [fetchProducts])
 
   const handleCategoryChange = (category: string) => {
     setSelectedCategory(category)
     setCurrentPage(1)
-    fetchProducts(1, category)
+    fetchProducts(1, category, selectedMockExam, selectedGrade, fileFormat, sortBy)
+  }
+
+  const handleMockExamChange = (mockExam: string) => {
+    setSelectedMockExam(mockExam)
+    setCurrentPage(1)
+    fetchProducts(1, selectedCategory, mockExam, selectedGrade, fileFormat, sortBy)
+  }
+
+  const handleGradeChange = (grade: string) => {
+    setSelectedGrade(grade)
+    setCurrentPage(1)
+    fetchProducts(1, selectedCategory, selectedMockExam, grade, fileFormat, sortBy)
+  }
+
+  const handleFileFormatChange = (format: "all" | "pdf" | "hwp") => {
+    setFileFormat(format)
+    setCurrentPage(1)
+    fetchProducts(1, selectedCategory, selectedMockExam, selectedGrade, format, sortBy)
+  }
+
+  const handleSortChange = (sort: "latest" | "questionAsc" | "questionDesc") => {
+    setSortBy(sort)
+    setCurrentPage(1)
+    fetchProducts(1, selectedCategory, selectedMockExam, selectedGrade, fileFormat, sort)
   }
 
   const handlePageChange = (page: number) => {
-    fetchProducts(page, selectedCategory)
+    fetchProducts(page, selectedCategory, selectedMockExam, selectedGrade, fileFormat, sortBy)
   }
-
 
   const resetFilters = () => {
     setSelectedCategory("all")
+    setSelectedMockExam("all")
+    setSelectedGrade("all")
+    setFileFormat("all")
+    setSortBy("latest")
     setCurrentPage(1)
-    fetchProducts(1, "all")
+    fetchProducts(1, "all", "all", "all", "all", "latest")
   }
 
   const formatFileSize = (bytes: number) => {
@@ -174,7 +260,7 @@ export default function FreeProductsPage() {
             <div className="max-w-3xl mx-auto text-center">
               <p className="inline-flex items-center gap-2 rounded-full border border-emerald-200/25 bg-emerald-500/10 px-4 py-1.5 text-xs sm:text-sm text-emerald-100/95 mb-5 backdrop-blur-sm">
                 <Gift className="w-3.5 h-3.5 text-emerald-300" />
-                로그인 없이 둘러보기 좋은 시작점
+                무료 자료 모음 · 로그인 후 다운로드
               </p>
               <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white tracking-tight leading-tight mb-4">
                 <span className="bg-gradient-to-r from-emerald-200 via-teal-200 to-emerald-100 bg-clip-text text-transparent">
@@ -191,10 +277,6 @@ export default function FreeProductsPage() {
                     <CheckCircle2 className="w-4 h-4 text-emerald-300 shrink-0" />
                     무료 자료 약 <strong className="text-white font-semibold">{totalFree}</strong>건
                   </span>
-                  <span className="flex items-center gap-2">
-                    <Sparkles className="w-4 h-4 text-teal-300 shrink-0" />
-                    결제 없이 미리 품질 확인
-                  </span>
                 </div>
               )}
             </div>
@@ -202,51 +284,127 @@ export default function FreeProductsPage() {
         </section>
 
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-14 space-y-10">
-          {/* 필터 */}
-          <div className="rounded-2xl border border-emerald-100/90 bg-white/80 backdrop-blur-sm shadow-sm shadow-emerald-900/5 p-5 sm:p-6">
-            <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-4">
-              <div>
-                <h2 className="text-lg font-semibold text-slate-900 tracking-tight">카테고리</h2>
-                <p className="text-sm text-slate-500 mt-1">영역을 골라 무료 자료만 모아 볼 수 있어요.</p>
+          <div className="rounded-2xl border border-emerald-100/90 bg-white/80 backdrop-blur-sm shadow-sm shadow-emerald-900/5 p-5 sm:p-6 space-y-5">
+            {/* 모의고사 */}
+            <div>
+              <p className="text-xs font-medium text-slate-500 mb-2">모의고사</p>
+              <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1 scrollbar-thin [scrollbar-width:thin]">
+                {MOCK_EXAM_FILTERS.map(({ value, label }) => (
+                  <button
+                    key={value}
+                    type="button"
+                    onClick={() => handleMockExamChange(value)}
+                    className={cn(
+                      "shrink-0 rounded-full px-3.5 py-2 text-sm font-medium transition-all whitespace-nowrap",
+                      selectedMockExam === value
+                        ? "bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-md shadow-emerald-900/20"
+                        : "bg-slate-100 text-slate-700 hover:bg-emerald-50 hover:text-emerald-800"
+                    )}
+                  >
+                    {label}
+                  </button>
+                ))}
               </div>
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                onClick={resetFilters}
-                className="text-slate-600 hover:text-emerald-700 hover:bg-emerald-50 self-start sm:self-auto"
-              >
-                전체로 초기화
-              </Button>
             </div>
-            <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1 scrollbar-thin [scrollbar-width:thin]">
-              <button
-                type="button"
-                onClick={() => handleCategoryChange("all")}
-                className={cn(
-                  "shrink-0 rounded-full px-4 py-2 text-sm font-medium transition-all",
-                  selectedCategory === "all"
-                    ? "bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-md shadow-emerald-900/20"
-                    : "bg-slate-100 text-slate-700 hover:bg-emerald-50 hover:text-emerald-800"
-                )}
-              >
-                전체
-              </button>
-              {categoryEntries.map(([value, label]) => (
+
+            {/* 학년 */}
+            <div>
+              <p className="text-xs font-medium text-slate-500 mb-2">학년</p>
+              <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1 scrollbar-thin [scrollbar-width:thin]">
+                {GRADE_FILTERS.map(({ value, label }) => (
+                  <button
+                    key={value}
+                    type="button"
+                    onClick={() => handleGradeChange(value)}
+                    className={cn(
+                      "shrink-0 rounded-full px-3.5 py-2 text-sm font-medium transition-all whitespace-nowrap",
+                      selectedGrade === value
+                        ? "bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-md shadow-emerald-900/20"
+                        : "bg-slate-100 text-slate-700 hover:bg-emerald-50 hover:text-emerald-800"
+                    )}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* 파일 형식 */}
+            <div>
+              <p className="text-xs font-medium text-slate-500 mb-2">파일 형식</p>
+              <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1 scrollbar-thin [scrollbar-width:thin]">
+                {FILE_FORMAT_FILTERS.map(({ value, label }) => (
+                  <button
+                    key={value}
+                    type="button"
+                    onClick={() => handleFileFormatChange(value)}
+                    className={cn(
+                      "shrink-0 rounded-full px-3.5 py-2 text-sm font-medium transition-all whitespace-nowrap",
+                      fileFormat === value
+                        ? "bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-md shadow-emerald-900/20"
+                        : "bg-slate-100 text-slate-700 hover:bg-emerald-50 hover:text-emerald-800"
+                    )}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* 문항 번호 순 */}
+            <div>
+              <p className="text-xs font-medium text-slate-500 mb-2">문항 번호 순</p>
+              <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1 scrollbar-thin [scrollbar-width:thin]">
+                {SORT_FILTERS.map(({ value, label }) => (
+                  <button
+                    key={value}
+                    type="button"
+                    onClick={() => handleSortChange(value)}
+                    className={cn(
+                      "shrink-0 rounded-full px-3.5 py-2 text-sm font-medium transition-all whitespace-nowrap",
+                      sortBy === value
+                        ? "bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-md shadow-emerald-900/20"
+                        : "bg-slate-100 text-slate-700 hover:bg-emerald-50 hover:text-emerald-800"
+                    )}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* 카테고리 */}
+            <div>
+              <p className="text-xs font-medium text-slate-500 mb-2">카테고리</p>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                 <button
-                  key={value}
                   type="button"
-                  onClick={() => handleCategoryChange(value)}
+                  onClick={() => handleCategoryChange("all")}
                   className={cn(
-                    "shrink-0 rounded-full px-3.5 py-2 text-sm font-medium transition-all whitespace-nowrap",
-                    selectedCategory === value
+                    "w-full min-h-[2.5rem] rounded-xl px-2 py-2 text-sm font-medium text-center transition-all leading-snug",
+                    selectedCategory === "all"
                       ? "bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-md shadow-emerald-900/20"
                       : "bg-slate-100 text-slate-700 hover:bg-emerald-50 hover:text-emerald-800"
                   )}
                 >
-                  {label}
+                  전체
                 </button>
-              ))}
+                {categoryEntries.map(([value, label]) => (
+                  <button
+                    key={value}
+                    type="button"
+                    onClick={() => handleCategoryChange(value)}
+                    className={cn(
+                      "w-full min-h-[2.5rem] rounded-xl px-2 py-2 text-sm font-medium text-center transition-all leading-snug",
+                      selectedCategory === value
+                        ? "bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-md shadow-emerald-900/20"
+                        : "bg-slate-100 text-slate-700 hover:bg-emerald-50 hover:text-emerald-800"
+                    )}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
 
@@ -275,9 +433,14 @@ export default function FreeProductsPage() {
                           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-emerald-100 to-teal-100 text-emerald-700 group-hover:scale-105 transition-transform">
                             <FileText className="h-5 w-5" strokeWidth={2} />
                           </div>
-                          <Badge className="shrink-0 bg-emerald-500/15 text-emerald-800 border-0 font-medium">
-                            무료
-                          </Badge>
+                          <div className="flex flex-col items-end gap-1 shrink-0">
+                            <Badge className="bg-emerald-500/15 text-emerald-800 border-0 font-medium">
+                              무료
+                            </Badge>
+                            <span className="text-[10px] font-medium text-slate-500 tabular-nums">
+                              {fileFormatsSummary(product)}
+                            </span>
+                          </div>
                         </div>
                         <h3 className="font-semibold text-slate-900 text-lg leading-snug mb-2 group-hover:text-emerald-800 transition-colors line-clamp-2">
                           {product.title}

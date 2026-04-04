@@ -1,5 +1,5 @@
 /**
- * assets/products/ 폴더의 PDF와 assets/products.json 메타데이터를 읽어
+ * assets/products/ 폴더의 PDF·HWP와 assets/products.json 메타데이터를 읽어
  * S3에 업로드하고 MongoDB에 상품을 등록하는 스크립트.
  *
  * 사용법:
@@ -33,6 +33,12 @@ const s3 = new S3Client({
 const BUCKET =
   process.env.S3_BUCKET_NAME || process.env.AWS_S3_BUCKET_NAME || "wagent-products"
 
+function contentTypeForFileName(fileName: string): string {
+  const ext = path.extname(fileName).toLowerCase()
+  if (ext === ".hwp") return "application/x-hwp"
+  return "application/pdf"
+}
+
 async function uploadToS3(buffer: Buffer, fileName: string): Promise<string> {
   const ts = Date.now()
   const safe = fileName.replace(/[^a-zA-Z0-9가-힣_.-]/g, "_")
@@ -43,7 +49,7 @@ async function uploadToS3(buffer: Buffer, fileName: string): Promise<string> {
       Bucket: BUCKET,
       Key: key,
       Body: buffer,
-      ContentType: "application/pdf",
+      ContentType: contentTypeForFileName(fileName),
       Metadata: {
         "original-name": Buffer.from(fileName, "utf8").toString("base64"),
         "uploaded-by": "PAYPERIC",
@@ -68,7 +74,7 @@ const ProductSchema = new mongoose.Schema(
       enum: [
         "shared-materials", "original-translation", "lecture-material",
         "class-material", "line-translation", "english-writing",
-        "translation-writing", "workbook-blanks", "order-questions",
+        "translation-writing", "workbook-blanks", "workbook-word-order", "workbook-grammar-choice", "order-questions",
         "insertion-questions", "ebs-lecture", "ebs-workbook", "ebs-test",
         "reading-comprehension", "reading-strategy", "reading-test",
         "grade1-material", "grade2-material", "grade3-material",
@@ -81,6 +87,9 @@ const ProductSchema = new mongoose.Schema(
     originalFileName: { type: String, required: true },
     fileSize: { type: Number, required: true },
     filePath: { type: String, required: true },
+    hwpFilePath: { type: String },
+    hwpOriginalFileName: { type: String },
+    hwpFileSize: { type: Number, min: 0 },
     thumbnail: { type: String },
     downloadCount: { type: Number, default: 0 },
     rating: { type: Number, default: 0, min: 0, max: 5 },
@@ -114,6 +123,16 @@ interface ProductEntry {
   originalPrice?: number
   category?: string
   isFree?: boolean
+}
+
+function siblingWithExt(relPosix: string, newExt: string): string {
+  const d = path.posix.dirname(relPosix)
+  const b = path.posix.basename(relPosix, path.posix.extname(relPosix))
+  return path.posix.join(d, b + newExt)
+}
+
+function absFromRel(assetsDir: string, relPosix: string): string {
+  return path.join(assetsDir, ...relPosix.split("/"))
 }
 
 // ── 메인 ──────────────────────────────────────────────
@@ -157,24 +176,39 @@ async function main() {
       continue
     }
 
-    // PDF 파일 확인
-    const pdfPath = path.join(assetsDir, entry.file)
-    if (!fs.existsSync(pdfPath)) {
-      console.error(`❌  ${label} 파일 없음: ${entry.file}`)
+    const pdfRel = siblingWithExt(entry.file, ".pdf")
+    const hwpRel = siblingWithExt(entry.file, ".hwp")
+    const pdfAbs = absFromRel(assetsDir, pdfRel)
+    const hwpAbs = absFromRel(assetsDir, hwpRel)
+
+    const hasPdf = fs.existsSync(pdfAbs)
+    const hasHwp = fs.existsSync(hwpAbs)
+    if (!hasPdf && !hasHwp) {
+      console.error(`❌  ${label} PDF/HWP 없음: ${entry.file}`)
       failed++
       continue
     }
 
     try {
-      const buffer = fs.readFileSync(pdfPath)
-      const fileSize = buffer.length
+      let pdfS3Key: string | undefined
+      let pdfSize = 0
+      let hwpS3Key: string | undefined
+      let hwpSize = 0
 
-      // S3 업로드
-      console.log(`📤  ${label} S3 업로드 중…`)
-      const s3Key = await uploadToS3(buffer, entry.file)
+      if (hasPdf) {
+        console.log(`📤  ${label} PDF S3 업로드…`)
+        const buf = fs.readFileSync(pdfAbs)
+        pdfSize = buf.length
+        pdfS3Key = await uploadToS3(buf, pdfRel)
+      }
+      if (hasHwp) {
+        console.log(`📤  ${label} HWP S3 업로드…`)
+        const buf = fs.readFileSync(hwpAbs)
+        hwpSize = buf.length
+        hwpS3Key = await uploadToS3(buf, hwpRel)
+      }
 
-      // DB 저장
-      await Product.create({
+      const doc: Record<string, unknown> = {
         title: entry.title,
         description: entry.description,
         price: entry.price,
@@ -183,14 +217,35 @@ async function main() {
         tags: entry.tags,
         author: "PAYPERIC",
         authorId: "admin",
-        fileName: path.basename(s3Key),
-        originalFileName: entry.file,
-        fileSize,
-        filePath: s3Key,
         isFree: entry.isFree ?? entry.price === 0,
-      })
+      }
 
-      console.log(`✅  ${label} 등록 완료 (${(fileSize / 1024).toFixed(0)} KB)`)
+      if (hasPdf && hasHwp && pdfS3Key && hwpS3Key) {
+        doc.filePath = pdfS3Key
+        doc.originalFileName = pdfRel
+        doc.fileSize = pdfSize
+        doc.fileName = path.basename(pdfS3Key)
+        doc.hwpFilePath = hwpS3Key
+        doc.hwpOriginalFileName = hwpRel
+        doc.hwpFileSize = hwpSize
+      } else if (hasPdf && pdfS3Key) {
+        doc.filePath = pdfS3Key
+        doc.originalFileName = pdfRel
+        doc.fileSize = pdfSize
+        doc.fileName = path.basename(pdfS3Key)
+      } else if (hasHwp && hwpS3Key) {
+        doc.filePath = hwpS3Key
+        doc.originalFileName = hwpRel
+        doc.fileSize = hwpSize
+        doc.fileName = path.basename(hwpS3Key)
+      }
+
+      await Product.create(doc)
+
+      const parts: string[] = []
+      if (hasPdf) parts.push(`PDF ${(pdfSize / 1024).toFixed(0)} KB`)
+      if (hasHwp) parts.push(`HWP ${(hwpSize / 1024).toFixed(0)} KB`)
+      console.log(`✅  ${label} 등록 완료 (${parts.join(", ")})`)
       created++
     } catch (err) {
       console.error(`❌  ${label} 실패:`, err instanceof Error ? err.message : err)

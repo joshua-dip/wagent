@@ -19,6 +19,7 @@ import {
   Check,
   X,
   ArrowRight,
+  ArrowUpDown,
 } from "lucide-react"
 
 interface Product {
@@ -88,11 +89,12 @@ export default function HomePage() {
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
   const [drawerOpen, setDrawerOpen] = useState(false)
+  const [sortByNumber, setSortByNumber] = useState(false)
 
   const fetchProducts = useCallback(async () => {
     try {
       setLoading(true)
-      const response = await fetch("/api/products?limit=100")
+      const response = await fetch("/api/products?limit=100&excludeFree=true")
       const data = await response.json()
       if (response.ok) {
         setProducts(data.products || [])
@@ -108,12 +110,19 @@ export default function HomePage() {
     fetchProducts()
   }, [fetchProducts])
 
-  const filteredProducts = products.filter((p) => {
-    if (!p.tags?.includes(selectedExam)) return false
-    if (selectedGrade && !p.tags?.includes(selectedGrade)) return false
-    if (selectedType !== "all" && !p.tags?.includes(selectedType)) return false
-    return true
-  })
+  const filteredProducts = products
+    .filter((p) => {
+      if (!p.tags?.includes(selectedExam)) return false
+      if (selectedGrade && !p.tags?.includes(selectedGrade)) return false
+      if (selectedType !== "all" && !p.tags?.includes(selectedType)) return false
+      return true
+    })
+    .sort((a, b) => {
+      if (!sortByNumber) return 0
+      const numA = a.tags?.includes("전체") ? -1 : parseInt(a.title.match(/(\d+)번/)?.[1] ?? "999")
+      const numB = b.tags?.includes("전체") ? -1 : parseInt(b.title.match(/(\d+)번/)?.[1] ?? "999")
+      return numA - numB
+    })
 
   const toggleGrade = (gradeId: string) => {
     setSelectedGrade((prev) => (prev === gradeId ? null : gradeId))
@@ -199,22 +208,37 @@ export default function HomePage() {
 
           {/* Type Filter */}
           <div className="sticky top-28 sm:top-[7.25rem] z-20 -mx-1 px-1 py-2 mb-4 sm:mb-6 bg-gradient-to-b from-white via-white/95 to-transparent">
-            <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
-              {QUESTION_TYPES.map((type) => (
-                <button
-                  key={type.id}
-                  type="button"
-                  onClick={() => setSelectedType(type.id)}
-                  className={cn(
-                    "shrink-0 rounded-full px-4 py-2 text-sm font-medium transition-all duration-200",
-                    selectedType === type.id
-                      ? "bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-md shadow-emerald-900/15 ring-2 ring-emerald-200/80 ring-offset-2"
-                      : "bg-white text-slate-700 border border-slate-200 shadow-sm hover:border-emerald-200 hover:bg-emerald-50/80 hover:text-emerald-800"
-                  )}
-                >
-                  {type.label}
-                </button>
-              ))}
+            <div className="flex items-center gap-2">
+              <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none flex-1">
+                {QUESTION_TYPES.map((type) => (
+                  <button
+                    key={type.id}
+                    type="button"
+                    onClick={() => setSelectedType(type.id)}
+                    className={cn(
+                      "shrink-0 rounded-full px-4 py-2 text-sm font-medium transition-all duration-200",
+                      selectedType === type.id
+                        ? "bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-md shadow-emerald-900/15 ring-2 ring-emerald-200/80 ring-offset-2"
+                        : "bg-white text-slate-700 border border-slate-200 shadow-sm hover:border-emerald-200 hover:bg-emerald-50/80 hover:text-emerald-800"
+                    )}
+                  >
+                    {type.label}
+                  </button>
+                ))}
+              </div>
+              <button
+                type="button"
+                onClick={() => setSortByNumber((v) => !v)}
+                className={cn(
+                  "shrink-0 flex items-center gap-1.5 rounded-full px-3.5 py-2 text-sm font-medium transition-all duration-200 whitespace-nowrap",
+                  sortByNumber
+                    ? "bg-emerald-50 text-emerald-700 border border-emerald-200 shadow-sm"
+                    : "bg-white text-slate-500 border border-slate-200 shadow-sm hover:border-slate-300 hover:text-slate-700"
+                )}
+              >
+                <ArrowUpDown className="h-3.5 w-3.5" />
+                번호순
+              </button>
             </div>
           </div>
 
@@ -229,14 +253,24 @@ export default function HomePage() {
               {filteredProducts.map((product) => {
                 const inCart = isInCart(product._id)
                 const isFree = product.price === 0
+                const isBundle = product.tags?.includes("전체")
                 return (
-                  <div key={product._id} className="group relative rounded-2xl">
+                  <div key={product._id} className={cn("group relative rounded-2xl", isBundle && "sm:col-span-2 lg:col-span-3")}>
                     <Link
                       href={`/products/${product._id}`}
                       className="block rounded-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 focus-visible:ring-offset-2"
                     >
-                      <Card className="h-full border border-slate-200/90 bg-white overflow-hidden shadow-sm transition-all duration-300 hover:border-emerald-200/90 hover:shadow-lg hover:shadow-emerald-900/[0.07] group-hover:-translate-y-0.5">
-                        <CardContent className="flex flex-col justify-between p-5 sm:p-6 pb-16 sm:pb-[4.25rem] h-full">
+                      <Card className={cn(
+                        "h-full overflow-hidden shadow-sm transition-all duration-300 group-hover:-translate-y-0.5",
+                        isBundle
+                          ? "border-emerald-200/90 bg-gradient-to-r from-emerald-50/70 via-white to-teal-50/70 hover:border-emerald-300 hover:shadow-lg hover:shadow-emerald-900/10"
+                          : "border border-slate-200/90 bg-white hover:border-emerald-200/90 hover:shadow-lg hover:shadow-emerald-900/[0.07]"
+                      )}>
+                        {isBundle && <div className="h-1 w-full bg-gradient-to-r from-emerald-400 via-teal-400 to-emerald-500" />}
+                        <CardContent className={cn(
+                          "flex flex-col justify-between h-full",
+                          isBundle ? "p-5 sm:p-6 pb-16 sm:pb-[4.25rem]" : "p-5 sm:p-6 pb-16 sm:pb-[4.25rem]"
+                        )}>
                           <div className="flex items-start justify-between gap-3 mb-3">
                             {product.tags?.length > 0 && (
                               <div className="flex flex-wrap gap-1.5">
@@ -261,9 +295,16 @@ export default function HomePage() {
                             </span>
                           </div>
 
-                          <h3 className="font-semibold text-slate-900 text-sm sm:text-base leading-snug group-hover:text-emerald-700 transition-colors line-clamp-2 mt-auto">
-                            {product.title}
-                          </h3>
+                          <div className="mt-auto">
+                            <h3 className="font-semibold text-slate-900 text-sm sm:text-base leading-snug group-hover:text-emerald-700 transition-colors line-clamp-2">
+                              {product.title}
+                            </h3>
+                            {product.tags?.includes("전체") && (
+                              <p className="text-[11px] text-slate-400 mt-1">
+                                {product.description?.match(/(\d+)지문/)?.[0] ?? ""} · 25-28, 43-45 제외
+                              </p>
+                            )}
+                          </div>
                         </CardContent>
                       </Card>
                     </Link>

@@ -31,7 +31,7 @@ const baseProductSchema = z.object({
   originalPrice: z.number().optional(),
   category: z.enum([
     'original-translation', 'lecture-material', 'class-material', 'line-translation', 
-    'english-writing', 'translation-writing', 'workbook-blanks', 'order-questions', 
+    'english-writing', 'translation-writing', 'workbook-blanks', 'workbook-word-order', 'workbook-grammar-choice', 'order-questions', 
     'insertion-questions', 'ebs-lecture', 'ebs-workbook', 'ebs-test', 
     'reading-comprehension', 'reading-strategy', 'reading-test', 
     'grade1-material', 'grade2-material', 'grade3-material'
@@ -72,6 +72,8 @@ const subCategories = {
   '2025-english-mock': [
     { value: 'shared-materials', label: '공유자료 (무료)' },
     { value: 'workbook-blanks', label: '워크북 빈칸쓰기 패키지' },
+    { value: 'workbook-word-order', label: '워크북 낱말배열' },
+    { value: 'workbook-grammar-choice', label: '워크북 어법 양자택일' },
     { value: 'order-questions', label: '변형문제_글의순서 4회분' },
     { value: 'insertion-questions', label: '변형문제_문장삽입 4회분' }
   ],

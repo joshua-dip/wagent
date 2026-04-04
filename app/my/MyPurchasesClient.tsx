@@ -103,10 +103,21 @@ export function MyPurchasesClient({ copy = defaultCopy }: { copy?: MyPurchasesCo
         return
       }
       const data = await response.json()
-      if (data.downloadUrl) {
-        window.open(data.downloadUrl, "_blank")
-        fetchPurchases()
+      let opened = 0
+      if (data.pdfDownloadUrl) {
+        window.open(data.pdfDownloadUrl, "_blank")
+        opened++
       }
+      if (data.hwpDownloadUrl) {
+        setTimeout(() => window.open(data.hwpDownloadUrl, "_blank"), 250)
+        opened++
+      }
+      if (opened === 0 && data.downloadUrl) {
+        window.open(data.downloadUrl, "_blank")
+        opened++
+      }
+      if (opened > 0) fetchPurchases()
+      else alert("다운로드 링크를 받지 못했습니다.")
     } catch {
       alert("다운로드 중 오류가 발생했습니다.")
     }
