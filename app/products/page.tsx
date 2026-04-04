@@ -9,20 +9,19 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
-import { 
-  Search, 
-  Filter, 
-  Star, 
-  Download, 
+import {
+  Search,
+  Star,
+  Download,
   FileText,
   ShoppingCart,
-  DollarSign,
   User,
   Calendar,
   Grid3X3,
   List,
-  Check
-} from 'lucide-react'
+  Check,
+} from "lucide-react"
+import { fileFormatsSummary } from "@/lib/productFileFormats"
 
 interface Product {
   _id: string
@@ -37,6 +36,9 @@ interface Product {
   rating: number
   reviewCount: number
   createdAt: string
+  originalFileName?: string
+  hwpFilePath?: string
+  hwpOriginalFileName?: string
 }
 
 interface ProductsResponse {
@@ -72,6 +74,7 @@ function ProductsContent() {
   const [pagination, setPagination] = useState<ProductsResponse['pagination'] | null>(null)
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedCategory, setSelectedCategory] = useState('all')
+  const [fileFormat, setFileFormat] = useState<'all' | 'pdf' | 'hwp'>('all')
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
   const [addedToCart, setAddedToCart] = useState<string | null>(null)
 
@@ -90,8 +93,10 @@ function ProductsContent() {
       const params = new URLSearchParams({
         page: page.toString(),
         limit: '12',
+        excludeFree: 'true',
         ...(selectedCategory !== 'all' && { category: selectedCategory }),
-        ...(searchTerm && { search: searchTerm })
+        ...(searchTerm && { search: searchTerm }),
+        ...(fileFormat !== 'all' && { fileFormat }),
       })
 
       const response = await fetch(`/api/products?${params}`)
@@ -112,7 +117,7 @@ function ProductsContent() {
 
   useEffect(() => {
     loadProducts()
-  }, [selectedCategory, searchTerm])
+  }, [selectedCategory, searchTerm, fileFormat])
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault()
@@ -151,7 +156,7 @@ function ProductsContent() {
         {/* 헤더 */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">디지털 상품</h1>
-          <p className="text-gray-600">다양한 PDF 자료를 탐색하고 구매하세요</p>
+          <p className="text-gray-600">PDF·HWP 자료를 형식별로 골라 탐색하고 구매하세요</p>
         </div>
 
         {/* 검색 및 필터 */}
@@ -184,6 +189,30 @@ function ProductsContent() {
                     {category.label}
                   </Button>
                 ))}
+              </div>
+
+              {/* 파일 형식 */}
+              <div className="flex flex-col gap-1.5 shrink-0">
+                <span className="text-xs text-gray-500 hidden lg:block">파일 형식</span>
+                <div className="flex items-center gap-1.5 flex-wrap">
+                  {(
+                    [
+                      { value: 'all' as const, label: '전체' },
+                      { value: 'pdf' as const, label: 'PDF만' },
+                      { value: 'hwp' as const, label: 'HWP만' },
+                    ]
+                  ).map(({ value, label }) => (
+                    <Button
+                      key={value}
+                      variant={fileFormat === value ? 'default' : 'outline'}
+                      size="sm"
+                      className="h-8"
+                      onClick={() => setFileFormat(value)}
+                    >
+                      {label}
+                    </Button>
+                  ))}
+                </div>
               </div>
 
               {/* 뷰 모드 */}
@@ -226,10 +255,15 @@ function ProductsContent() {
               {products.map(product => (
                 <Card key={product._id} className="group hover:shadow-lg transition-all duration-200">
                   <CardHeader className="pb-3">
-                    <div className="flex items-start justify-between mb-2">
-                      <Badge variant="secondary" className="text-xs">
-                        {categories.find(c => c.value === product.category)?.label || product.category}
-                      </Badge>
+                    <div className="flex items-start justify-between mb-2 gap-2 flex-wrap">
+                      <div className="flex flex-wrap gap-1.5">
+                        <Badge variant="secondary" className="text-xs">
+                          {categories.find(c => c.value === product.category)?.label || product.category}
+                        </Badge>
+                        <Badge variant="outline" className="text-xs font-normal text-gray-600 border-gray-200">
+                          {fileFormatsSummary(product)}
+                        </Badge>
+                      </div>
                       {getDiscountPercentage(product.price, product.originalPrice) && (
                         <Badge variant="destructive" className="text-xs">
                           -{getDiscountPercentage(product.price, product.originalPrice)}%

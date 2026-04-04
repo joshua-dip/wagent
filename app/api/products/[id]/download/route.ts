@@ -11,6 +11,24 @@ import { verify } from "jsonwebtoken";
 import fs from 'fs';
 import path from 'path';
 
+function normalizeS3Key(filePath: string): string {
+  return filePath.replace("s3://", "").replace(/^\//, "");
+}
+
+function isS3Path(filePath: string): boolean {
+  return (
+    filePath.startsWith("s3://") ||
+    filePath.startsWith("products/") ||
+    !filePath.includes("/public/")
+  );
+}
+
+function mimeForFilename(name: string): string {
+  const lower = name.toLowerCase();
+  if (lower.endsWith(".hwp")) return "application/x-hwp";
+  return "application/pdf";
+}
+
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -94,50 +112,98 @@ export async function GET(
       });
     }
 
-    // 다운로드 카운트 증가
-    await Product.findByIdAndUpdate(id, { 
-      $inc: { downloadCount: 1 } 
+    // 다운로드 카운트 증가 (PDF+HWP 한 번에 받아도 1회)
+    await Product.findByIdAndUpdate(id, {
+      $inc: { downloadCount: 1 },
     });
 
-    // S3 경로인지 확인 (s3:// 또는 products/ 로 시작)
-    const isS3File = product.filePath.startsWith('s3://') || 
-                     product.filePath.startsWith('products/') ||
-                     !product.filePath.includes('/public/');
+    const orig = (product.originalFileName || "").toLowerCase();
+    const hasPdfPrimary = orig.endsWith(".pdf");
+    const hasHwpField = !!(product as { hwpFilePath?: string }).hwpFilePath;
+    const hasHwpOnly = orig.endsWith(".hwp") && !hasHwpField;
+
+    let pdfKey: string | null = null;
+    let pdfName: string | null = null;
+    let pdfSize: number | null = null;
+    let hwpKey: string | null = null;
+    let hwpName: string | null = null;
+    let hwpSize: number | null = null;
+
+    if (hasPdfPrimary) {
+      pdfKey = product.filePath;
+      pdfName = product.originalFileName;
+      pdfSize = product.fileSize;
+    }
+    if (hasHwpField) {
+      const p = product as {
+        hwpFilePath: string;
+        hwpOriginalFileName?: string;
+        hwpFileSize?: number;
+      };
+      hwpKey = p.hwpFilePath;
+      hwpName = p.hwpOriginalFileName || "file.hwp";
+      hwpSize = p.hwpFileSize ?? null;
+    }
+    if (hasHwpOnly) {
+      hwpKey = product.filePath;
+      hwpName = product.originalFileName;
+      hwpSize = product.fileSize;
+    }
 
     try {
-      if (isS3File) {
-        // S3에서 보안 다운로드 URL 생성
-        const s3Key = product.filePath.replace('s3://', '').replace(/^\//, '');
-        const downloadUrl = await generateSecureDownloadUrl(s3Key);
-        
-        return NextResponse.json({ 
-          downloadUrl,
-          fileName: product.originalFileName,
-          fileSize: product.fileSize,
-          storageType: 's3',
-          message: "다운로드 링크가 생성되었습니다. (1시간 유효)"
-        });
-      } else {
-        // 로컬 파일 다운로드
-        const filePath = path.join(process.cwd(), 'public', product.filePath.replace('/uploads/', 'uploads/'));
-        
-        if (!fs.existsSync(filePath)) {
-          return NextResponse.json({ error: "파일을 찾을 수 없습니다." }, { status: 404 });
-        }
+      const pdfOnS3 = pdfKey && isS3Path(pdfKey);
+      const hwpOnS3 = hwpKey && isS3Path(hwpKey);
+      if (pdfOnS3 || hwpOnS3) {
+        const pdfDownloadUrl = pdfOnS3
+          ? await generateSecureDownloadUrl(normalizeS3Key(pdfKey!))
+          : null;
+        const hwpDownloadUrl = hwpOnS3
+          ? await generateSecureDownloadUrl(normalizeS3Key(hwpKey!))
+          : null;
 
-        const fileBuffer = fs.readFileSync(filePath);
+        const primaryUrl = pdfDownloadUrl || hwpDownloadUrl;
+        const primaryName = pdfName || hwpName;
+        const primarySize = pdfSize ?? hwpSize;
 
-        // 파일 다운로드 응답
-        const headers = new Headers();
-        headers.set('Content-Type', 'application/pdf');
-        headers.set('Content-Disposition', `attachment; filename="${encodeURIComponent(product.originalFileName)}"`);
-        headers.set('Content-Length', fileBuffer.length.toString());
-
-        return new NextResponse(fileBuffer, {
-          status: 200,
-          headers
+        return NextResponse.json({
+          downloadUrl: primaryUrl,
+          fileName: primaryName,
+          fileSize: primarySize,
+          pdfDownloadUrl,
+          hwpDownloadUrl,
+          pdfFileName: pdfName,
+          hwpFileName: hwpName,
+          pdfFileSize: pdfSize,
+          hwpFileSize: hwpSize,
+          storageType: "s3",
+          message: "다운로드 링크가 생성되었습니다. (1시간 유효)",
         });
       }
+
+      // 로컬 파일 (단일)
+      const filePath = path.join(
+        process.cwd(),
+        "public",
+        product.filePath.replace("/uploads/", "uploads/")
+      );
+
+      if (!fs.existsSync(filePath)) {
+        return NextResponse.json({ error: "파일을 찾을 수 없습니다." }, { status: 404 });
+      }
+
+      const fileBuffer = fs.readFileSync(filePath);
+      const headers = new Headers();
+      headers.set("Content-Type", mimeForFilename(product.originalFileName));
+      headers.set(
+        "Content-Disposition",
+        `attachment; filename="${encodeURIComponent(product.originalFileName)}"`
+      );
+      headers.set("Content-Length", fileBuffer.length.toString());
+
+      return new NextResponse(fileBuffer, {
+        status: 200,
+        headers,
+      });
     } catch (fileError) {
       console.error("파일 다운로드 오류:", fileError);
       return NextResponse.json({ 

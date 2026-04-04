@@ -41,6 +41,9 @@ interface Product {
   rating: number
   reviewCount: number
   originalFileName: string
+  hwpFilePath?: string
+  hwpOriginalFileName?: string
+  hwpFileSize?: number
 }
 
 const CATEGORY_LABELS: Record<string, string> = {
@@ -59,12 +62,28 @@ const CATEGORY_LABELS: Record<string, string> = {
   "grade3-material": "고3",
 }
 
+function pathBasename(p: string) {
+  const parts = p.split(/[/\\]/)
+  return parts[parts.length - 1] || p
+}
+
 function formatFileSize(bytes: number) {
   if (bytes === 0) return "0 B"
   const k = 1024
   const sizes = ["B", "KB", "MB", "GB"]
   const i = Math.floor(Math.log(bytes) / Math.log(k))
   return `${parseFloat((bytes / Math.pow(k, i)).toFixed(1))} ${sizes[i]}`
+}
+
+function fileFormatsSummary(p: Product) {
+  const hasPdf = p.originalFileName?.toLowerCase().endsWith(".pdf")
+  const hasHwp =
+    !!(p.hwpFilePath && p.hwpOriginalFileName) ||
+    p.originalFileName?.toLowerCase().endsWith(".hwp")
+  if (hasPdf && hasHwp && p.hwpFilePath) return "PDF, HWP"
+  if (hasPdf) return "PDF"
+  if (hasHwp) return "HWP"
+  return "파일"
 }
 
 export default function ProductDetailPage() {
@@ -115,12 +134,31 @@ export default function ProductDetailPage() {
       setDownloading(true)
       const res = await fetch(`/api/products/${productId}/download`)
       const data = await res.json()
-      if (res.ok && data.downloadUrl) {
-        window.open(data.downloadUrl, "_blank")
-        showToast("success", "다운로드가 시작되었습니다")
-        setProduct((p) => p ? { ...p, downloadCount: p.downloadCount + 1 } : null)
-      } else {
+      if (!res.ok) {
         showToast("error", data.error || "다운로드 중 오류가 발생했습니다")
+        return
+      }
+      let opened = 0
+      if (data.pdfDownloadUrl) {
+        window.open(data.pdfDownloadUrl, "_blank")
+        opened++
+      }
+      if (data.hwpDownloadUrl) {
+        setTimeout(() => window.open(data.hwpDownloadUrl, "_blank"), 250)
+        opened++
+      }
+      if (opened === 0 && data.downloadUrl) {
+        window.open(data.downloadUrl, "_blank")
+        opened++
+      }
+      if (opened > 0) {
+        showToast(
+          "success",
+          opened >= 2 ? "PDF와 HWP 다운로드가 시작되었습니다" : "다운로드가 시작되었습니다"
+        )
+        setProduct((p) => (p ? { ...p, downloadCount: p.downloadCount + 1 } : null))
+      } else {
+        showToast("error", "다운로드 링크를 받지 못했습니다")
       }
     } catch {
       showToast("error", "다운로드 중 오류가 발생했습니다")
@@ -311,7 +349,13 @@ export default function ProductDetailPage() {
                         {downloading ? (
                           <><Loader2 className="h-4 w-4 mr-2 animate-spin" />다운로드 중…</>
                         ) : (
-                          <><Download className="h-4 w-4 mr-2" />다운로드</>
+                          <>
+                            <Download className="h-4 w-4 mr-2" />
+                            {product.originalFileName?.toLowerCase().endsWith(".pdf") &&
+                            product.hwpFilePath
+                              ? "PDF·HWP 다운로드"
+                              : "다운로드"}
+                          </>
                         )}
                       </Button>
                     ) : (
@@ -411,18 +455,39 @@ export default function ProductDetailPage() {
                 <dl className="space-y-2 text-sm">
                   <div className="flex justify-between">
                     <dt className="text-slate-500">형식</dt>
-                    <dd className="font-medium text-slate-700">PDF</dd>
+                    <dd className="font-medium text-slate-700">{fileFormatsSummary(product)}</dd>
                   </div>
-                  <div className="flex justify-between">
-                    <dt className="text-slate-500">크기</dt>
-                    <dd className="font-medium text-slate-700">{formatFileSize(product.fileSize)}</dd>
-                  </div>
-                  <div className="flex justify-between">
-                    <dt className="text-slate-500">파일명</dt>
-                    <dd className="font-medium text-slate-700 text-right truncate max-w-[160px]">
-                      {product.originalFileName}
-                    </dd>
-                  </div>
+                  {product.originalFileName?.toLowerCase().endsWith(".pdf") && (
+                    <div className="flex justify-between gap-2">
+                      <dt className="text-slate-500 shrink-0">PDF</dt>
+                      <dd className="font-medium text-slate-700 text-right truncate max-w-[200px]">
+                        {pathBasename(product.originalFileName)} · {formatFileSize(product.fileSize)}
+                      </dd>
+                    </div>
+                  )}
+                  {product.hwpFilePath && product.hwpOriginalFileName && (
+                    <div className="flex justify-between gap-2">
+                      <dt className="text-slate-500 shrink-0">HWP</dt>
+                      <dd className="font-medium text-slate-700 text-right truncate max-w-[200px]">
+                        {pathBasename(product.hwpOriginalFileName)} ·{" "}
+                        {formatFileSize(product.hwpFileSize ?? 0)}
+                      </dd>
+                    </div>
+                  )}
+                  {product.originalFileName?.toLowerCase().endsWith(".hwp") && !product.hwpFilePath && (
+                    <>
+                      <div className="flex justify-between">
+                        <dt className="text-slate-500">크기</dt>
+                        <dd className="font-medium text-slate-700">{formatFileSize(product.fileSize)}</dd>
+                      </div>
+                      <div className="flex justify-between">
+                        <dt className="text-slate-500">파일명</dt>
+                        <dd className="font-medium text-slate-700 text-right truncate max-w-[160px]">
+                          {product.originalFileName}
+                        </dd>
+                      </div>
+                    </>
+                  )}
                 </dl>
               </div>
             </div>

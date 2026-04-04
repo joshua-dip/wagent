@@ -12,7 +12,10 @@ export interface IProduct extends Document {
   fileName: string; // 실제 파일명
   originalFileName: string; // 원본 파일명
   fileSize: number; // 파일 크기 (bytes)
-  filePath: string; // 서버 내 파일 경로
+  filePath: string; // S3 키 (주로 PDF)
+  hwpFilePath?: string;
+  hwpOriginalFileName?: string;
+  hwpFileSize?: number;
   thumbnail?: string; // 썸네일 이미지 경로
   downloadCount: number;
   rating: number;
@@ -49,7 +52,7 @@ const ProductSchema: Schema = new Schema({
     required: true,
     enum: [
       'shared-materials', 'original-translation', 'lecture-material', 'class-material', 'line-translation', 
-      'english-writing', 'translation-writing', 'workbook-blanks', 'order-questions', 
+      'english-writing', 'translation-writing', 'workbook-blanks', 'workbook-word-order', 'workbook-grammar-choice', 'order-questions', 
       'insertion-questions', 'ebs-lecture', 'ebs-workbook', 'ebs-test',
       'reading-comprehension', 'reading-strategy', 'reading-test',
       'grade1-material', 'grade2-material', 'grade3-material'
@@ -84,6 +87,9 @@ const ProductSchema: Schema = new Schema({
     type: String, 
     required: true 
   },
+  hwpFilePath: { type: String },
+  hwpOriginalFileName: { type: String },
+  hwpFileSize: { type: Number, min: 0 },
   thumbnail: { 
     type: String 
   },
