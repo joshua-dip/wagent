@@ -2,17 +2,25 @@
 
 import { Button } from "@/components/ui/button"
 import { useSession, signOut } from "next-auth/react"
-import { User, LogOut, ShoppingCart, Download, CreditCard } from "lucide-react"
+import { User, LogOut, ShoppingCart, Download, CreditCard, PenTool, Star } from "lucide-react"
 import Link from "next/link"
+import { usePathname } from "next/navigation"
 import { useSimpleAuth } from "@/hooks/useSimpleAuth"
 import { isSupabaseConfigured, createClient } from "@/lib/supabase/client"
 import { useCart } from "@/contexts/CartContext"
 import { useEffect, useState, useRef } from "react"
+import { cn } from "@/lib/utils"
+
+const NAV_ITEMS = [
+  { href: "/", label: "서술형 자료", icon: PenTool },
+  { href: "/products/free", label: "무료 자료", icon: Star },
+]
 
 export default function Header() {
   const { data: session } = useSession()
   const simpleAuth = useSimpleAuth()
   const { cartCount } = useCart()
+  const pathname = usePathname()
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false)
   const userMenuRef = useRef<HTMLDivElement>(null)
 
@@ -21,6 +29,8 @@ export default function Header() {
   const isAdmin =
     currentUser?.email === "wnsrb2898@naver.com" ||
     simpleAuth.user?.role === "admin"
+
+  const isAdminPage = pathname?.startsWith("/admin")
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -33,8 +43,8 @@ export default function Header() {
   }, [])
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-emerald-100/80 bg-white/90 backdrop-blur-md shadow-sm">
-      <div className="flex h-14 sm:h-16 items-center justify-between gap-3 px-3 sm:px-5 lg:px-8 max-w-[1600px] mx-auto">
+    <header className="sticky top-0 z-50 w-full bg-white/90 backdrop-blur-md shadow-sm">
+      <div className="flex h-14 sm:h-16 items-center justify-between gap-3 px-3 sm:px-5 lg:px-8 max-w-[1600px] mx-auto border-b border-emerald-100/80">
         <Link href="/" className="flex items-center gap-2.5 group shrink-0">
           <div
             className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl flex items-center justify-center text-white font-bold text-sm sm:text-base shadow-md shadow-[#5eead4]/35 group-hover:shadow-[#5eead4]/50 transition-shadow bg-[linear-gradient(135deg,#6ee7b7_0%,#5eead4_45%,#2dd4bf_100%)]"
@@ -182,6 +192,33 @@ export default function Header() {
           )}
         </div>
       </div>
+
+      {/* Sub navigation */}
+      {!isAdminPage && (
+        <nav className="border-b border-slate-100 bg-white/80">
+          <div className="flex items-center gap-1 px-3 sm:px-5 lg:px-8 max-w-[1600px] mx-auto">
+            {NAV_ITEMS.map((item) => {
+              const Icon = item.icon
+              const isActive = item.href === "/" ? pathname === "/" : pathname?.startsWith(item.href)
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={cn(
+                    "shrink-0 flex items-center gap-1.5 px-3 py-2.5 text-sm font-medium transition-colors border-b-2 -mb-px",
+                    isActive
+                      ? "border-emerald-500 text-emerald-700"
+                      : "border-transparent text-slate-500 hover:text-slate-900 hover:border-slate-300"
+                  )}
+                >
+                  <Icon className="h-4 w-4" />
+                  {item.label}
+                </Link>
+              )
+            })}
+          </div>
+        </nav>
+      )}
     </header>
   )
 }

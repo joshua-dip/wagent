@@ -159,7 +159,7 @@ export default function FreeProductsPage() {
 
   return (
     <Layout>
-      <div className="-mx-3 -mt-4 sm:-mx-6 sm:-mt-6 min-h-full">
+      <div className="-mx-3 -mt-4 sm:-mx-6 sm:-mt-6">
         {/* 히어로 */}
         <section className="relative overflow-hidden">
           <div
@@ -183,7 +183,7 @@ export default function FreeProductsPage() {
                 로 먼저 경험해 보세요
               </h1>
               <p className="text-slate-300/95 text-base sm:text-lg leading-relaxed max-w-xl mx-auto mb-8">
-                서술형 문제 샘플과 수업 보조 자료를 무료로 제공합니다. 구매 전에 자료 품질을 직접 확인해 보세요.
+                수업에 바로 활용할 수 있는 워크북·보조 자료를 무료로 제공합니다.
               </p>
               {!loading && (
                 <div className="flex flex-wrap justify-center gap-6 text-sm text-emerald-100/90">
@@ -201,7 +201,7 @@ export default function FreeProductsPage() {
           </div>
         </section>
 
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-14 space-y-10">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-14 space-y-10">
           {/* 필터 */}
           <div className="rounded-2xl border border-emerald-100/90 bg-white/80 backdrop-blur-sm shadow-sm shadow-emerald-900/5 p-5 sm:p-6">
             <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-4">

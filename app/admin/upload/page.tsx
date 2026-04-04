@@ -129,7 +129,6 @@ export default function AdminUploadPage() {
 
   const watchIsFree = watch('isFree')
   const watchCategory = watch('category')
-  const watchTags = watch('tags')
   
   useEffect(() => {
     if (watchIsFree) {
@@ -145,15 +144,6 @@ export default function AdminUploadPage() {
       setValue('originalPrice', undefined)
     }
   }, [watchCategory, setValue])
-
-  useEffect(() => {
-    const tags = (watchTags || '').split(',').map(t => t.trim()).filter(Boolean)
-    if (tags.includes('빈칸재배열형')) {
-      setValue('isFree', true)
-      setValue('price', 0)
-      setValue('originalPrice', undefined)
-    }
-  }, [watchTags, setValue])
 
   // 로딩 중이면 로딩 표시
   if (status === 'loading' || simpleAuth.isLoading) {
