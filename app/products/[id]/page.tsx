@@ -21,6 +21,7 @@ import {
   Check,
   Loader2,
   CreditCard,
+  Eye,
 } from "lucide-react"
 import Layout from "@/components/Layout"
 import { cn } from "@/lib/utils"
@@ -161,9 +162,17 @@ export default function ProductDetailPage() {
       ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)
       : null
 
+  const sampleFile = product.tags?.some(t => t.includes("빈칸재배열형(주제)"))
+    ? { url: "/samples/sample-blank-topic.pdf", label: "빈칸재배열형(주제) 샘플" }
+    : product.tags?.some(t => t.includes("빈칸재배열형(어법)"))
+    ? { url: "/samples/sample-blank-grammar.pdf", label: "빈칸재배열형(어법) 샘플" }
+    : product.tags?.some(t => t.includes("요약문조건영작형"))
+    ? { url: "/samples/sample-summary.pdf", label: "요약문조건영작형 샘플" }
+    : null
+
   return (
     <Layout>
-      <div className="-mx-3 -mt-4 sm:-mx-6 sm:-mt-6 min-h-full bg-gradient-to-b from-slate-50 via-white to-slate-50/50">
+      <div className="-mx-3 -mt-4 sm:-mx-6 sm:-mt-6">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
           {/* Toast */}
           {toast && (
@@ -235,6 +244,31 @@ export default function ProductDetailPage() {
                   {product.description}
                 </p>
               </div>
+
+              {/* Sample Preview */}
+              {sampleFile && (
+                <div className="rounded-2xl border border-emerald-200/80 bg-gradient-to-br from-emerald-50/60 to-teal-50/40 p-5 sm:p-6">
+                  <div className="flex items-center gap-2.5 mb-4">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-100">
+                      <Eye className="h-4 w-4 text-emerald-700" />
+                    </div>
+                    <div>
+                      <h3 className="text-sm font-semibold text-slate-900">샘플 미리보기</h3>
+                      <p className="text-xs text-slate-500">구매 전에 자료 형태를 확인해 보세요</p>
+                    </div>
+                  </div>
+                  <div className="rounded-xl overflow-hidden border border-slate-200/80 bg-white shadow-sm">
+                    <iframe
+                      src={sampleFile.url}
+                      className="w-full h-[500px] sm:h-[600px]"
+                      title={sampleFile.label}
+                    />
+                  </div>
+                  <p className="text-[11px] text-slate-400 mt-2 text-center">
+                    {sampleFile.label} — 실제 상품과 동일한 형식입니다
+                  </p>
+                </div>
+              )}
 
               {/* Tags */}
               {product.tags?.length > 0 && (

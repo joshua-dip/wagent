@@ -176,7 +176,7 @@ export default function ProductCheckoutPage() {
   if (error && !product) {
     return (
       <Layout>
-        <div className="-mx-3 -mt-4 sm:-mx-6 sm:-mt-6 min-h-full bg-gradient-to-b from-slate-50 via-white to-slate-50/50">
+        <div className="-mx-3 -mt-4 sm:-mx-6 sm:-mt-6">
           <div className="max-w-3xl mx-auto px-4 sm:px-6 py-16 text-center">
             <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-red-100">
               <AlertCircle className="h-7 w-7 text-red-500" />
@@ -194,7 +194,7 @@ export default function ProductCheckoutPage() {
 
   return (
     <Layout>
-      <div className="-mx-3 -mt-4 sm:-mx-6 sm:-mt-6 min-h-full bg-gradient-to-b from-slate-50 via-white to-slate-50/50">
+      <div className="-mx-3 -mt-4 sm:-mx-6 sm:-mt-6">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
           {/* Back */}
           <button

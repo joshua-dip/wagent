@@ -177,7 +177,7 @@ async function main() {
       await Product.create({
         title: entry.title,
         description: entry.description,
-        price: entry.tags?.includes('빈칸재배열형') ? 0 : entry.price,
+        price: entry.price,
         originalPrice: entry.originalPrice,
         category: entry.category || inferCategory(entry.tags),
         tags: entry.tags,
@@ -187,7 +187,7 @@ async function main() {
         originalFileName: entry.file,
         fileSize,
         filePath: s3Key,
-        isFree: entry.isFree ?? entry.tags?.includes('빈칸재배열형') ?? entry.price === 0,
+        isFree: entry.isFree ?? entry.price === 0,
       })
 
       console.log(`✅  ${label} 등록 완료 (${(fileSize / 1024).toFixed(0)} KB)`)

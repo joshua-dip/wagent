@@ -14,11 +14,11 @@ import { cn } from "@/lib/utils"
 import {
   FileText,
   Loader2,
-  User,
   MessageCircle,
   ShoppingCart,
   Check,
-  CheckCircle2,
+  X,
+  ArrowRight,
 } from "lucide-react"
 
 interface Product {
@@ -76,7 +76,7 @@ const KAKAO_INQUIRY_URL =
 export default function HomePage() {
   const { data: session } = useSession()
   const simpleAuth = useSimpleAuth()
-  const { addToCart, isInCart } = useCart()
+  const { addToCart, isInCart, cartItems, removeFromCart } = useCart()
   const router = useRouter()
 
   const currentUser = simpleAuth.user || session?.user
@@ -87,12 +87,7 @@ export default function HomePage() {
   const [selectedType, setSelectedType] = useState("all")
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
-  const [toast, setToast] = useState<string | null>(null)
-
-  const showToast = (msg: string) => {
-    setToast(msg)
-    setTimeout(() => setToast(null), 2500)
-  }
+  const [drawerOpen, setDrawerOpen] = useState(false)
 
   const fetchProducts = useCallback(async () => {
     try {
@@ -127,23 +122,17 @@ export default function HomePage() {
   const formatPrice = (price: number) =>
     new Intl.NumberFormat("ko-KR").format(price)
 
+  const cartTotal = cartItems.reduce((sum, i) => sum + i.price, 0)
+
   return (
     <Layout>
-      <div className="-mx-3 -mt-4 sm:-mx-6 sm:-mt-6 min-h-full bg-gradient-to-b from-slate-50 via-white to-slate-50/50">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10">
-          {/* Header */}
-          <div className="mb-8 sm:mb-10">
-            <div className="flex items-center gap-3 mb-1.5">
-              <div className="h-8 w-1 rounded-full bg-gradient-to-b from-emerald-400 to-teal-500" />
-              <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">
-                서술형 자료
-              </h1>
-            </div>
-            <p className="text-slate-500 text-sm sm:text-base ml-[19px]">
-              영어모의고사 서술형 문제 · 디지털 자료
-            </p>
-          </div>
-
+      <div className="-mx-3 -mt-4 sm:-mx-6 sm:-mt-6 min-h-full">
+        <div
+          className={cn(
+            "mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10 transition-all duration-300 ease-out max-w-5xl",
+            drawerOpen && "lg:pr-[21rem]"
+          )}
+        >
           {/* Exam Period Tabs */}
           <div className="flex gap-2 mb-5 sm:mb-6">
             {EXAMS.map((exam) => (
@@ -158,8 +147,8 @@ export default function HomePage() {
                 className={cn(
                   "rounded-lg px-4 py-2 text-sm font-semibold transition-all duration-200",
                   selectedExam === exam.id
-                    ? "bg-slate-900 text-white shadow-sm"
-                    : "bg-white text-slate-500 border border-slate-200 hover:border-slate-300 hover:text-slate-700"
+                    ? "bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-md shadow-emerald-900/15"
+                    : "bg-white text-slate-500 border border-slate-200 hover:border-emerald-200 hover:text-emerald-800"
                 )}
               >
                 {exam.label}
@@ -181,8 +170,8 @@ export default function HomePage() {
                     "p-4 sm:p-6 lg:p-8",
                     `bg-gradient-to-br ${grade.gradient}`,
                     isSelected
-                      ? "ring-2 ring-offset-2 ring-emerald-500 shadow-xl shadow-emerald-900/20 scale-[1.03]"
-                      : "opacity-75 hover:opacity-95 hover:shadow-lg hover:shadow-emerald-900/10 hover:scale-[1.01]"
+                      ? "ring-2 ring-offset-2 ring-white/90 shadow-xl shadow-emerald-900/25 scale-[1.02]"
+                      : "opacity-80 hover:opacity-100 hover:shadow-lg hover:shadow-emerald-900/10 hover:scale-[1.01]"
                   )}
                 >
                   <span
@@ -209,31 +198,25 @@ export default function HomePage() {
           </div>
 
           {/* Type Filter */}
-          <div className="flex gap-2 overflow-x-auto pb-1 mb-6 sm:mb-8 scrollbar-none -mx-1 px-1">
-            {QUESTION_TYPES.map((type) => (
-              <button
-                key={type.id}
-                type="button"
-                onClick={() => setSelectedType(type.id)}
-                className={cn(
-                  "shrink-0 rounded-full px-4 py-2 text-sm font-medium transition-all duration-200",
-                  selectedType === type.id
-                    ? "bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-md shadow-emerald-900/15"
-                    : "bg-white text-slate-700 border border-slate-200 hover:border-emerald-200 hover:bg-emerald-50/60 hover:text-emerald-800"
-                )}
-              >
-                {type.label}
-              </button>
-            ))}
-          </div>
-
-          {/* Toast */}
-          {toast && (
-            <div className="fixed top-20 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 rounded-xl bg-emerald-600 text-white px-5 py-3 text-sm font-medium shadow-lg">
-              <CheckCircle2 className="h-4 w-4" />
-              {toast}
+          <div className="sticky top-28 sm:top-[7.25rem] z-20 -mx-1 px-1 py-2 mb-4 sm:mb-6 bg-gradient-to-b from-white via-white/95 to-transparent">
+            <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
+              {QUESTION_TYPES.map((type) => (
+                <button
+                  key={type.id}
+                  type="button"
+                  onClick={() => setSelectedType(type.id)}
+                  className={cn(
+                    "shrink-0 rounded-full px-4 py-2 text-sm font-medium transition-all duration-200",
+                    selectedType === type.id
+                      ? "bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-md shadow-emerald-900/15 ring-2 ring-emerald-200/80 ring-offset-2"
+                      : "bg-white text-slate-700 border border-slate-200 shadow-sm hover:border-emerald-200 hover:bg-emerald-50/80 hover:text-emerald-800"
+                  )}
+                >
+                  {type.label}
+                </button>
+              ))}
             </div>
-          )}
+          </div>
 
           {/* Product Grid */}
           {loading ? (
@@ -252,8 +235,8 @@ export default function HomePage() {
                       href={`/products/${product._id}`}
                       className="block rounded-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 focus-visible:ring-offset-2"
                     >
-                      <Card className="h-full border border-slate-200/80 bg-white overflow-hidden transition-all duration-300 hover:border-emerald-200 hover:shadow-lg hover:shadow-emerald-900/5 group-hover:-translate-y-0.5">
-                        <CardContent className="p-5 sm:p-6">
+                      <Card className="h-full border border-slate-200/90 bg-white overflow-hidden shadow-sm transition-all duration-300 hover:border-emerald-200/90 hover:shadow-lg hover:shadow-emerald-900/[0.07] group-hover:-translate-y-0.5">
+                        <CardContent className="flex flex-col justify-between p-5 sm:p-6 pb-16 sm:pb-[4.25rem] h-full">
                           <div className="flex items-start justify-between gap-3 mb-3">
                             {product.tags?.length > 0 && (
                               <div className="flex flex-wrap gap-1.5">
@@ -268,36 +251,33 @@ export default function HomePage() {
                                 ))}
                               </div>
                             )}
-                            <span className="shrink-0 text-lg font-bold text-slate-900">
-                              {isFree
-                                ? "무료"
-                                : `${formatPrice(product.price)}원`}
+                            <span
+                              className={cn(
+                                "shrink-0 text-base sm:text-lg font-bold tabular-nums",
+                                isFree ? "text-emerald-600" : "text-slate-900"
+                              )}
+                            >
+                              {isFree ? "무료" : `${formatPrice(product.price)}원`}
                             </span>
                           </div>
 
-                          <h3 className="font-semibold text-slate-900 text-base leading-snug mb-2 group-hover:text-emerald-700 transition-colors line-clamp-2">
+                          <h3 className="font-semibold text-slate-900 text-sm sm:text-base leading-snug group-hover:text-emerald-700 transition-colors line-clamp-2 mt-auto">
                             {product.title}
                           </h3>
-
-                          <p className="text-slate-500 text-sm leading-relaxed line-clamp-2 mb-4">
-                            {product.description}
-                          </p>
-
-                          <div className="pt-3 border-t border-slate-100" />
                         </CardContent>
                       </Card>
                     </Link>
 
                     {/* Cart button overlay */}
                     {!isFree && (
-                      <div className="absolute bottom-4 right-4 sm:bottom-5 sm:right-5">
+                      <div className="absolute bottom-4 right-4 sm:bottom-5 sm:right-5 z-10">
                         <button
                           type="button"
                           onClick={(e) => {
                             e.preventDefault()
                             e.stopPropagation()
                             if (!isAuthenticated) { router.push("/auth/simple-signin"); return }
-                            if (inCart) { router.push("/cart"); return }
+                            if (inCart) { removeFromCart(product._id); return }
                             addToCart({
                               productId: product._id,
                               title: product.title,
@@ -305,19 +285,20 @@ export default function HomePage() {
                               originalPrice: product.originalPrice,
                               category: product.category,
                             })
-                            showToast("장바구니에 담았습니다")
+                            setDrawerOpen(true)
                           }}
                           className={cn(
-                            "flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition-all shadow-sm",
+                            "flex items-center gap-1.5 rounded-full px-3.5 py-2 text-xs font-semibold transition-all shadow-md min-h-[36px]",
                             inCart
-                              ? "bg-slate-100 text-slate-500"
-                              : "bg-emerald-600 text-white hover:bg-emerald-700"
+                              ? "bg-white text-emerald-700 border-2 border-emerald-200 shadow-emerald-900/10 hover:bg-red-50 hover:border-red-200 hover:text-red-700"
+                              : "bg-gradient-to-r from-emerald-600 to-teal-600 text-white hover:from-emerald-700 hover:to-teal-700 shadow-emerald-600/25"
                           )}
+                          aria-pressed={inCart}
                         >
                           {inCart ? (
-                            <><Check className="h-3.5 w-3.5" />담김</>
+                            <><Check className="h-3.5 w-3.5 shrink-0" />빼기</>
                           ) : (
-                            <><ShoppingCart className="h-3.5 w-3.5" />담기</>
+                            <><ShoppingCart className="h-3.5 w-3.5 shrink-0" />담기</>
                           )}
                         </button>
                       </div>
@@ -377,6 +358,93 @@ export default function HomePage() {
           </div>
         </div>
       </div>
+
+      {/* Cart Drawer - non-blocking slide panel */}
+      <aside
+        className={cn(
+          "fixed top-[7rem] sm:top-[7.75rem] right-0 bottom-0 w-full max-w-xs bg-white border-l border-slate-200/90 shadow-[0_0_40px_-10px_rgba(15,23,42,0.2)] flex flex-col z-40 transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] rounded-tl-2xl rounded-bl-none overflow-hidden",
+          drawerOpen
+            ? "translate-x-0 pointer-events-auto"
+            : "translate-x-full pointer-events-none"
+        )}
+        aria-hidden={!drawerOpen}
+      >
+        <div className="h-1 w-full shrink-0 bg-gradient-to-r from-emerald-400 via-teal-400 to-emerald-500" />
+        <div className="flex items-center justify-between px-4 py-3.5 border-b border-slate-100 bg-slate-50/50">
+          <div className="flex items-center gap-2">
+            <ShoppingCart className="h-5 w-5 text-emerald-600" />
+            <h2 className="font-semibold text-slate-900 text-sm">
+              담은 자료
+              <span className="ml-1.5 text-xs font-normal text-slate-500">
+                {cartItems.length}개
+              </span>
+            </h2>
+          </div>
+          <button
+            type="button"
+            onClick={() => setDrawerOpen(false)}
+            className="p-1 rounded-lg hover:bg-slate-100 transition-colors text-slate-400 hover:text-slate-600"
+            aria-label="닫기"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+
+        <div className="flex-1 overflow-y-auto px-4 py-3">
+          {cartItems.length === 0 ? (
+            <div className="text-center py-12 px-2 text-slate-400 text-sm leading-relaxed">
+              <ShoppingCart className="h-10 w-10 mx-auto mb-3 text-slate-200" aria-hidden />
+              담은 자료가 없습니다.
+              <p className="text-xs text-slate-400 mt-2">유료 자료의 담기를 누르면 여기에 모입니다.</p>
+            </div>
+          ) : (
+            <ul className="space-y-2">
+              {cartItems.map((item) => (
+                <li
+                  key={item.productId}
+                  className="flex items-center gap-2.5 rounded-xl border border-slate-100 bg-white px-3 py-2.5 shadow-sm animate-in fade-in slide-in-from-right-2 duration-200"
+                >
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-medium text-slate-900 leading-snug line-clamp-1">
+                      {item.title}
+                    </p>
+                    <p className="text-xs font-semibold text-emerald-600 mt-0.5">
+                      {formatPrice(item.price)}원
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => removeFromCart(item.productId)}
+                    className="shrink-0 p-0.5 rounded hover:bg-red-50 text-slate-300 hover:text-red-500 transition-colors"
+                    aria-label={`${item.title} 제거`}
+                  >
+                    <X className="h-3.5 w-3.5" />
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+
+        {cartItems.length > 0 && (
+          <div className="border-t border-slate-100 bg-slate-50/60 px-4 py-3 space-y-2.5">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-medium text-slate-500">합계</span>
+              <span className="text-lg font-bold text-slate-900 tabular-nums">
+                {formatPrice(cartTotal)}원
+              </span>
+            </div>
+            <Button
+              type="button"
+              onClick={() => router.push("/cart")}
+              className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-semibold h-10 text-sm shadow-md"
+            >
+              장바구니로 이동
+              <ArrowRight className="h-4 w-4 ml-1.5" />
+            </Button>
+          </div>
+        )}
+      </aside>
     </Layout>
   )
 }
