@@ -33,10 +33,7 @@ export default function Footer() {
               <h4 className="font-semibold text-slate-900 mb-2.5">서비스</h4>
               <ul className="space-y-1.5">
                 <li>
-                  <Link href="/" className="hover:text-emerald-700 transition-colors">서술형 자료</Link>
-                </li>
-                <li>
-                  <Link href="/products/free" className="hover:text-emerald-700 transition-colors">무료 자료</Link>
+                  <Link href="/" className="hover:text-emerald-700 transition-colors">조건영작배열</Link>
                 </li>
                 <li>
                   <Link href="/my/purchases" className="hover:text-emerald-700 transition-colors">구매 내역</Link>

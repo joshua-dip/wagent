@@ -518,7 +518,7 @@ export default function AdminUploadPage() {
                       )
                     })}
                     <span className="w-px h-5 bg-slate-200 self-center mx-1" />
-                    {['빈칸재배열형(주제)', '빈칸재배열형(어법)', '요약문조건영작형'].map(tag => {
+                    {['조건영작배열'].map(tag => {
                       const current = (watch('tags') || '').split(',').map(t => t.trim()).filter(Boolean)
                       const active = current.includes(tag)
                       return (

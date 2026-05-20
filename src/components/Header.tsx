@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button"
 import { useSession, signOut } from "next-auth/react"
-import { User, LogOut, ShoppingCart, Download, CreditCard, PenTool, Star } from "lucide-react"
+import { User, LogOut, ShoppingCart, Download, CreditCard, PenTool } from "lucide-react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { useSimpleAuth } from "@/hooks/useSimpleAuth"
@@ -12,8 +12,7 @@ import { useEffect, useState, useRef } from "react"
 import { cn } from "@/lib/utils"
 
 const NAV_ITEMS = [
-  { href: "/", label: "서술형 자료", icon: PenTool },
-  { href: "/products/free", label: "무료 자료", icon: Star },
+  { href: "/", label: "조건영작배열", icon: PenTool },
 ]
 
 export default function Header() {

@@ -25,7 +25,7 @@ export default function RefundPolicyPage() {
               <div className="flex items-center justify-center gap-4 text-sm text-gray-500 mt-4">
                 <div className="flex items-center gap-2">
                   <Calendar className="w-4 h-4" />
-                  <span>시행일: 2025년 11월 10일</span>
+                  <span>시행일: 2026년 5월 20일</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <User className="w-4 h-4" />
@@ -228,6 +228,9 @@ export default function RefundPolicyPage() {
                   <div className="space-y-2">
                     <p><strong>상호명:</strong> 페이퍼릭(Payperic)</p>
                     <p><strong>대표자:</strong> 박준규</p>
+                    <p><strong>사업자등록번호:</strong> 246-47-01070</p>
+                    <p><strong>통신판매업신고:</strong> 제 2025-부산해운대-1495호</p>
+                    <p><strong>주소:</strong> 부산광역시 해운대구 센텀중앙로 48, 1304호(우동, 에이스하이테크21)</p>
                     <p><strong>이메일:</strong> payperic@naver.com</p>
                     <p><strong>연락처:</strong> 010-7927-0806</p>
                     <p><strong>운영시간:</strong> 평일 09:00 - 18:00 (주말 및 공휴일 휴무)</p>
@@ -243,8 +246,8 @@ export default function RefundPolicyPage() {
                 부칙
               </h2>
               <div className="bg-gray-50 p-4 rounded-lg space-y-2">
-                <p className="text-gray-700"><strong>시행일:</strong> 이 환불 정책은 2025년 11월 10일부터 시행됩니다.</p>
-                <p className="text-sm text-gray-600">본 정책은 쏠북(주식회사 북아이피스) 등 디지털 콘텐츠 플랫폼의 환불 정책을 참고하여 작성되었으며, 전자상거래 등에서의 소비자보호에 관한 법률을 준수합니다.</p>
+                <p className="text-gray-700"><strong>시행일:</strong> 이 환불 정책은 2026년 5월 20일부터 시행됩니다.</p>
+                <p className="text-sm text-gray-600">본 정책은 전자상거래 등에서의 소비자보호에 관한 법률을 준수합니다.</p>
               </div>
             </section>
 

@@ -6,7 +6,7 @@ import { useSession } from 'next-auth/react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { useSimpleAuth } from '@/hooks/useSimpleAuth'
 import Layout from '@/components/Layout'
-import { Download, User, FileText, CreditCard, ChevronRight, Loader2, Star } from 'lucide-react'
+import { Download, User, FileText, CreditCard, ChevronRight, Loader2 } from 'lucide-react'
 import Link from 'next/link'
 
 export default function UserDashboard() {
@@ -84,18 +84,6 @@ export default function UserDashboard() {
                     <span className="flex items-center gap-2">
                       <Download className="w-4 h-4 text-gray-400" />
                       구매한 자료 다운로드
-                    </span>
-                    <ChevronRight className="w-4 h-4 text-gray-400 flex-shrink-0" />
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="/products/free"
-                    className="flex items-center justify-between py-3 text-gray-700 hover:text-emerald-600 transition-colors border-b border-gray-100 last:border-0"
-                  >
-                    <span className="flex items-center gap-2">
-                      <Star className="w-4 h-4 text-gray-400" />
-                      공유(무료) 자료
                     </span>
                     <ChevronRight className="w-4 h-4 text-gray-400 flex-shrink-0" />
                   </Link>

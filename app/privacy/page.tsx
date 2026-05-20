@@ -25,7 +25,7 @@ export default function PrivacyPage() {
               <div className="flex items-center justify-center gap-4 text-sm text-gray-500 mt-4">
                 <div className="flex items-center gap-2">
                   <Calendar className="w-4 h-4" />
-                  <span>시행일: 2024년 1월 1일</span>
+                  <span>시행일: 2026년 5월 20일</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <User className="w-4 h-4" />
@@ -179,8 +179,8 @@ export default function PrivacyPage() {
                 <div className="bg-indigo-50 p-4 rounded-lg">
                   <h3 className="font-semibold mb-2">▶ 개인정보 보호책임자</h3>
                   <div className="space-y-1">
-                    <p><strong>성명:</strong> PAYPERIC 관리자</p>
-                    <p><strong>연락처:</strong> contact@dipthink.co.kr</p>
+                    <p><strong>성명:</strong> 박준규</p>
+                    <p><strong>연락처:</strong> payperic@naver.com</p>
                   </div>
                 </div>
 
@@ -203,7 +203,7 @@ export default function PrivacyPage() {
                 부칙
               </h2>
               <div className="bg-gray-50 p-4 rounded-lg">
-                <p className="text-gray-700"><strong>시행일:</strong> 이 개인정보처리방침은 2024년 1월 1일부터 시행됩니다.</p>
+                <p className="text-gray-700"><strong>시행일:</strong> 이 개인정보처리방침은 2026년 5월 20일부터 시행됩니다.</p>
               </div>
             </section>
 

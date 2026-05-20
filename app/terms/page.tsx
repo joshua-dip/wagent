@@ -25,7 +25,7 @@ export default function TermsPage() {
               <div className="flex items-center justify-center gap-4 text-sm text-gray-500 mt-4">
                 <div className="flex items-center gap-2">
                   <Calendar className="w-4 h-4" />
-                  <span>시행일: 2024년 1월 1일</span>
+                  <span>시행일: 2026년 5월 20일</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <User className="w-4 h-4" />
@@ -160,7 +160,7 @@ export default function TermsPage() {
                 부칙
               </h2>
               <div className="bg-gray-50 p-4 rounded-lg">
-                <p className="text-gray-700"><strong>시행일:</strong> 이 약관은 2024년 1월 1일부터 시행됩니다.</p>
+                <p className="text-gray-700"><strong>시행일:</strong> 이 약관은 2026년 5월 20일부터 시행됩니다.</p>
               </div>
             </section>
 

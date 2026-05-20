@@ -14,12 +14,11 @@ import { cn } from "@/lib/utils"
 import {
   FileText,
   Loader2,
-  MessageCircle,
   ShoppingCart,
   Check,
   X,
   ArrowRight,
-  ArrowUpDown,
+  Download,
 } from "lucide-react"
 
 interface Product {
@@ -37,11 +36,6 @@ interface Product {
   createdAt: string
   fileSize: number
 }
-
-const EXAMS = [
-  { id: "26년 3월", label: "26년 3월" },
-  { id: "25년 3월", label: "25년 3월" },
-]
 
 const GRADE_CARDS = [
   {
@@ -64,15 +58,109 @@ const GRADE_CARDS = [
   },
 ]
 
-const QUESTION_TYPES = [
-  { id: "all", label: "전체" },
-  { id: "빈칸재배열형(주제)", label: "빈칸재배열형(주제)" },
-  { id: "빈칸재배열형(어법)", label: "빈칸재배열형(어법)" },
-  { id: "요약문조건영작형", label: "요약문조건영작형" },
+const EXAMS = [
+  { id: "26년 5월", label: "26년 5월" },
+  { id: "26년 3월", label: "26년 3월" },
+  { id: "25년 3월", label: "25년 3월" },
 ]
 
-const KAKAO_INQUIRY_URL =
-  process.env.NEXT_PUBLIC_KAKAO_CHANNEL_CHAT_URL ?? "https://pf.kakao.com/_qxbvtn/chat"
+const EXAM_GRADES: Record<string, readonly string[]> = {
+  "26년 5월": ["고3"],
+  "26년 3월": ["고1", "고2", "고3"],
+  "25년 3월": ["고1", "고2", "고3"],
+}
+
+const DIFFICULTY_ORDER = ["최고난도", "고난도", "중난도", "기본난도"] as const
+type DifficultyLevel = (typeof DIFFICULTY_ORDER)[number]
+
+const DIFFICULTY_CONFIG: Record<
+  DifficultyLevel,
+  {
+    label: string
+    level: number
+    accent: string
+    border: string
+    bg: string
+    badge: string
+    bar: string
+    text: string
+  }
+> = {
+  최고난도: {
+    label: "최고난도",
+    level: 4,
+    accent: "from-rose-500 to-red-600",
+    border: "border-rose-200/90 hover:border-rose-300",
+    bg: "bg-gradient-to-br from-rose-50/90 via-white to-white",
+    badge: "bg-rose-100 text-rose-800 ring-1 ring-rose-200/80",
+    bar: "bg-rose-500",
+    text: "text-rose-800",
+  },
+  고난도: {
+    label: "고난도",
+    level: 3,
+    accent: "from-orange-500 to-amber-600",
+    border: "border-orange-200/90 hover:border-orange-300",
+    bg: "bg-gradient-to-br from-orange-50/90 via-white to-white",
+    badge: "bg-orange-100 text-orange-800 ring-1 ring-orange-200/80",
+    bar: "bg-orange-500",
+    text: "text-orange-800",
+  },
+  중난도: {
+    label: "중난도",
+    level: 2,
+    accent: "from-amber-400 to-yellow-500",
+    border: "border-amber-200/90 hover:border-amber-300",
+    bg: "bg-gradient-to-br from-amber-50/80 via-white to-white",
+    badge: "bg-amber-100 text-amber-900 ring-1 ring-amber-200/80",
+    bar: "bg-amber-400",
+    text: "text-amber-900",
+  },
+  기본난도: {
+    label: "기본난도",
+    level: 1,
+    accent: "from-emerald-400 to-teal-500",
+    border: "border-emerald-200/90 hover:border-emerald-300",
+    bg: "bg-gradient-to-br from-emerald-50/80 via-white to-white",
+    badge: "bg-emerald-100 text-emerald-800 ring-1 ring-emerald-200/80",
+    bar: "bg-emerald-500",
+    text: "text-emerald-800",
+  },
+}
+
+function getDifficultyLevel(product: Product): DifficultyLevel | null {
+  return DIFFICULTY_ORDER.find((d) => product.tags?.includes(d)) ?? null
+}
+
+function isFullSet(product: Product) {
+  return product.tags?.includes("전체") || product.title.includes("풀세트")
+}
+
+function isDifficultyBundle(product: Product) {
+  return product.tags?.includes("난이도별")
+}
+
+function isNumberItem(product: Product) {
+  return !isFullSet(product) && !isDifficultyBundle(product)
+}
+
+function sortByQuestionNumber(a: Product, b: Product) {
+  const parseNum = (title: string) => {
+    const range = title.match(/(\d+)~(\d+)번/)
+    if (range) return parseInt(range[1], 10)
+    const single = title.match(/(\d+)번/)
+    return single ? parseInt(single[1], 10) : 999
+  }
+  return parseNum(a.title) - parseNum(b.title)
+}
+
+function sortByDifficulty(a: Product, b: Product) {
+  const idx = (p: Product) => {
+    const level = DIFFICULTY_ORDER.find((d) => p.tags?.includes(d))
+    return level ? DIFFICULTY_ORDER.indexOf(level) : 99
+  }
+  return idx(a) - idx(b)
+}
 
 export default function HomePage() {
   const { data: session } = useSession()
@@ -80,21 +168,19 @@ export default function HomePage() {
   const { addToCart, isInCart, cartItems, removeFromCart } = useCart()
   const router = useRouter()
 
-  const currentUser = simpleAuth.user || session?.user
   const isAuthenticated = simpleAuth.isAuthenticated || !!session
 
-  const [selectedExam, setSelectedExam] = useState("26년 3월")
-  const [selectedGrade, setSelectedGrade] = useState<string | null>(null)
-  const [selectedType, setSelectedType] = useState("all")
+  const [selectedGrade, setSelectedGrade] = useState<string>("고3")
+  const [selectedExam, setSelectedExam] = useState("26년 5월")
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
   const [drawerOpen, setDrawerOpen] = useState(false)
-  const [sortByNumber, setSortByNumber] = useState(false)
+  const [downloadingId, setDownloadingId] = useState<string | null>(null)
 
   const fetchProducts = useCallback(async () => {
     try {
       setLoading(true)
-      const response = await fetch("/api/products?limit=100&excludeFree=true")
+      const response = await fetch("/api/products?limit=100")
       const data = await response.json()
       if (response.ok) {
         setProducts(data.products || [])
@@ -110,28 +196,335 @@ export default function HomePage() {
     fetchProducts()
   }, [fetchProducts])
 
-  const filteredProducts = products
-    .filter((p) => {
-      if (!p.tags?.includes(selectedExam)) return false
-      if (selectedGrade && !p.tags?.includes(selectedGrade)) return false
-      if (selectedType !== "all" && !p.tags?.includes(selectedType)) return false
-      return true
-    })
-    .sort((a, b) => {
-      if (!sortByNumber) return 0
-      const numA = a.tags?.includes("전체") ? -1 : parseInt(a.title.match(/(\d+)번/)?.[1] ?? "999")
-      const numB = b.tags?.includes("전체") ? -1 : parseInt(b.title.match(/(\d+)번/)?.[1] ?? "999")
-      return numA - numB
-    })
+  const visibleExams = EXAMS.filter((e) =>
+    (EXAM_GRADES[e.id] ?? ["고1", "고2", "고3"]).includes(selectedGrade)
+  )
 
-  const toggleGrade = (gradeId: string) => {
-    setSelectedGrade((prev) => (prev === gradeId ? null : gradeId))
-  }
+  useEffect(() => {
+    if (!visibleExams.some((e) => e.id === selectedExam)) {
+      const fallback = visibleExams[0]
+      if (fallback) setSelectedExam(fallback.id)
+    }
+  }, [selectedGrade, selectedExam, visibleExams])
+
+  const filteredProducts = products.filter((p) => {
+    if (!p.tags?.includes(selectedGrade)) return false
+    if (!p.tags?.includes(selectedExam)) return false
+    return true
+  })
+
+  const fullSetProducts = filteredProducts.filter(isFullSet)
+  const difficultyProducts = filteredProducts
+    .filter(isDifficultyBundle)
+    .sort(sortByDifficulty)
+  const numberProducts = filteredProducts
+    .filter(isNumberItem)
+    .sort(sortByQuestionNumber)
+  const freeSampleCount = numberProducts.filter((p) => p.price === 0).length
 
   const formatPrice = (price: number) =>
     new Intl.NumberFormat("ko-KR").format(price)
 
   const cartTotal = cartItems.reduce((sum, i) => sum + i.price, 0)
+
+  const handleFreeDownload = async (
+    e: React.MouseEvent,
+    productId: string
+  ) => {
+    e.preventDefault()
+    e.stopPropagation()
+    if (!isAuthenticated) {
+      router.push("/auth/simple-signin")
+      return
+    }
+    try {
+      setDownloadingId(productId)
+      const res = await fetch(`/api/products/${productId}/download`)
+      const data = await res.json()
+      if (!res.ok) {
+        alert(data.error || "다운로드 중 오류가 발생했습니다.")
+        return
+      }
+      if (data.pdfDownloadUrl) window.open(data.pdfDownloadUrl, "_blank")
+      else if (data.downloadUrl) window.open(data.downloadUrl, "_blank")
+      if (data.hwpDownloadUrl) {
+        setTimeout(() => window.open(data.hwpDownloadUrl, "_blank"), 250)
+      }
+    } catch {
+      alert("다운로드 중 오류가 발생했습니다.")
+    } finally {
+      setDownloadingId(null)
+    }
+  }
+
+  const renderProductCard = (
+    product: Product,
+    variant: "full" | "default" | "difficulty" | "number"
+  ) => {
+    const inCart = isInCart(product._id)
+    const isFree = product.price === 0
+    const isBundle = variant === "full"
+    const difficulty = variant === "difficulty" ? getDifficultyLevel(product) : null
+    const diffStyle = difficulty ? DIFFICULTY_CONFIG[difficulty] : null
+
+    return (
+      <div
+        key={product._id}
+        className={cn(
+          "group relative rounded-2xl",
+          isBundle && "sm:col-span-2 lg:col-span-3",
+          isFree && "ring-2 ring-emerald-200/80 ring-offset-1"
+        )}
+      >
+        <Link
+          href={`/products/${product._id}`}
+          className="block rounded-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 focus-visible:ring-offset-2"
+        >
+          <Card
+            className={cn(
+              "h-full overflow-hidden shadow-sm transition-all duration-300 group-hover:-translate-y-0.5",
+              isBundle
+                ? "border-emerald-200/90 bg-gradient-to-r from-emerald-50/70 via-white to-teal-50/70 hover:border-emerald-300 hover:shadow-lg hover:shadow-emerald-900/10"
+                : diffStyle
+                  ? cn(diffStyle.bg, diffStyle.border, "border hover:shadow-lg")
+                  : isFree
+                    ? "border-emerald-200/90 bg-gradient-to-br from-emerald-50/50 to-white hover:border-emerald-300 hover:shadow-lg"
+                    : "border border-slate-200/90 bg-white hover:border-emerald-200/90 hover:shadow-lg hover:shadow-emerald-900/[0.07]"
+            )}
+          >
+            {isBundle && (
+              <div className="h-1 w-full bg-gradient-to-r from-emerald-400 via-teal-400 to-emerald-500" />
+            )}
+            {diffStyle && (
+              <div className={cn("h-1.5 w-full bg-gradient-to-r", diffStyle.accent)} />
+            )}
+            <CardContent className="flex flex-col justify-between h-full p-5 sm:p-6 pb-16 sm:pb-[4.25rem]">
+              {diffStyle ? (
+                <>
+                  <div className="flex items-start justify-between gap-3 mb-4">
+                    <div className="space-y-2 min-w-0">
+                      <span
+                        className={cn(
+                          "inline-flex items-center rounded-lg px-2.5 py-1 text-sm font-bold",
+                          diffStyle.badge
+                        )}
+                      >
+                        {diffStyle.label}
+                      </span>
+                      <div className="flex items-center gap-1" aria-label={`난이도 ${diffStyle.level}단계`}>
+                        {DIFFICULTY_ORDER.map((d) => (
+                          <span
+                            key={d}
+                            className={cn(
+                              "h-2 flex-1 max-w-[2rem] rounded-full",
+                              DIFFICULTY_CONFIG[d].level <= diffStyle.level
+                                ? diffStyle.bar
+                                : "bg-slate-200/80"
+                            )}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                    <div className="shrink-0 text-right">
+                      <span className="text-base sm:text-lg font-bold tabular-nums text-slate-900">
+                        {formatPrice(product.price)}원
+                      </span>
+                      {product.originalPrice && product.originalPrice > product.price && (
+                        <p className="text-[11px] text-slate-400 line-through tabular-nums">
+                          {formatPrice(product.originalPrice)}원
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                  <div className="mt-auto">
+                    <p className={cn("text-lg sm:text-xl font-bold leading-tight", diffStyle.text)}>
+                      {diffStyle.label} 전체
+                    </p>
+                    <p className="text-xs text-slate-500 mt-1.5">18~45번 · 25문항 묶음</p>
+                  </div>
+                </>
+              ) : (
+              <>
+              <div className="flex items-start justify-between gap-3 mb-3">
+                {product.tags?.length > 0 && (
+                  <div className="flex flex-wrap gap-1.5">
+                    {product.tags
+                      .filter((t) => !["26년 3월", "25년 3월", "난이도별"].includes(t))
+                      .slice(0, 2)
+                      .map((tag) => (
+                        <Badge
+                          key={tag}
+                          variant="secondary"
+                          className="text-[10px] sm:text-xs bg-emerald-50 text-emerald-800 border-0"
+                        >
+                          {tag}
+                        </Badge>
+                      ))}
+                  </div>
+                )}
+                <div className="shrink-0 text-right">
+                  {!isFree &&
+                    product.originalPrice &&
+                    product.originalPrice > product.price && (
+                      <span className="inline-block mb-0.5 rounded-md bg-rose-100 px-1.5 py-0.5 text-[10px] font-bold text-rose-700 tabular-nums">
+                        {Math.round(
+                          ((product.originalPrice - product.price) /
+                            product.originalPrice) *
+                            100
+                        )}
+                        % OFF
+                      </span>
+                    )}
+                  <span
+                    className={cn(
+                      "block text-base sm:text-lg font-bold tabular-nums",
+                      isFree ? "text-emerald-600" : "text-slate-900"
+                    )}
+                  >
+                    {isFree ? "무료" : `${formatPrice(product.price)}원`}
+                  </span>
+                  {!isFree &&
+                    product.originalPrice &&
+                    product.originalPrice > product.price && (
+                      <p className="text-[11px] text-slate-400 line-through tabular-nums">
+                        {formatPrice(product.originalPrice)}원
+                      </p>
+                    )}
+                </div>
+              </div>
+
+              <div className="mt-auto">
+                <h3 className="font-semibold text-slate-900 text-sm sm:text-base leading-snug group-hover:text-emerald-700 transition-colors line-clamp-2">
+                  {product.title}
+                </h3>
+                {isBundle && (
+                  <p className="text-[11px] text-slate-400 mt-1">
+                    18~45번 전 문항 · 4난이도 풀세트
+                  </p>
+                )}
+              </div>
+              </>
+              )}
+            </CardContent>
+          </Card>
+        </Link>
+
+        <div className="absolute bottom-4 right-4 sm:bottom-5 sm:right-5 z-10">
+          {isFree ? (
+            <button
+              type="button"
+              onClick={(e) => handleFreeDownload(e, product._id)}
+              disabled={downloadingId === product._id}
+              className="flex items-center gap-1.5 rounded-full px-3.5 py-2 text-xs font-semibold transition-all shadow-md min-h-[36px] bg-gradient-to-r from-emerald-500 to-teal-500 text-white hover:from-emerald-600 hover:to-teal-600 disabled:opacity-70"
+            >
+              {downloadingId === product._id ? (
+                <>
+                  <Loader2 className="h-3.5 w-3.5 shrink-0 animate-spin" />
+                  받는 중
+                </>
+              ) : (
+                <>
+                  <Download className="h-3.5 w-3.5 shrink-0" />
+                  다운로드
+                </>
+              )}
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.preventDefault()
+                e.stopPropagation()
+                if (!isAuthenticated) {
+                  router.push("/auth/simple-signin")
+                  return
+                }
+                if (inCart) {
+                  removeFromCart(product._id)
+                  return
+                }
+                addToCart({
+                  productId: product._id,
+                  title: product.title,
+                  price: product.price,
+                  originalPrice: product.originalPrice,
+                  category: product.category,
+                })
+                setDrawerOpen(true)
+              }}
+              className={cn(
+                "flex items-center gap-1.5 rounded-full px-3.5 py-2 text-xs font-semibold transition-all shadow-md min-h-[36px]",
+                inCart
+                  ? "bg-white text-emerald-700 border-2 border-emerald-200 shadow-emerald-900/10 hover:bg-red-50 hover:border-red-200 hover:text-red-700"
+                  : "bg-gradient-to-r from-emerald-600 to-teal-600 text-white hover:from-emerald-700 hover:to-teal-700 shadow-emerald-600/25"
+              )}
+              aria-pressed={inCart}
+            >
+              {inCart ? (
+                <>
+                  <Check className="h-3.5 w-3.5 shrink-0" />
+                  빼기
+                </>
+              ) : (
+                <>
+                  <ShoppingCart className="h-3.5 w-3.5 shrink-0" />
+                  담기
+                </>
+              )}
+            </button>
+          )}
+        </div>
+      </div>
+    )
+  }
+
+  const renderSection = (
+    title: string,
+    subtitle: string,
+    items: Product[],
+    variant: "full" | "default" | "difficulty" | "number"
+  ) => {
+    if (items.length === 0) return null
+
+    const cardVariant = variant === "number" ? "default" : variant
+
+    return (
+      <section className="mb-10 sm:mb-12 last:mb-0 pt-10 sm:pt-12 border-t border-slate-100 first:pt-0 first:border-t-0">
+        <div className="mb-4 sm:mb-5 flex items-start justify-between gap-3">
+          <div className="min-w-0">
+            <h2 className="text-base sm:text-lg font-bold text-slate-900">{title}</h2>
+            <p className="text-xs sm:text-sm text-slate-500 mt-0.5">{subtitle}</p>
+            {variant === "difficulty" && (
+              <div className="flex flex-wrap gap-2 mt-3">
+                {DIFFICULTY_ORDER.map((d) => (
+                  <span
+                    key={d}
+                    className={cn(
+                      "inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-semibold",
+                      DIFFICULTY_CONFIG[d].badge
+                    )}
+                  >
+                    <span className={cn("h-2 w-2 rounded-full", DIFFICULTY_CONFIG[d].bar)} />
+                    {d}
+                  </span>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+        <div
+          className={cn(
+            "grid gap-4 sm:gap-5",
+            variant === "difficulty"
+              ? "grid-cols-1 sm:grid-cols-2"
+              : "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3"
+          )}
+        >
+          {items.map((product) => renderProductCard(product, cardVariant))}
+        </div>
+      </section>
+    )
+  }
 
   return (
     <Layout>
@@ -142,38 +535,15 @@ export default function HomePage() {
             drawerOpen && "lg:pr-[21rem]"
           )}
         >
-          {/* Exam Period Tabs */}
-          <div className="flex gap-2 mb-5 sm:mb-6">
-            {EXAMS.map((exam) => (
-              <button
-                key={exam.id}
-                type="button"
-                onClick={() => {
-                  setSelectedExam(exam.id)
-                  setSelectedGrade(null)
-                  setSelectedType("all")
-                }}
-                className={cn(
-                  "rounded-lg px-4 py-2 text-sm font-semibold transition-all duration-200",
-                  selectedExam === exam.id
-                    ? "bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-md shadow-emerald-900/15"
-                    : "bg-white text-slate-500 border border-slate-200 hover:border-emerald-200 hover:text-emerald-800"
-                )}
-              >
-                {exam.label}
-              </button>
-            ))}
-          </div>
-
-          {/* Grade Cards */}
-          <div className="grid grid-cols-3 gap-3 sm:gap-5 mb-8 sm:mb-10">
+          {/* Grade Cards (primary) */}
+          <div className="grid grid-cols-3 gap-3 sm:gap-5 mb-6 sm:mb-8">
             {GRADE_CARDS.map((grade) => {
               const isSelected = selectedGrade === grade.id
               return (
                 <button
                   key={grade.id}
                   type="button"
-                  onClick={() => toggleGrade(grade.id)}
+                  onClick={() => setSelectedGrade(grade.id)}
                   className={cn(
                     "relative overflow-hidden rounded-2xl text-left transition-all duration-300 cursor-pointer",
                     "p-4 sm:p-6 lg:p-8",
@@ -191,14 +561,11 @@ export default function HomePage() {
                   </span>
 
                   <div className="relative z-10">
-                    <span className="inline-block text-[10px] sm:text-xs font-medium text-white/85 bg-white/15 rounded-full px-2 py-0.5 mb-2 sm:mb-3 backdrop-blur-sm">
-                      {selectedExam}
-                    </span>
                     <h3 className="text-sm sm:text-lg lg:text-xl font-bold text-white leading-tight">
                       {grade.title}
                     </h3>
                     <p className="hidden sm:block text-xs text-white/70 mt-1.5">
-                      서술형 문제 자료
+                      조건영작배열
                     </p>
                   </div>
                 </button>
@@ -206,147 +573,68 @@ export default function HomePage() {
             })}
           </div>
 
-          {/* Type Filter */}
+          {/* Exam Period */}
           <div className="sticky top-28 sm:top-[7.25rem] z-20 -mx-1 px-1 py-2 mb-4 sm:mb-6 bg-gradient-to-b from-white via-white/95 to-transparent">
-            <div className="flex items-center gap-2">
-              <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none flex-1">
-                {QUESTION_TYPES.map((type) => (
-                  <button
-                    key={type.id}
-                    type="button"
-                    onClick={() => setSelectedType(type.id)}
-                    className={cn(
-                      "shrink-0 rounded-full px-4 py-2 text-sm font-medium transition-all duration-200",
-                      selectedType === type.id
-                        ? "bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-md shadow-emerald-900/15 ring-2 ring-emerald-200/80 ring-offset-2"
-                        : "bg-white text-slate-700 border border-slate-200 shadow-sm hover:border-emerald-200 hover:bg-emerald-50/80 hover:text-emerald-800"
-                    )}
-                  >
-                    {type.label}
-                  </button>
-                ))}
-              </div>
-              <button
-                type="button"
-                onClick={() => setSortByNumber((v) => !v)}
-                className={cn(
-                  "shrink-0 flex items-center gap-1.5 rounded-full px-3.5 py-2 text-sm font-medium transition-all duration-200 whitespace-nowrap",
-                  sortByNumber
-                    ? "bg-emerald-50 text-emerald-700 border border-emerald-200 shadow-sm"
-                    : "bg-white text-slate-500 border border-slate-200 shadow-sm hover:border-slate-300 hover:text-slate-700"
-                )}
-              >
-                <ArrowUpDown className="h-3.5 w-3.5" />
-                번호순
-              </button>
+            <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
+              {visibleExams.map((exam) => (
+                <button
+                  key={exam.id}
+                  type="button"
+                  onClick={() => setSelectedExam(exam.id)}
+                  className={cn(
+                    "shrink-0 rounded-full px-4 py-2 text-sm font-medium transition-all duration-200",
+                    selectedExam === exam.id
+                      ? "bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-md shadow-emerald-900/15 ring-2 ring-emerald-200/80 ring-offset-2"
+                      : "bg-white text-slate-700 border border-slate-200 shadow-sm hover:border-emerald-200 hover:bg-emerald-50/80 hover:text-emerald-800"
+                  )}
+                >
+                  {exam.label}
+                </button>
+              ))}
             </div>
           </div>
 
-          {/* Product Grid */}
+          {/* Product Sections */}
           {loading ? (
             <div className="flex flex-col items-center justify-center py-24 gap-3">
               <Loader2 className="h-9 w-9 text-emerald-500 animate-spin" />
               <p className="text-slate-500 text-sm">자료를 불러오는 중…</p>
             </div>
           ) : filteredProducts.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
-              {filteredProducts.map((product) => {
-                const inCart = isInCart(product._id)
-                const isFree = product.price === 0
-                const isBundle = product.tags?.includes("전체")
-                return (
-                  <div key={product._id} className={cn("group relative rounded-2xl", isBundle && "sm:col-span-2 lg:col-span-3")}>
-                    <Link
-                      href={`/products/${product._id}`}
-                      className="block rounded-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 focus-visible:ring-offset-2"
-                    >
-                      <Card className={cn(
-                        "h-full overflow-hidden shadow-sm transition-all duration-300 group-hover:-translate-y-0.5",
-                        isBundle
-                          ? "border-emerald-200/90 bg-gradient-to-r from-emerald-50/70 via-white to-teal-50/70 hover:border-emerald-300 hover:shadow-lg hover:shadow-emerald-900/10"
-                          : "border border-slate-200/90 bg-white hover:border-emerald-200/90 hover:shadow-lg hover:shadow-emerald-900/[0.07]"
-                      )}>
-                        {isBundle && <div className="h-1 w-full bg-gradient-to-r from-emerald-400 via-teal-400 to-emerald-500" />}
-                        <CardContent className={cn(
-                          "flex flex-col justify-between h-full",
-                          isBundle ? "p-5 sm:p-6 pb-16 sm:pb-[4.25rem]" : "p-5 sm:p-6 pb-16 sm:pb-[4.25rem]"
-                        )}>
-                          <div className="flex items-start justify-between gap-3 mb-3">
-                            {product.tags?.length > 0 && (
-                              <div className="flex flex-wrap gap-1.5">
-                                {product.tags.filter(t => !['26년 3월', '25년 3월'].includes(t)).slice(0, 2).map((tag) => (
-                                  <Badge
-                                    key={tag}
-                                    variant="secondary"
-                                    className="text-[10px] sm:text-xs bg-emerald-50 text-emerald-800 border-0"
-                                  >
-                                    {tag}
-                                  </Badge>
-                                ))}
-                              </div>
-                            )}
-                            <span
-                              className={cn(
-                                "shrink-0 text-base sm:text-lg font-bold tabular-nums",
-                                isFree ? "text-emerald-600" : "text-slate-900"
-                              )}
-                            >
-                              {isFree ? "무료" : `${formatPrice(product.price)}원`}
-                            </span>
-                          </div>
-
-                          <div className="mt-auto">
-                            <h3 className="font-semibold text-slate-900 text-sm sm:text-base leading-snug group-hover:text-emerald-700 transition-colors line-clamp-2">
-                              {product.title}
-                            </h3>
-                            {product.tags?.includes("전체") && (
-                              <p className="text-[11px] text-slate-400 mt-1">
-                                {product.description?.match(/(\d+)지문/)?.[0] ?? ""} · 25-28, 43-45 제외
-                              </p>
-                            )}
-                          </div>
-                        </CardContent>
-                      </Card>
-                    </Link>
-
-                    {/* Cart button overlay */}
-                    {!isFree && (
-                      <div className="absolute bottom-4 right-4 sm:bottom-5 sm:right-5 z-10">
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.preventDefault()
-                            e.stopPropagation()
-                            if (!isAuthenticated) { router.push("/auth/simple-signin"); return }
-                            if (inCart) { removeFromCart(product._id); return }
-                            addToCart({
-                              productId: product._id,
-                              title: product.title,
-                              price: product.price,
-                              originalPrice: product.originalPrice,
-                              category: product.category,
-                            })
-                            setDrawerOpen(true)
-                          }}
-                          className={cn(
-                            "flex items-center gap-1.5 rounded-full px-3.5 py-2 text-xs font-semibold transition-all shadow-md min-h-[36px]",
-                            inCart
-                              ? "bg-white text-emerald-700 border-2 border-emerald-200 shadow-emerald-900/10 hover:bg-red-50 hover:border-red-200 hover:text-red-700"
-                              : "bg-gradient-to-r from-emerald-600 to-teal-600 text-white hover:from-emerald-700 hover:to-teal-700 shadow-emerald-600/25"
-                          )}
-                          aria-pressed={inCart}
-                        >
-                          {inCart ? (
-                            <><Check className="h-3.5 w-3.5 shrink-0" />빼기</>
-                          ) : (
-                            <><ShoppingCart className="h-3.5 w-3.5 shrink-0" />담기</>
-                          )}
-                        </button>
-                      </div>
-                    )}
+            <div>
+              {freeSampleCount > 0 && (
+                <div className="mb-6 sm:mb-8 flex items-center gap-3 rounded-xl border border-emerald-200/80 bg-gradient-to-r from-emerald-50 via-emerald-50/70 to-teal-50/60 px-4 py-3 sm:px-5 sm:py-4">
+                  <span className="shrink-0 inline-flex items-center justify-center rounded-lg bg-emerald-500 px-2 py-1 text-[11px] font-bold text-white">
+                    무료
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-semibold text-emerald-900">
+                      먼저 {freeSampleCount}개 문항을 무료로 체험해 보세요
+                    </p>
+                    <p className="text-xs text-emerald-700/80 mt-0.5">
+                      번호별 섹션에서 무료 표시된 자료를 다운로드할 수 있어요
+                    </p>
                   </div>
-                )
-              })}
+                </div>
+              )}
+              {renderSection(
+                "풀세트",
+                "전 문항 × 전 난이도를 한 번에",
+                fullSetProducts,
+                "full"
+              )}
+              {renderSection(
+                "난이도별",
+                "한 난이도의 전체 문항 묶음",
+                difficultyProducts,
+                "difficulty"
+              )}
+              {renderSection(
+                "번호별",
+                "문항 단위 · 4단계 난이도 포함",
+                numberProducts,
+                "number"
+              )}
             </div>
           ) : (
             <div className="text-center py-16 sm:py-24">
@@ -354,49 +642,14 @@ export default function HomePage() {
                 <FileText className="h-8 w-8 text-emerald-600" />
               </div>
               <h3 className="text-lg font-semibold text-slate-900 mb-2">
-                {selectedGrade || selectedType !== "all"
-                  ? "해당 조건의 자료가 아직 없어요"
-                  : "등록된 자료가 없어요"}
+                해당 조건의 자료가 아직 없어요
               </h3>
               <p className="text-slate-500 text-sm max-w-md mx-auto mb-6">
-                {selectedGrade || selectedType !== "all"
-                  ? "다른 학년이나 유형을 선택해 보세요. 새 자료가 곧 등록됩니다."
-                  : "서술형 자료가 곧 등록됩니다. 조금만 기다려 주세요."}
+                {selectedGrade} · {selectedExam} 자료가 곧 등록됩니다.
               </p>
-              {(selectedGrade || selectedType !== "all") && (
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => {
-                    setSelectedGrade(null)
-                    setSelectedType("all")
-                  }}
-                  className="border-emerald-200 hover:bg-emerald-50 text-emerald-800"
-                >
-                  전체 보기
-                </Button>
-              )}
             </div>
           )}
 
-          {/* Bottom CTA */}
-          <div className="mt-12 sm:mt-16 rounded-2xl border border-emerald-100/90 bg-gradient-to-br from-emerald-50/80 via-white to-teal-50/60 p-6 sm:p-8 text-center">
-            <h3 className="text-base sm:text-lg font-semibold text-slate-900 mb-2">
-              원하는 자료가 없으신가요?
-            </h3>
-            <p className="text-sm text-slate-600 mb-5 max-w-md mx-auto">
-              맞춤 서술형 자료 제작도 가능합니다. 카카오톡으로 편하게 문의해 주세요.
-            </p>
-            <a href={KAKAO_INQUIRY_URL} target="_blank" rel="noopener noreferrer">
-              <Button
-                type="button"
-                className="font-semibold bg-[#FEE500] text-[#191919] hover:bg-[#FDD835] border-0 shadow-md"
-              >
-                <MessageCircle className="h-4 w-4 mr-2" />
-                카카오톡 문의
-              </Button>
-            </a>
-          </div>
         </div>
       </div>
 

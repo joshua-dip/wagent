@@ -1,7 +1,5 @@
-import { 
+import {
   Home,
-  Star,
-  PenTool,
   Settings,
   Upload,
   BarChart3,
@@ -47,27 +45,6 @@ export const menuConfig: MenuSection[] = [
         title: "구매한 자료",
         href: "/my/purchases",
         icon: Download,
-      },
-      {
-        title: "무료 자료",
-        href: "/products/free",
-        icon: Star,
-      },
-    ]
-  },
-
-  // ===================================
-  // 관리자 전용 - 서술형 맞춤 제작
-  // ===================================
-  {
-    title: "맞춤 제작",
-    roles: ['admin'], // 관리자만 이 섹션을 볼 수 있음
-    items: [
-      {
-        title: "서술형 자료 맞춤 제작",
-        href: "/custom-order",
-        icon: PenTool,
-        roles: ['admin'],
       },
     ]
   },

@@ -10,13 +10,13 @@ import { XCircle, Home, RefreshCw } from 'lucide-react'
 function PaymentFailContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
-  
+
   const code = searchParams.get('code')
   const message = searchParams.get('message')
 
   return (
     <Layout>
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-red-50 to-pink-50 py-12 px-4">
+      <div className="min-h-screen flex flex-col items-center justify-center gap-6 bg-gradient-to-br from-red-50 to-pink-50 py-12 px-4">
         <Card className="w-full max-w-md border-red-200 shadow-xl">
           <CardHeader className="text-center pb-4">
             <div className="w-20 h-20 bg-gradient-to-r from-red-500 to-pink-500 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -99,6 +99,7 @@ function PaymentFailContent() {
             </div>
           </CardContent>
         </Card>
+
       </div>
     </Layout>
   )

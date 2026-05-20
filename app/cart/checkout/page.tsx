@@ -51,15 +51,15 @@ export default function CartCheckoutPage() {
 
     // 인증 체크
     if (!isAuthenticated) {
-      setErrorMessage('로그인이 필요합니다. 잠시 후 로그인 페이지로 이동합니다.')
-      const id = window.setTimeout(() => router.push('/auth/simple-signin'), 1800)
+      setErrorMessage('결제하려면 카카오 로그인이 필요합니다. 로그인 페이지로 이동합니다.')
+      const id = window.setTimeout(() => router.push('/auth/simple-signin'), 300)
       return () => clearTimeout(id)
     }
 
     // 장바구니가 비어있는지 체크
     if (cartItems.length === 0) {
-      setErrorMessage('장바구니가 비어 있습니다. 잠시 후 장바구니로 이동합니다.')
-      const id = window.setTimeout(() => router.push('/cart'), 1800)
+      setErrorMessage('장바구니가 비어 있어 결제할 수 없습니다.')
+      const id = window.setTimeout(() => router.push('/cart'), 300)
       return () => clearTimeout(id)
     }
   }, [isAuthLoading, isAuthenticated, cartItems.length, router, simpleAuth.isLoading, status, simpleAuth.isAuthenticated, session, currentUser])
