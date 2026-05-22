@@ -184,7 +184,7 @@ export function MyPurchasesClient({ copy = defaultCopy }: { copy?: MyPurchasesCo
                 </div>
                 <h3 className="text-xl font-semibold text-gray-900 mb-2">{copy.emptyTitle}</h3>
                 <p className="text-gray-600 mb-6">{copy.emptyDescription}</p>
-                <Link href="/products">
+                <Link href="/">
                   <Button className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700">
                     <FileText className="w-4 h-4 mr-2" />
                     상품 둘러보기

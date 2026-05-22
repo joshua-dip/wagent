@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button"
 import { useSession, signOut } from "next-auth/react"
-import { User, LogOut, ShoppingCart, Download, CreditCard, PenTool } from "lucide-react"
+import { User, LogOut, ShoppingCart, Download, CreditCard } from "lucide-react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { useSimpleAuth } from "@/hooks/useSimpleAuth"
@@ -12,7 +12,7 @@ import { useEffect, useState, useRef } from "react"
 import { cn } from "@/lib/utils"
 
 const NAV_ITEMS = [
-  { href: "/", label: "조건영작배열", icon: PenTool },
+  { href: "/", label: "조건영작배열" },
 ]
 
 export default function Header() {
@@ -45,12 +45,6 @@ export default function Header() {
     <header className="sticky top-0 z-50 w-full bg-white/90 backdrop-blur-md shadow-sm">
       <div className="flex h-14 sm:h-16 items-center justify-between gap-3 px-3 sm:px-5 lg:px-8 max-w-[1600px] mx-auto border-b border-emerald-100/80">
         <Link href="/" className="flex items-center gap-2.5 group shrink-0">
-          <div
-            className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl flex items-center justify-center text-white font-bold text-sm sm:text-base shadow-md shadow-[#5eead4]/35 group-hover:shadow-[#5eead4]/50 transition-shadow bg-[linear-gradient(135deg,#6ee7b7_0%,#5eead4_45%,#2dd4bf_100%)]"
-            aria-hidden
-          >
-            P
-          </div>
           <div>
             <span className="font-bold text-base sm:text-lg tracking-tight bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-600 bg-clip-text text-transparent">
               PAYPERIC
@@ -197,7 +191,6 @@ export default function Header() {
         <nav className="border-b border-slate-100 bg-white/80">
           <div className="flex items-center gap-1 px-3 sm:px-5 lg:px-8 max-w-[1600px] mx-auto">
             {NAV_ITEMS.map((item) => {
-              const Icon = item.icon
               const isActive = item.href === "/" ? pathname === "/" : pathname?.startsWith(item.href)
               return (
                 <Link
@@ -210,7 +203,6 @@ export default function Header() {
                       : "border-transparent text-slate-500 hover:text-slate-900 hover:border-slate-300"
                   )}
                 >
-                  <Icon className="h-4 w-4" />
                   {item.label}
                 </Link>
               )

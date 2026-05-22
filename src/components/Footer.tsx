@@ -16,11 +16,10 @@ export default function Footer() {
         <div className="flex flex-col sm:flex-row sm:items-start gap-8 sm:gap-12 mb-8">
           {/* 브랜드 */}
           <div className="shrink-0">
-            <div className="flex items-center gap-2 mb-2">
-              <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-emerald-400 to-teal-500 flex items-center justify-center text-white font-bold text-sm shadow-sm">
-                P
-              </div>
-              <span className="font-bold text-slate-900 text-lg tracking-tight">PAYPERIC</span>
+            <div className="mb-2">
+              <span className="font-bold text-lg tracking-tight bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-600 bg-clip-text text-transparent">
+                PAYPERIC
+              </span>
             </div>
             <p className="text-sm text-slate-500 max-w-[240px] leading-relaxed">
               고등 영어 서술형 자료를 한곳에서 구매하고 바로 다운로드하세요.

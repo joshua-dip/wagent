@@ -21,7 +21,6 @@ import {
   CreditCard,
   Activity,
   Loader2,
-  Upload,
 } from "lucide-react"
 import Link from "next/link"
 import { cn } from "@/lib/utils"
@@ -175,7 +174,6 @@ export default function AdminDashboardPage() {
   ]
 
   const quickActions = [
-    { href: "/admin/upload", icon: Upload, label: "자료 업로드" },
     { href: "/admin/products", icon: Package, label: "상품 관리" },
     { href: "/admin/users", icon: Users, label: "사용자 관리" },
   ]

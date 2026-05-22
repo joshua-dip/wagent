@@ -147,7 +147,7 @@ export default function CartPage() {
                   </Button>
                   <Button
                     className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700"
-                    onClick={() => router.push('/products')}
+                    onClick={() => router.push('/')}
                   >
                     <FileText className="w-4 h-4 mr-2" />
                     상품 둘러보기
@@ -281,7 +281,7 @@ export default function CartPage() {
                     <div className="text-center">
                       <Button
                         variant="ghost"
-                        onClick={() => router.push('/products')}
+                        onClick={() => router.push('/')}
                         className="text-gray-600"
                       >
                         쇼핑 계속하기

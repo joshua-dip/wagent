@@ -15,7 +15,6 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { 
   Search,
-  Plus,
   Edit,
   Trash2,
   Eye,
@@ -451,12 +450,6 @@ export default function AdminProductsPage() {
                 <RefreshCw className="w-4 h-4 mr-2" />
                 새로고침
               </Button>
-              <Link href="/admin/upload">
-                <Button className="bg-emerald-600 hover:bg-emerald-700">
-                  <Plus className="w-4 h-4 mr-2" />
-                  새 상품 업로드
-                </Button>
-              </Link>
             </div>
           </div>
         </div>
@@ -592,12 +585,7 @@ export default function AdminProductsPage() {
               <FileText className="w-12 h-12 text-gray-400 mx-auto mb-4" />
               <h3 className="text-lg font-medium text-gray-900 mb-2">상품이 없습니다</h3>
               <p className="text-gray-600 mb-4">첫 번째 상품을 업로드해보세요.</p>
-              <Link href="/admin/upload">
-                <Button>
-                  <Plus className="w-4 h-4 mr-2" />
-                  상품 업로드하기
-                </Button>
-              </Link>
+              <p className="text-sm text-gray-500">스크립트(`scripts/upload-*.ts`)로 업로드해 주세요.</p>
             </CardContent>
           </Card>
         ) : (

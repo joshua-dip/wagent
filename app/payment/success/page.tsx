@@ -96,13 +96,7 @@ function PaymentSuccessContent() {
               <h2 className="text-2xl font-bold text-gray-900 mb-2">결제 실패</h2>
               <p className="text-gray-600 mb-6">{error}</p>
               <div className="flex gap-3 justify-center">
-                <Button 
-                  variant="outline"
-                  onClick={() => router.push('/products')}
-                >
-                  상품 목록으로
-                </Button>
-                <Button 
+                <Button
                   onClick={() => router.push('/')}
                 >
                   <Home className="w-4 h-4 mr-2" />

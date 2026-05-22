@@ -326,7 +326,17 @@ export default function HomePage() {
                       </div>
                     </div>
                     <div className="shrink-0 text-right">
-                      <span className="text-base sm:text-lg font-bold tabular-nums text-slate-900">
+                      {product.originalPrice && product.originalPrice > product.price && (
+                        <span className="inline-block mb-0.5 rounded-md bg-rose-100 px-1.5 py-0.5 text-[10px] font-bold text-rose-700 tabular-nums">
+                          {Math.round(
+                            ((product.originalPrice - product.price) /
+                              product.originalPrice) *
+                              100
+                          )}
+                          % OFF
+                        </span>
+                      )}
+                      <span className="block text-base sm:text-lg font-bold tabular-nums text-slate-900">
                         {formatPrice(product.price)}원
                       </span>
                       {product.originalPrice && product.originalPrice > product.price && (

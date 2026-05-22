@@ -43,7 +43,6 @@ export function getUserRole(email?: string | null, role?: string): UserRole {
 const ADMIN_ONLY_PATHS = [
   '/admin',
   '/admin/dashboard',
-  '/admin/upload',
   '/admin/products',
   '/admin/storage-settings',
   // 추가 관리자 전용 경로를 여기에 추가하세요

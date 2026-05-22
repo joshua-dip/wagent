@@ -71,15 +71,7 @@ function PaymentFailContent() {
               </Button>
               
               <div className="flex gap-3">
-                <Button 
-                  variant="outline"
-                  className="flex-1"
-                  onClick={() => router.push('/products')}
-                >
-                  상품 목록으로
-                </Button>
-                
-                <Button 
+                <Button
                   variant="outline"
                   className="flex-1"
                   onClick={() => router.push('/')}

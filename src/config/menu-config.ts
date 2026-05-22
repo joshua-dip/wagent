@@ -1,7 +1,6 @@
 import {
   Home,
   Settings,
-  Upload,
   BarChart3,
   Download,
   LucideIcon
@@ -61,13 +60,6 @@ export const menuConfig: MenuSection[] = [
         href: "/admin/dashboard",
         icon: BarChart3,
         roles: ['admin'],
-      },
-      {
-        title: "자료 업로드",
-        href: "/admin/upload",
-        icon: Upload,
-        roles: ['admin'],
-        isNew: true, // 새 기능 표시
       },
       {
         title: "상품 관리",
