@@ -652,7 +652,7 @@ export default function HomePage() {
               <div id="section-number" className="scroll-mt-32 sm:scroll-mt-36">
                 {renderSection(
                   "번호별",
-                  "문항 단위 · 4단계 난이도 포함",
+                  `문항 단위 · 4단계 난이도 포함 · 총 ${numberProducts.length}개`,
                   numberProducts,
                   "number"
                 )}

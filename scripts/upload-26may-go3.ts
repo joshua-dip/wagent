@@ -35,9 +35,9 @@ const NUM_FILES: Array<{ filename: string; number: string; passages: number }> =
   { filename: `26년 5월 고3 영어모의고사 43~45번.pdf`, number: "43-45번", passages: 3 },
 ]
 
-// 난이도별: 28지문 × 200원 = 5,600원 정가 → 5,200원
-const DIFFICULTY_PRICE = 5200
-const DIFFICULTY_ORIGINAL = 5600
+// 난이도별: 22지문(18-20번 무료 제외) × 200원 = 4,400원 정가, 11% off → 3,900원
+const DIFFICULTY_PRICE = 3900
+const DIFFICULTY_ORIGINAL = 4400
 
 const DIFFICULTY_FILES: Array<{ filename: string; level: string }> = [
   { filename: "기본난도.pdf", level: "기본난도" },
@@ -48,8 +48,9 @@ const DIFFICULTY_FILES: Array<{ filename: string; level: string }> = [
 
 const ALL_BUNDLE = {
   filename: "26년 5월 고3 영어모의고사_조건영작배열_전번호.pdf",
-  price: 10800,
-  originalPrice: DIFFICULTY_PRICE * 4, // 20,800
+  // 18~20번 무료 제외 22지문 × 800원 = 17,600원 정가, 20% off → 14,000원
+  price: 14000,
+  originalPrice: 17600,
 }
 
 const s3 = new S3Client({
