@@ -38,12 +38,43 @@ export async function POST(request: NextRequest) {
     const { paymentKey, orderId, amount, productId, isCart } = await request.json();
 
     if (!paymentKey || !orderId || !amount) {
-      return NextResponse.json({ 
-        error: "결제 정보가 올바르지 않습니다." 
+      return NextResponse.json({
+        error: "결제 정보가 올바르지 않습니다."
       }, { status: 400 });
     }
 
     await connectDB();
+
+    // Idempotency 가드: 같은 paymentKey로 이미 Purchase가 존재하면 Toss 재호출 없이 기존 데이터 반환.
+    // (React StrictMode/네트워크 재시도로 confirm이 중복 호출되어도 사용자에게는 항상 성공 화면을 보임)
+    const existing = await Purchase.find({ paymentKey }).lean();
+    if (existing.length > 0) {
+      if (isCart || existing.length > 1) {
+        return NextResponse.json({
+          success: true,
+          message: "결제가 완료되었습니다.",
+          purchases: existing.map((p) => ({
+            _id: p._id,
+            productId: p.productId,
+            productTitle: p.productTitle,
+            amount: p.amount,
+            purchaseDate: p.purchaseDate,
+          })),
+        });
+      }
+      const p = existing[0];
+      return NextResponse.json({
+        success: true,
+        message: "결제가 완료되었습니다.",
+        purchase: {
+          _id: p._id,
+          productId: p.productId,
+          productTitle: p.productTitle,
+          amount: p.amount,
+          purchaseDate: p.purchaseDate,
+        },
+      });
+    }
 
     // 토스페이먼츠 결제 승인 API 호출
     // AWS Amplify 환경 변수 이슈로 인한 fallback 값 사용

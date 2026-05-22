@@ -155,10 +155,10 @@ export async function GET(
       const hwpOnS3 = hwpKey && isS3Path(hwpKey);
       if (pdfOnS3 || hwpOnS3) {
         const pdfDownloadUrl = pdfOnS3
-          ? await generateSecureDownloadUrl(normalizeS3Key(pdfKey!))
+          ? await generateSecureDownloadUrl(normalizeS3Key(pdfKey!), pdfName ?? undefined)
           : null;
         const hwpDownloadUrl = hwpOnS3
-          ? await generateSecureDownloadUrl(normalizeS3Key(hwpKey!))
+          ? await generateSecureDownloadUrl(normalizeS3Key(hwpKey!), hwpName ?? undefined)
           : null;
 
         const primaryUrl = pdfDownloadUrl || hwpDownloadUrl;

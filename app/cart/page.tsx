@@ -1,13 +1,15 @@
 "use client"
 
+import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Layout from '@/components/Layout'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { 
-  ShoppingCart, 
-  Trash2, 
-  ArrowRight, 
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
+import {
+  ShoppingCart,
+  Trash2,
+  ArrowRight,
   Home,
   FileText,
   AlertCircle
@@ -17,22 +19,25 @@ import { useSession } from 'next-auth/react'
 import { useCart } from '@/contexts/CartContext'
 import Image from 'next/image'
 
+type DialogState =
+  | { kind: "none" }
+  | { kind: "clear" }
+  | { kind: "remove"; productId: string }
+  | { kind: "signin" }
+
 export default function CartPage() {
   const router = useRouter()
   const { data: session, status } = useSession()
   const simpleAuth = useSimpleAuth()
   const { cartItems, removeFromCart, clearCart } = useCart()
+  const [dialog, setDialog] = useState<DialogState>({ kind: "none" })
 
   // 인증 확인
   const currentUser = simpleAuth.user || session?.user
   const isAuthenticated = simpleAuth.isAuthenticated || !!session
   const isAuthLoading = simpleAuth.isLoading || status === 'loading'
 
-  const handleClearCart = () => {
-    if (confirm('장바구니를 비우시겠습니까?')) {
-      clearCart()
-    }
-  }
+  const handleClearCart = () => setDialog({ kind: "clear" })
 
   const calculateTotal = () => {
     return cartItems.reduce((sum, item) => sum + item.price, 0)
@@ -53,9 +58,7 @@ export default function CartPage() {
     }
 
     if (!isAuthenticated) {
-      if (confirm('로그인이 필요합니다. 로그인 페이지로 이동하시겠습니까?')) {
-        router.push('/auth/simple-signin')
-      }
+      setDialog({ kind: "signin" })
       return
     }
 
@@ -64,10 +67,45 @@ export default function CartPage() {
   }
 
   const handleRemoveItem = (productId: string) => {
-    if (confirm('이 상품을 장바구니에서 제거하시겠습니까?')) {
-      removeFromCart(productId)
-    }
+    setDialog({ kind: "remove", productId })
   }
+
+  const closeDialog = () => setDialog({ kind: "none" })
+
+  const handleDialogConfirm = () => {
+    if (dialog.kind === "clear") {
+      clearCart()
+    } else if (dialog.kind === "remove") {
+      removeFromCart(dialog.productId)
+    } else if (dialog.kind === "signin") {
+      router.push('/auth/simple-signin')
+    }
+    closeDialog()
+  }
+
+  const dialogContent =
+    dialog.kind === "clear"
+      ? {
+          title: "장바구니를 비우시겠어요?",
+          description: "담아둔 모든 상품이 제거됩니다.",
+          confirmLabel: "비우기",
+          variant: "danger" as const,
+        }
+      : dialog.kind === "remove"
+        ? {
+            title: "이 상품을 장바구니에서 빼시겠어요?",
+            description: "다시 담으려면 상품 목록에서 추가해 주세요.",
+            confirmLabel: "빼기",
+            variant: "danger" as const,
+          }
+        : dialog.kind === "signin"
+          ? {
+              title: "로그인이 필요해요",
+              description: "결제를 진행하려면 먼저 로그인해 주세요.",
+              confirmLabel: "로그인하러 가기",
+              variant: "default" as const,
+            }
+          : null
 
   return (
     <Layout>
@@ -265,6 +303,17 @@ export default function CartPage() {
           )}
         </div>
       </div>
+      {dialogContent && (
+        <ConfirmDialog
+          open
+          title={dialogContent.title}
+          description={dialogContent.description}
+          confirmLabel={dialogContent.confirmLabel}
+          variant={dialogContent.variant}
+          onConfirm={handleDialogConfirm}
+          onCancel={closeDialog}
+        />
+      )}
     </Layout>
   )
 }

@@ -53,16 +53,25 @@ export const uploadToS3 = multer({
 });
 
 // 보안 다운로드 URL 생성 (임시 URL, 1시간 유효)
-export async function generateSecureDownloadUrl(s3Key: string): Promise<string> {
+// filename을 넘기면 Content-Disposition을 통해 다운로드 파일명을 강제 (RFC 5987 UTF-8)
+export async function generateSecureDownloadUrl(
+  s3Key: string,
+  filename?: string,
+): Promise<string> {
   const command = new GetObjectCommand({
     Bucket: BUCKET_NAME,
     Key: s3Key,
+    ...(filename
+      ? {
+          ResponseContentDisposition: `attachment; filename*=UTF-8''${encodeURIComponent(filename)}`,
+        }
+      : {}),
   });
 
-  const signedUrl = await getSignedUrl(s3Client, command, { 
+  const signedUrl = await getSignedUrl(s3Client, command, {
     expiresIn: 3600 // 1시간
   });
-  
+
   return signedUrl;
 }
 

@@ -196,7 +196,7 @@ export default function ProductDetailPage() {
 
   const isFree = product.price === 0
   const discount =
-    product.originalPrice && product.originalPrice > product.price
+    !isFree && product.originalPrice && product.originalPrice > product.price
       ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)
       : null
 
@@ -440,11 +440,6 @@ export default function ProductDetailPage() {
                       )}
                     </div>
 
-                    {!isAdmin && (
-                      <p className="text-[11px] text-slate-400 text-center mt-3">
-                        안전한 결제 시스템으로 보호됩니다
-                      </p>
-                    )}
                   </>
                 )}
               </div>

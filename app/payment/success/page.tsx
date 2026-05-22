@@ -1,6 +1,6 @@
 "use client"
 
-import { Suspense, useEffect, useState } from 'react'
+import { Suspense, useEffect, useRef, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Layout from '@/components/Layout'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -15,9 +15,13 @@ function PaymentSuccessContent() {
   const [confirming, setConfirming] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [purchaseInfo, setPurchaseInfo] = useState<any>(null)
+  const confirmedRef = useRef(false)
 
   useEffect(() => {
     const confirmPayment = async () => {
+      if (confirmedRef.current) return
+      confirmedRef.current = true
+
       const paymentKey = searchParams.get('paymentKey')
       const orderId = searchParams.get('orderId')
       const amount = searchParams.get('amount')

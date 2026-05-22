@@ -55,7 +55,10 @@ export async function GET(request: NextRequest, context: RouteContext) {
 
     try {
       // S3에서 보안 다운로드 URL 생성 (1시간 유효)
-      const downloadUrl = await generateSecureDownloadUrl(product.filePath);
+      const downloadUrl = await generateSecureDownloadUrl(
+        product.filePath,
+        product.originalFileName
+      );
       
       // 다운로드 카운트 업데이트
       await Promise.all([
