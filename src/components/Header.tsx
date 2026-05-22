@@ -30,6 +30,11 @@ export default function Header() {
     simpleAuth.user?.role === "admin"
 
   const isAdminPage = pathname?.startsWith("/admin")
+  const hideSubNav =
+    isAdminPage ||
+    pathname?.startsWith("/cart") ||
+    pathname?.startsWith("/payment") ||
+    pathname?.startsWith("/auth")
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -187,9 +192,9 @@ export default function Header() {
       </div>
 
       {/* Sub navigation */}
-      {!isAdminPage && (
+      {!hideSubNav && (
         <nav className="border-b border-slate-100 bg-white/80">
-          <div className="flex items-center gap-1 px-3 sm:px-5 lg:px-8 max-w-[1600px] mx-auto">
+          <div className="flex items-center justify-center gap-1 px-3 sm:px-5 lg:px-8 max-w-[1600px] mx-auto">
             {NAV_ITEMS.map((item) => {
               const isActive = item.href === "/" ? pathname === "/" : pathname?.startsWith(item.href)
               return (

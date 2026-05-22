@@ -613,7 +613,16 @@ export default function HomePage() {
           ) : filteredProducts.length > 0 ? (
             <div>
               {freeSampleCount > 0 && (
-                <div className="mb-6 sm:mb-8 flex items-center gap-3 rounded-xl border border-emerald-200/80 bg-gradient-to-r from-emerald-50 via-emerald-50/70 to-teal-50/60 px-4 py-3 sm:px-5 sm:py-4">
+                <button
+                  type="button"
+                  onClick={() => {
+                    document
+                      .getElementById("section-number")
+                      ?.scrollIntoView({ behavior: "smooth", block: "start" })
+                  }}
+                  className="w-full text-left mb-6 sm:mb-8 flex items-center gap-3 rounded-xl border border-emerald-200/80 bg-gradient-to-r from-emerald-50 via-emerald-50/70 to-teal-50/60 px-4 py-3 sm:px-5 sm:py-4 transition-all hover:border-emerald-300 hover:shadow-md hover:shadow-emerald-900/5 active:scale-[0.998]"
+                  aria-label="번호별 섹션으로 이동"
+                >
                   <span className="shrink-0 inline-flex items-center justify-center rounded-lg bg-emerald-500 px-2 py-1 text-[11px] font-bold text-white">
                     무료
                   </span>
@@ -625,7 +634,8 @@ export default function HomePage() {
                       번호별 섹션에서 무료 표시된 자료를 다운로드할 수 있어요
                     </p>
                   </div>
-                </div>
+                  <ArrowRight className="shrink-0 h-4 w-4 text-emerald-600" />
+                </button>
               )}
               {renderSection(
                 "풀세트",
@@ -639,12 +649,14 @@ export default function HomePage() {
                 difficultyProducts,
                 "difficulty"
               )}
-              {renderSection(
-                "번호별",
-                "문항 단위 · 4단계 난이도 포함",
-                numberProducts,
-                "number"
-              )}
+              <div id="section-number" className="scroll-mt-32 sm:scroll-mt-36">
+                {renderSection(
+                  "번호별",
+                  "문항 단위 · 4단계 난이도 포함",
+                  numberProducts,
+                  "number"
+                )}
+              </div>
             </div>
           ) : (
             <div className="text-center py-16 sm:py-24">

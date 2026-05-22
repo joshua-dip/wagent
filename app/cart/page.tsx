@@ -4,7 +4,6 @@ import { useRouter } from 'next/navigation'
 import Layout from '@/components/Layout'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
 import { 
   ShoppingCart, 
   Trash2, 
@@ -68,28 +67,6 @@ export default function CartPage() {
     if (confirm('이 상품을 장바구니에서 제거하시겠습니까?')) {
       removeFromCart(productId)
     }
-  }
-
-  const categories: { [key: string]: string } = {
-    'shared-materials': '공유자료',
-    'original-translation': '원문과 해석',
-    'lecture-material': '강의용자료',
-    'class-material': '수업용자료',
-    'line-translation': '한줄해석',
-    'english-writing': '영작하기',
-    'translation-writing': '해석쓰기',
-    'workbook-blanks': '워크북',
-    'order-questions': '글의순서',
-    'insertion-questions': '문장삽입',
-    'ebs-lecture': 'EBS강의',
-    'ebs-workbook': 'EBS워크북',
-    'ebs-test': 'EBS평가',
-    'reading-comprehension': '독해연습',
-    'reading-strategy': '독해전략',
-    'reading-test': '독해평가',
-    'grade1-material': '고1부교재',
-    'grade2-material': '고2부교재',
-    'grade3-material': '고3부교재'
   }
 
   return (
@@ -183,12 +160,13 @@ export default function CartPage() {
                         <div className="flex-1 min-w-0">
                           <div className="flex items-start justify-between gap-2">
                             <div className="flex-1 min-w-0">
-                              <h3 className="font-semibold text-gray-900 mb-1 truncate">
+                              <h3 className="font-semibold text-gray-900 truncate">
                                 {item.title}
                               </h3>
-                              <Badge variant="outline" className="text-xs">
-                                {categories[item.category] || item.category}
-                              </Badge>
+                              <p className="mt-1 inline-flex items-center gap-1 text-xs text-gray-500">
+                                <FileText className="w-3.5 h-3.5 text-rose-500" />
+                                PDF 자료
+                              </p>
                             </div>
                             <Button
                               variant="ghost"
@@ -200,14 +178,7 @@ export default function CartPage() {
                             </Button>
                           </div>
 
-                          <div className="flex items-center justify-between mt-4">
-                            {/* 디지털 상품 안내 */}
-                            <div className="text-sm text-gray-500">
-                              <span className="bg-emerald-50 text-emerald-700 px-2 py-1 rounded">
-                                디지털 상품 • 1회 구매
-                              </span>
-                            </div>
-
+                          <div className="flex items-center justify-end mt-4">
                             {/* 가격 */}
                             <div className="text-right">
                               {item.originalPrice && item.originalPrice > item.price && (
