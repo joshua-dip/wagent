@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button"
 import { useSession, signOut } from "next-auth/react"
-import { User, LogOut, ShoppingCart, Download, CreditCard } from "lucide-react"
+import { User, LogOut, ShoppingCart, Download } from "lucide-react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { useSimpleAuth } from "@/hooks/useSimpleAuth"
@@ -128,12 +128,6 @@ export default function Header() {
                       <div className="flex items-center px-4 py-2.5 hover:bg-emerald-50/90 transition-colors">
                         <User className="h-4 w-4 text-slate-500 mr-3" />
                         <span className="text-sm text-slate-700">내 정보</span>
-                      </div>
-                    </Link>
-                    <Link href="/my/orders" onClick={() => setIsUserMenuOpen(false)}>
-                      <div className="flex items-center px-4 py-2.5 hover:bg-emerald-50/90 transition-colors">
-                        <CreditCard className="h-4 w-4 text-slate-500 mr-3" />
-                        <span className="text-sm text-slate-700">주문 내역</span>
                       </div>
                     </Link>
                     {isAdmin && (
