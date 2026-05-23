@@ -16,7 +16,7 @@ const NAV_ITEMS = [
 ]
 
 export default function Header() {
-  const { data: session } = useSession()
+  const { data: session, status } = useSession()
   const simpleAuth = useSimpleAuth()
   const { cartCount } = useCart()
   const pathname = usePathname()
@@ -25,6 +25,7 @@ export default function Header() {
 
   const currentUser = simpleAuth.user || session?.user
   const isAuthenticated = simpleAuth.isAuthenticated || !!session
+  const isAuthLoading = simpleAuth.isLoading || status === "loading"
   const isAdmin =
     currentUser?.email === "wnsrb2898@naver.com" ||
     simpleAuth.user?.role === "admin"
@@ -61,7 +62,15 @@ export default function Header() {
         </Link>
 
         <div className="flex items-center gap-1 sm:gap-2 shrink-0 ml-auto">
-          {isAuthenticated ? (
+          {isAuthLoading ? (
+            /* 인증 확인 중 — 깜빡임 방지용 빈 자리 (로그인 영역 폭과 비슷하게 유지) */
+            <div className="flex items-center gap-1 sm:gap-2" aria-hidden>
+              <div className="w-9 h-9 sm:w-10 sm:h-10" />
+              <div className="pl-2 sm:pl-3 border-l border-transparent">
+                <div className="w-8 h-8 rounded-full bg-slate-100 animate-pulse" />
+              </div>
+            </div>
+          ) : isAuthenticated ? (
             <div className="flex items-center gap-1 sm:gap-2">
               <Link href="/cart">
                 <Button
