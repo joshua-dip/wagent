@@ -218,7 +218,7 @@ export default function RefundPolicyPage() {
             </section>
 
             {/* 제8조 */}
-            <section>
+            <section id="contact" className="scroll-mt-24">
               <h2 className="text-xl font-bold text-gray-900 mb-4">제8조 (고객센터 안내)</h2>
               <div className="space-y-3 text-gray-700">
                 <p>환불 및 상품 관련 문의사항은 아래로 연락 주시기 바랍니다:</p>

@@ -123,7 +123,7 @@ function PaymentSuccessContent() {
               <CheckCircle2 className="w-12 h-12 text-white" />
             </div>
             <CardTitle className="text-3xl font-bold text-gray-900">
-              결제가 완료되었습니다! 🎉
+              결제가 완료되었습니다
             </CardTitle>
             <p className="text-gray-600 mt-2">
               구매해주셔서 감사합니다.
@@ -215,11 +215,16 @@ function PaymentSuccessContent() {
                 </li>
                 <li className="flex items-start gap-2">
                   <CheckCircle2 className="w-5 h-5 mt-0.5 flex-shrink-0" />
-                  <span>구매 내역은 이메일로도 발송됩니다.</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <CheckCircle2 className="w-5 h-5 mt-0.5 flex-shrink-0" />
-                  <span>문의사항이 있으시면 고객센터로 연락 주세요.</span>
+                  <span>
+                    문의사항이 있으시면{" "}
+                    <a
+                      href="/refund-policy#contact"
+                      className="font-semibold text-emerald-700 underline underline-offset-2 hover:text-emerald-900"
+                    >
+                      고객센터
+                    </a>
+                    로 연락 주세요.
+                  </span>
                 </li>
               </ul>
             </div>
@@ -236,12 +241,13 @@ function PaymentSuccessContent() {
                 </Button>
               )}
               
-              <Button 
+              <Button
                 variant="outline"
                 className="flex-1"
-                onClick={() => router.push('/user-dashboard')}
+                onClick={() => router.push('/my/purchases')}
               >
-                구매 내역 보기
+                <Download className="w-4 h-4 mr-2" />
+                다운로드하러 가기
               </Button>
               
               <Button 

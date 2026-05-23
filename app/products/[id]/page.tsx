@@ -104,6 +104,7 @@ export default function ProductDetailPage() {
   const [loading, setLoading] = useState(true)
   const [downloading, setDownloading] = useState(false)
   const [toast, setToast] = useState<{ type: "success" | "error"; message: string } | null>(null)
+  const [isPurchased, setIsPurchased] = useState(false)
 
   useEffect(() => {
     if (!productId) return
@@ -121,6 +122,27 @@ export default function ProductDetailPage() {
       }
     })()
   }, [productId])
+
+  useEffect(() => {
+    if (!isAuthenticated || !productId) {
+      setIsPurchased(false)
+      return
+    }
+    let cancelled = false
+    fetch("/api/purchases/my-purchases")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => {
+        if (cancelled || !data?.purchases) return
+        const owned = (data.purchases as Array<{ productId?: string }>).some(
+          (p) => p.productId === productId
+        )
+        setIsPurchased(owned)
+      })
+      .catch(() => {})
+    return () => {
+      cancelled = true
+    }
+  }, [isAuthenticated, productId])
 
   const showToast = (type: "success" | "error", message: string) => {
     setToast({ type, message })
@@ -395,6 +417,24 @@ export default function ProductDetailPage() {
                             <><Download className="h-4 w-4 mr-2" />관리자 다운로드</>
                           )}
                         </Button>
+                      ) : isPurchased ? (
+                        <>
+                          <div className="w-full flex items-center justify-center gap-2 rounded-md border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-700">
+                            <Check className="h-4 w-4" />
+                            구매 완료된 자료입니다
+                          </div>
+                          <Button
+                            onClick={handleDownload}
+                            disabled={downloading}
+                            className="w-full h-12 text-base font-semibold bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 border-0 shadow-md shadow-emerald-900/10"
+                          >
+                            {downloading ? (
+                              <><Loader2 className="h-4 w-4 mr-2 animate-spin" />다운로드 중…</>
+                            ) : (
+                              <><Download className="h-4 w-4 mr-2" />다운로드</>
+                            )}
+                          </Button>
+                        </>
                       ) : (
                         <>
                           <Button

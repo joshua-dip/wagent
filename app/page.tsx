@@ -176,6 +176,7 @@ export default function HomePage() {
   const [loading, setLoading] = useState(true)
   const [drawerOpen, setDrawerOpen] = useState(false)
   const [downloadingId, setDownloadingId] = useState<string | null>(null)
+  const [purchasedIds, setPurchasedIds] = useState<Set<string>>(new Set())
 
   const fetchProducts = useCallback(async () => {
     try {
@@ -195,6 +196,30 @@ export default function HomePage() {
   useEffect(() => {
     fetchProducts()
   }, [fetchProducts])
+
+  useEffect(() => {
+    if (!isAuthenticated) {
+      setPurchasedIds(new Set())
+      return
+    }
+    let cancelled = false
+    fetch("/api/purchases/my-purchases")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => {
+        if (cancelled || !data?.purchases) return
+        setPurchasedIds(
+          new Set(
+            data.purchases
+              .map((p: { productId?: string }) => p.productId)
+              .filter((id: string | undefined): id is string => !!id)
+          )
+        )
+      })
+      .catch(() => {})
+    return () => {
+      cancelled = true
+    }
+  }, [isAuthenticated])
 
   const visibleExams = EXAMS.filter((e) =>
     (EXAM_GRADES[e.id] ?? ["고1", "고2", "고3"]).includes(selectedGrade)
@@ -264,6 +289,7 @@ export default function HomePage() {
     const inCart = isInCart(product._id)
     const isFree = product.price === 0
     const isBundle = variant === "full"
+    const isPurchased = !isFree && purchasedIds.has(product._id)
     const difficulty = variant === "difficulty" ? getDifficultyLevel(product) : null
     const diffStyle = difficulty ? DIFFICULTY_CONFIG[difficulty] : null
 
@@ -438,6 +464,20 @@ export default function HomePage() {
                   다운로드
                 </>
               )}
+            </button>
+          ) : isPurchased ? (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.preventDefault()
+                e.stopPropagation()
+                router.push(`/products/${product._id}`)
+              }}
+              className="flex items-center gap-1.5 rounded-full px-3.5 py-2 text-xs font-semibold transition-all shadow-sm min-h-[36px] bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100"
+              aria-label="구매완료 — 다운로드 페이지로 이동"
+            >
+              <Check className="h-3.5 w-3.5 shrink-0" />
+              구매완료
             </button>
           ) : (
             <button
