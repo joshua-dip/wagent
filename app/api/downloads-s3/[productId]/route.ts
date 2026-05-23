@@ -54,10 +54,15 @@ export async function GET(request: NextRequest, context: RouteContext) {
     }
 
     try {
+      // 다운로드 파일명은 product.title 기반 (자료 유형 포함)
+      const sanitizedTitle = (product.title || "").replace(/[\\/:*?"<>|]/g, "_").trim();
+      const ext = product.originalFileName?.toLowerCase().endsWith(".hwp") ? ".hwp" : ".pdf";
+      const downloadFilename = sanitizedTitle ? `${sanitizedTitle}${ext}` : product.originalFileName;
+
       // S3에서 보안 다운로드 URL 생성 (1시간 유효)
       const downloadUrl = await generateSecureDownloadUrl(
         product.filePath,
-        product.originalFileName
+        downloadFilename
       );
       
       // 다운로드 카운트 업데이트

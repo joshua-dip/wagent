@@ -129,9 +129,15 @@ export async function GET(
     let hwpName: string | null = null;
     let hwpSize: number | null = null;
 
+    // 다운로드 파일명은 product.title 기반으로 구성 (자료 유형 포함)
+    // 예: '26년 5월 고3 영어모의고사 18번 조건영작배열.pdf'
+    const sanitizedTitle = (product.title || "").replace(/[\\/:*?"<>|]/g, "_").trim();
+    const titlePdfName = sanitizedTitle ? `${sanitizedTitle}.pdf` : null;
+    const titleHwpName = sanitizedTitle ? `${sanitizedTitle}.hwp` : null;
+
     if (hasPdfPrimary) {
       pdfKey = product.filePath;
-      pdfName = product.originalFileName;
+      pdfName = titlePdfName || product.originalFileName;
       pdfSize = product.fileSize;
     }
     if (hasHwpField) {
@@ -141,12 +147,12 @@ export async function GET(
         hwpFileSize?: number;
       };
       hwpKey = p.hwpFilePath;
-      hwpName = p.hwpOriginalFileName || "file.hwp";
+      hwpName = titleHwpName || p.hwpOriginalFileName || "file.hwp";
       hwpSize = p.hwpFileSize ?? null;
     }
     if (hasHwpOnly) {
       hwpKey = product.filePath;
-      hwpName = product.originalFileName;
+      hwpName = titleHwpName || product.originalFileName;
       hwpSize = product.fileSize;
     }
 
