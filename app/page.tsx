@@ -434,9 +434,25 @@ export default function HomePage() {
                   {product.title}
                 </h3>
                 {isBundle && (
-                  <p className="text-[11px] text-slate-400 mt-1">
-                    18~45번 전 문항 · 4난이도 풀세트
-                  </p>
+                  <>
+                    <p className="text-[11px] text-slate-400 mt-1">
+                      18~45번 전 문항 · 4난이도 풀세트
+                    </p>
+                    <div className="mt-3 flex flex-wrap items-center gap-1.5 sm:gap-2">
+                      <span className="inline-flex items-center gap-1 rounded-full bg-white/90 border border-emerald-200 px-2 py-0.5 text-[10.5px] sm:text-[11px] font-semibold text-emerald-800">
+                        난이도별 <span className="text-emerald-600">4개 PDF</span>
+                      </span>
+                      <span className="inline-flex items-center gap-1 rounded-full bg-white/90 border border-emerald-200 px-2 py-0.5 text-[10.5px] sm:text-[11px] font-semibold text-emerald-800">
+                        번호별 <span className="text-emerald-600">25개 PDF</span>
+                      </span>
+                      <span className="inline-flex items-center gap-1 rounded-full bg-emerald-600 px-2 py-0.5 text-[10.5px] sm:text-[11px] font-semibold text-white">
+                        ZIP 한 번에
+                      </span>
+                    </div>
+                    <p className="text-[11px] sm:text-[12px] text-emerald-800/90 mt-2 leading-relaxed pr-24">
+                      난이도별 편집본(기본·중·고·최고)과 번호별 편집본(18~45번)을 한 번에 받아 출력·학습에 바로 사용할 수 있어요.
+                    </p>
+                  </>
                 )}
               </div>
               </>

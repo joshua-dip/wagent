@@ -26,6 +26,7 @@ function isS3Path(filePath: string): boolean {
 function mimeForFilename(name: string): string {
   const lower = name.toLowerCase();
   if (lower.endsWith(".hwp")) return "application/x-hwp";
+  if (lower.endsWith(".zip")) return "application/zip";
   return "application/pdf";
 }
 
@@ -121,6 +122,7 @@ export async function GET(
     const hasPdfPrimary = orig.endsWith(".pdf");
     const hasHwpField = !!(product as { hwpFilePath?: string }).hwpFilePath;
     const hasHwpOnly = orig.endsWith(".hwp") && !hasHwpField;
+    const hasZipPrimary = orig.endsWith(".zip");
 
     let pdfKey: string | null = null;
     let pdfName: string | null = null;
@@ -128,12 +130,16 @@ export async function GET(
     let hwpKey: string | null = null;
     let hwpName: string | null = null;
     let hwpSize: number | null = null;
+    let zipKey: string | null = null;
+    let zipName: string | null = null;
+    let zipSize: number | null = null;
 
     // 다운로드 파일명은 product.title 기반으로 구성 (자료 유형 포함)
     // 예: '26년 5월 고3 영어모의고사 18번 조건영작배열.pdf'
     const sanitizedTitle = (product.title || "").replace(/[\\/:*?"<>|]/g, "_").trim();
     const titlePdfName = sanitizedTitle ? `${sanitizedTitle}.pdf` : null;
     const titleHwpName = sanitizedTitle ? `${sanitizedTitle}.hwp` : null;
+    const titleZipName = sanitizedTitle ? `${sanitizedTitle}.zip` : null;
 
     if (hasPdfPrimary) {
       pdfKey = product.filePath;
@@ -155,21 +161,30 @@ export async function GET(
       hwpName = titleHwpName || product.originalFileName;
       hwpSize = product.fileSize;
     }
+    if (hasZipPrimary) {
+      zipKey = product.filePath;
+      zipName = titleZipName || product.originalFileName;
+      zipSize = product.fileSize;
+    }
 
     try {
       const pdfOnS3 = pdfKey && isS3Path(pdfKey);
       const hwpOnS3 = hwpKey && isS3Path(hwpKey);
-      if (pdfOnS3 || hwpOnS3) {
+      const zipOnS3 = zipKey && isS3Path(zipKey);
+      if (pdfOnS3 || hwpOnS3 || zipOnS3) {
         const pdfDownloadUrl = pdfOnS3
           ? await generateSecureDownloadUrl(normalizeS3Key(pdfKey!), pdfName ?? undefined)
           : null;
         const hwpDownloadUrl = hwpOnS3
           ? await generateSecureDownloadUrl(normalizeS3Key(hwpKey!), hwpName ?? undefined)
           : null;
+        const zipDownloadUrl = zipOnS3
+          ? await generateSecureDownloadUrl(normalizeS3Key(zipKey!), zipName ?? undefined)
+          : null;
 
-        const primaryUrl = pdfDownloadUrl || hwpDownloadUrl;
-        const primaryName = pdfName || hwpName;
-        const primarySize = pdfSize ?? hwpSize;
+        const primaryUrl = pdfDownloadUrl || hwpDownloadUrl || zipDownloadUrl;
+        const primaryName = pdfName || hwpName || zipName;
+        const primarySize = pdfSize ?? hwpSize ?? zipSize;
 
         return NextResponse.json({
           downloadUrl: primaryUrl,
@@ -177,10 +192,13 @@ export async function GET(
           fileSize: primarySize,
           pdfDownloadUrl,
           hwpDownloadUrl,
+          zipDownloadUrl,
           pdfFileName: pdfName,
           hwpFileName: hwpName,
+          zipFileName: zipName,
           pdfFileSize: pdfSize,
           hwpFileSize: hwpSize,
+          zipFileSize: zipSize,
           storageType: "s3",
           message: "다운로드 링크가 생성되었습니다. (1시간 유효)",
         });

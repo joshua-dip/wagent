@@ -75,11 +75,13 @@ function formatFileSize(bytes: number) {
   return `${parseFloat((bytes / Math.pow(k, i)).toFixed(1))} ${sizes[i]}`
 }
 
-function fileFormatsSummary(p: Product) {
-  const hasPdf = p.originalFileName?.toLowerCase().endsWith(".pdf")
+function fileFormatsSummary(p: Product, isFullsetBundle: boolean) {
+  const lower = p.originalFileName?.toLowerCase() ?? ""
+  const hasZip = isFullsetBundle || lower.endsWith(".zip")
+  const hasPdf = lower.endsWith(".pdf")
   const hasHwp =
-    !!(p.hwpFilePath && p.hwpOriginalFileName) ||
-    p.originalFileName?.toLowerCase().endsWith(".hwp")
+    !!(p.hwpFilePath && p.hwpOriginalFileName) || lower.endsWith(".hwp")
+  if (hasZip) return "ZIP (풀세트)"
   if (hasPdf && hasHwp && p.hwpFilePath) return "PDF, HWP"
   if (hasPdf) return "PDF"
   if (hasHwp) return "HWP"
@@ -221,6 +223,11 @@ export default function ProductDetailPage() {
     !isFree && product.originalPrice && product.originalPrice > product.price
       ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)
       : null
+
+  const isFullsetBundle = !!product.tags?.includes("전체")
+  const bundleFileName = product.originalFileName?.toLowerCase().endsWith(".zip")
+    ? pathBasename(product.originalFileName)
+    : `${(product.title || "풀세트").replace(/[\\/:*?"<>|]/g, "_").trim()}.zip`
 
   const sampleFile = product.tags?.some(t => t.includes("빈칸재배열형(주제)"))
     ? { url: "/samples/sample-blank-topic.pdf", label: "빈칸재배열형(주제) 샘플" }
@@ -487,40 +494,95 @@ export default function ProductDetailPage() {
               {/* File info */}
               <div className="rounded-2xl border border-slate-200/80 bg-white p-5">
                 <h3 className="text-sm font-semibold text-slate-900 mb-3">파일 정보</h3>
-                <dl className="space-y-2 text-sm">
+                <dl className="space-y-2.5 text-sm">
                   <div className="flex justify-between">
                     <dt className="text-slate-500">형식</dt>
-                    <dd className="font-medium text-slate-700">{fileFormatsSummary(product)}</dd>
+                    <dd className="font-medium text-slate-700">{fileFormatsSummary(product, isFullsetBundle)}</dd>
                   </div>
-                  {product.originalFileName?.toLowerCase().endsWith(".pdf") && (
-                    <div className="flex justify-between gap-2">
-                      <dt className="text-slate-500 shrink-0">PDF</dt>
-                      <dd className="font-medium text-slate-700 text-right truncate max-w-[200px]">
-                        {pathBasename(product.originalFileName)} · {formatFileSize(product.fileSize)}
-                      </dd>
-                    </div>
-                  )}
-                  {product.hwpFilePath && product.hwpOriginalFileName && (
-                    <div className="flex justify-between gap-2">
-                      <dt className="text-slate-500 shrink-0">HWP</dt>
-                      <dd className="font-medium text-slate-700 text-right truncate max-w-[200px]">
-                        {pathBasename(product.hwpOriginalFileName)} ·{" "}
-                        {formatFileSize(product.hwpFileSize ?? 0)}
-                      </dd>
-                    </div>
-                  )}
-                  {product.originalFileName?.toLowerCase().endsWith(".hwp") && !product.hwpFilePath && (
+                  {isFullsetBundle ? (
                     <>
-                      <div className="flex justify-between">
-                        <dt className="text-slate-500">크기</dt>
-                        <dd className="font-medium text-slate-700">{formatFileSize(product.fileSize)}</dd>
-                      </div>
-                      <div className="flex justify-between">
+                      <div className="flex flex-col gap-1">
                         <dt className="text-slate-500">파일명</dt>
-                        <dd className="font-medium text-slate-700 text-right truncate max-w-[160px]">
-                          {product.originalFileName}
+                        <dd className="font-medium text-slate-700 break-all leading-snug">
+                          {bundleFileName} <span className="text-slate-400">·</span> {formatFileSize(product.fileSize)}
                         </dd>
                       </div>
+                      <div className="flex justify-between">
+                        <dt className="text-slate-500">구성</dt>
+                        <dd className="font-medium text-slate-700">PDF 29개</dd>
+                      </div>
+
+                      <div className="mt-3 rounded-xl border border-emerald-100 bg-emerald-50/60 p-3.5 space-y-3">
+                        <p className="text-[12px] font-semibold text-emerald-900">
+                          한 번 결제로 두 가지 편집본을 모두 사용할 수 있어요
+                        </p>
+
+                        <div className="space-y-1.5">
+                          <div className="flex items-center justify-between gap-2">
+                            <span className="inline-flex items-center gap-1.5 text-[12px] font-semibold text-emerald-900">
+                              <span className="rounded-md bg-white px-1.5 py-0.5 text-[10px] font-bold text-emerald-700 border border-emerald-200">
+                                난이도별
+                              </span>
+                              4개 PDF
+                            </span>
+                          </div>
+                          <p className="text-[11.5px] text-emerald-800/90 leading-relaxed pl-1">
+                            기본·중·고·최고난도 — 같은 난이도의 25문항을 한 권에 모은 편집본. 난이도별 일괄 출력에 적합.
+                          </p>
+                        </div>
+
+                        <div className="space-y-1.5">
+                          <div className="flex items-center justify-between gap-2">
+                            <span className="inline-flex items-center gap-1.5 text-[12px] font-semibold text-emerald-900">
+                              <span className="rounded-md bg-white px-1.5 py-0.5 text-[10px] font-bold text-emerald-700 border border-emerald-200">
+                                번호별
+                              </span>
+                              25개 PDF
+                            </span>
+                          </div>
+                          <p className="text-[11.5px] text-emerald-800/90 leading-relaxed pl-1">
+                            18~40번 · 41~42번 · 43~45번 — 한 문항을 4난이도 + 정답·해설까지 한 번에. 문항별 학습·복사에 적합.
+                          </p>
+                        </div>
+
+                        <p className="text-[11px] text-emerald-700/80 leading-relaxed pt-1 border-t border-emerald-100">
+                          압축 풀면 <span className="font-medium">난이도별/</span>, <span className="font-medium">번호별/</span> 두 폴더로 자동 분류돼요.
+                        </p>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      {product.originalFileName?.toLowerCase().endsWith(".pdf") && (
+                        <div className="flex flex-col gap-1">
+                          <dt className="text-slate-500">PDF</dt>
+                          <dd className="font-medium text-slate-700 break-all leading-snug">
+                            {pathBasename(product.originalFileName)} <span className="text-slate-400">·</span> {formatFileSize(product.fileSize)}
+                          </dd>
+                        </div>
+                      )}
+                      {product.hwpFilePath && product.hwpOriginalFileName && (
+                        <div className="flex flex-col gap-1">
+                          <dt className="text-slate-500">HWP</dt>
+                          <dd className="font-medium text-slate-700 break-all leading-snug">
+                            {pathBasename(product.hwpOriginalFileName)} <span className="text-slate-400">·</span>{" "}
+                            {formatFileSize(product.hwpFileSize ?? 0)}
+                          </dd>
+                        </div>
+                      )}
+                      {product.originalFileName?.toLowerCase().endsWith(".hwp") && !product.hwpFilePath && (
+                        <>
+                          <div className="flex justify-between">
+                            <dt className="text-slate-500">크기</dt>
+                            <dd className="font-medium text-slate-700">{formatFileSize(product.fileSize)}</dd>
+                          </div>
+                          <div className="flex flex-col gap-1">
+                            <dt className="text-slate-500">파일명</dt>
+                            <dd className="font-medium text-slate-700 break-all leading-snug">
+                              {product.originalFileName}
+                            </dd>
+                          </div>
+                        </>
+                      )}
                     </>
                   )}
                 </dl>
