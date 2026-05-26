@@ -1,11 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server'
 import connectDB from '@/lib/db'
 import User from '@/models/User'
+import { requireAdmin } from '@/lib/adminAuth'
 
 export async function PATCH(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
+  const gate = await requireAdmin()
+  if (!gate.ok) return gate.response
+
   try {
     await connectDB()
 

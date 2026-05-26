@@ -2,8 +2,12 @@ import { NextRequest, NextResponse } from 'next/server'
 import connectDB from '@/lib/db'
 import User from '@/models/User'
 import Purchase from '@/models/Purchase'
+import { requireAdmin } from '@/lib/adminAuth'
 
 export async function GET(request: NextRequest) {
+  const gate = await requireAdmin()
+  if (!gate.ok) return gate.response
+
   try {
     await connectDB()
 

@@ -1,7 +1,11 @@
 import { NextAuthOptions } from "next-auth"
 import CredentialsProvider from "next-auth/providers/credentials"
+import bcrypt from "bcryptjs"
 import connectDB from "@/lib/db"
 import Admin from "@/models/Admin"
+
+const ADMIN_EMAIL = (process.env.ADMIN_EMAIL || "").toLowerCase().trim()
+const ADMIN_PASSWORD_HASH = process.env.ADMIN_PASSWORD_HASH || ""
 
 export const authOptions: NextAuthOptions = {
   trustHost: true,
@@ -19,17 +23,25 @@ export const authOptions: NextAuthOptions = {
         }
 
         try {
-          // 관리자 계정만 허용 (하드코딩 - 안정성 위해 임시)
-          if (credentials.email === "wnsrb2898@naver.com" && credentials.password === "jg117428281!") {
+          if (!ADMIN_EMAIL || !ADMIN_PASSWORD_HASH) {
+            console.error('[NextAuth] ADMIN_EMAIL / ADMIN_PASSWORD_HASH env 미설정 — 로그인 거부')
+            return null
+          }
+          const inputEmail = credentials.email.toLowerCase().trim()
+          if (inputEmail !== ADMIN_EMAIL) {
+            console.log('인증 실패 - 관리자 계정만 허용:', credentials.email)
+            return null
+          }
+          const matches = await bcrypt.compare(credentials.password, ADMIN_PASSWORD_HASH)
+          if (matches) {
             console.log('관리자 로그인 성공 (NextAuth)')
             return {
               id: "admin",
-              email: "wnsrb2898@naver.com",
+              email: ADMIN_EMAIL,
               name: "관리자",
             }
           }
-
-          console.log('인증 실패 - 관리자 계정만 허용:', credentials.email)
+          console.log('인증 실패 - 비밀번호 불일치:', credentials.email)
           return null
         } catch (error) {
           console.error('로그인 오류:', error)

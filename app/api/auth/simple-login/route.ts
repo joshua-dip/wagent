@@ -1,11 +1,29 @@
 import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import jwt from "jsonwebtoken";
+import bcrypt from "bcryptjs";
 import connectDB from "@/lib/db";
 import User from "@/models/User";
 import Admin from "@/models/Admin";
 
 const JWT_SECRET = process.env.NEXTAUTH_SECRET || "simple-auth-secret-key";
+const ADMIN_EMAIL = (process.env.ADMIN_EMAIL || "").toLowerCase().trim();
+const ADMIN_PASSWORD_HASH = process.env.ADMIN_PASSWORD_HASH || "";
+
+async function verifyAdminCredentials(email: string, password: string): Promise<boolean> {
+  if (!ADMIN_EMAIL || !ADMIN_PASSWORD_HASH) {
+    // env 미설정 시 거부 — 평문 fallback 제거 (보안)
+    console.error("[simple-login] ADMIN_EMAIL / ADMIN_PASSWORD_HASH env 미설정");
+    return false;
+  }
+  if (email.toLowerCase().trim() !== ADMIN_EMAIL) return false;
+  try {
+    return await bcrypt.compare(password, ADMIN_PASSWORD_HASH);
+  } catch (e) {
+    console.error("[simple-login] bcrypt 비교 오류:", e);
+    return false;
+  }
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -14,14 +32,15 @@ export async function POST(request: NextRequest) {
 
     console.log('로그인 시도:', email);
 
-    // 1. 관리자 계정 우선 확인 (하드코딩 - 안정성 위해 임시)
-    if (email === "wnsrb2898@naver.com" && password === "jg117428281!") {
+    // 1. 관리자 계정 우선 확인 (env 기반 bcrypt 검증)
+    const isAdminEmailInput = ADMIN_EMAIL && email.toLowerCase().trim() === ADMIN_EMAIL;
+    if (await verifyAdminCredentials(email, password)) {
       console.log('관리자 인증 성공');
-      
+
       const token = jwt.sign(
         {
           id: "admin",
-          email: "wnsrb2898@naver.com",
+          email: ADMIN_EMAIL,
           name: "관리자",
           role: "admin"
         },
@@ -42,11 +61,20 @@ export async function POST(request: NextRequest) {
         success: true,
         message: "관리자 로그인 성공",
         user: {
-          email: "wnsrb2898@naver.com",
+          email: ADMIN_EMAIL,
           name: "관리자",
           role: "admin"
         }
       });
+    }
+
+    // admin 이메일로 들어왔는데 비번 불일치 → 일반 user 폴백 차단 (admin 우회 방지)
+    if (isAdminEmailInput) {
+      console.log('관리자 비밀번호 불일치, 일반 사용자 폴백 차단');
+      return NextResponse.json(
+        { error: "이메일 또는 비밀번호가 올바르지 않습니다." },
+        { status: 401 }
+      );
     }
 
     // 2. MongoDB에서 일반 사용자 확인
