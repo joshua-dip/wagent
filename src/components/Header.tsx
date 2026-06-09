@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button"
 import { useSession, signOut } from "next-auth/react"
-import { User, LogOut, ShoppingCart, Download } from "lucide-react"
+import { User, LogOut, ShoppingCart, Download, Coins, FileText } from "lucide-react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { useSimpleAuth } from "@/hooks/useSimpleAuth"
@@ -11,8 +11,10 @@ import { useCart } from "@/contexts/CartContext"
 import { useEffect, useState, useRef } from "react"
 import { cn } from "@/lib/utils"
 
-const NAV_ITEMS = [
-  { href: "/", label: "조건영작배열" },
+type NavKind = "paid" | "free"
+const NAV_ITEMS: { href: string; label: string; kind: NavKind; icon: typeof Coins }[] = [
+  { href: "/", label: "조건영작배열", kind: "paid", icon: Coins },
+  { href: "/blog", label: "Blog", kind: "free", icon: FileText },
 ]
 
 export default function Header() {
@@ -200,18 +202,36 @@ export default function Header() {
           <div className="flex items-center justify-center gap-1 px-3 sm:px-5 lg:px-8 max-w-[1600px] mx-auto">
             {NAV_ITEMS.map((item) => {
               const isActive = item.href === "/" ? pathname === "/" : pathname?.startsWith(item.href)
+              const Icon = item.icon
+              const isPaid = item.kind === "paid"
               return (
                 <Link
                   key={item.href}
                   href={item.href}
+                  aria-label={isPaid ? `${item.label} (유료 상품)` : `${item.label} (무료)`}
                   className={cn(
                     "shrink-0 flex items-center gap-1.5 px-3 py-2.5 text-sm font-medium transition-colors border-b-2 -mb-px",
-                    isActive
-                      ? "border-emerald-500 text-emerald-700"
-                      : "border-transparent text-slate-500 hover:text-slate-900 hover:border-slate-300"
+                    isPaid
+                      ? isActive
+                        ? "border-amber-500 text-amber-700 bg-amber-50/60"
+                        : "border-transparent text-amber-700/80 hover:text-amber-800 hover:border-amber-300 hover:bg-amber-50/40"
+                      : isActive
+                        ? "border-emerald-500 text-emerald-700"
+                        : "border-transparent text-slate-500 hover:text-slate-900 hover:border-slate-300"
                   )}
                 >
+                  <Icon
+                    className={cn(
+                      "h-3.5 w-3.5",
+                      isPaid ? "text-amber-500" : isActive ? "text-emerald-500" : "text-slate-400"
+                    )}
+                  />
                   {item.label}
+                  {isPaid && (
+                    <span className="hidden sm:inline-flex items-center text-[10px] font-semibold tracking-wide bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded-full ml-0.5">
+                      구매
+                    </span>
+                  )}
                 </Link>
               )
             })}

@@ -86,7 +86,7 @@ function PaymentFailContent() {
             <div className="text-center text-sm text-gray-500 pt-4 border-t">
               <p>문제가 계속되면 고객센터로 문의해주세요.</p>
               <p className="font-medium text-gray-700 mt-1">
-                📞 010-7927-0806 | 📧 payperic@naver.com
+                📧 payperic@naver.com
               </p>
             </div>
           </CardContent>

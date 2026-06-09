@@ -4,11 +4,12 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 import Header from "./Header"
 import { cn } from "@/lib/utils"
-import { BarChart3, Package, Users, ArrowLeft } from "lucide-react"
+import { BarChart3, Package, Users, ArrowLeft, FileText } from "lucide-react"
 
 const ADMIN_NAV = [
   { href: "/admin/dashboard", label: "대시보드", icon: BarChart3 },
   { href: "/admin/products", label: "상품 관리", icon: Package },
+  { href: "/admin/blog", label: "블로그", icon: FileText },
   { href: "/admin/users", label: "사용자 관리", icon: Users },
 ]
 

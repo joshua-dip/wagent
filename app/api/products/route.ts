@@ -5,8 +5,10 @@ import Product from "@/models/Product";
 /** 제목·설명에 포함되는 연·월 문자열 (examRound 쿼리 키와 대응) */
 const MOCK_EXAM_TITLE_NEEDLES: Record<string, string> = {
   "26-03": "26년 3월",
+  "26-05": "26년 5월",
   "26-06": "26년 6월",
   "26-09": "26년 9월",
+  "25-03": "25년 3월",
   "25-06": "25년 6월",
   "25-10": "25년 10월",
   "24-06": "24년 6월",

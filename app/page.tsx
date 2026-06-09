@@ -59,15 +59,33 @@ const GRADE_CARDS = [
 ]
 
 const EXAMS = [
+  { id: "26년 6월", label: "26년 6월" },
   { id: "26년 5월", label: "26년 5월" },
   { id: "26년 3월", label: "26년 3월" },
+  { id: "25년 6월", label: "25년 6월" },
   { id: "25년 3월", label: "25년 3월" },
 ]
 
 const EXAM_GRADES: Record<string, readonly string[]> = {
+  "26년 6월": ["고1", "고2", "고3"],
   "26년 5월": ["고3"],
   "26년 3월": ["고1", "고2", "고3"],
+  "25년 6월": ["고1", "고2", "고3"],
   "25년 3월": ["고1", "고2", "고3"],
+}
+
+const EXAM_TO_ROUND: Record<string, string> = {
+  "26년 6월": "26-06",
+  "26년 5월": "26-05",
+  "26년 3월": "26-03",
+  "25년 6월": "25-06",
+  "25년 3월": "25-03",
+}
+
+const GRADE_TO_NUM: Record<string, string> = {
+  고1: "1",
+  고2: "2",
+  고3: "3",
 }
 
 const DIFFICULTY_ORDER = ["최고난도", "고난도", "중난도", "기본난도"] as const
@@ -178,10 +196,16 @@ export default function HomePage() {
   const [downloadingId, setDownloadingId] = useState<string | null>(null)
   const [purchasedIds, setPurchasedIds] = useState<Set<string>>(new Set())
 
-  const fetchProducts = useCallback(async () => {
+  const fetchProducts = useCallback(async (grade: string, exam: string) => {
     try {
       setLoading(true)
-      const response = await fetch("/api/products?limit=100")
+      const params = new URLSearchParams({ limit: "60", tag: "조건영작배열" })
+      const gradeNum = GRADE_TO_NUM[grade]
+      const examRound = EXAM_TO_ROUND[exam]
+      if (gradeNum) params.set("grade", gradeNum)
+      if (examRound) params.set("examRound", examRound)
+
+      const response = await fetch(`/api/products?${params}`)
       const data = await response.json()
       if (response.ok) {
         setProducts(data.products || [])
@@ -194,8 +218,8 @@ export default function HomePage() {
   }, [])
 
   useEffect(() => {
-    fetchProducts()
-  }, [fetchProducts])
+    fetchProducts(selectedGrade, selectedExam)
+  }, [selectedGrade, selectedExam, fetchProducts])
 
   useEffect(() => {
     if (!isAuthenticated) {

@@ -1,10 +1,8 @@
 "use client"
 
 import Link from "next/link"
-import { Mail, Phone, MessageCircle } from "lucide-react"
-
-const KAKAO_URL =
-  process.env.NEXT_PUBLIC_KAKAO_CHANNEL_CHAT_URL ?? "https://pf.kakao.com/_qxbvtn/chat"
+import { Mail } from "lucide-react"
+import KakaoChannelActions from "@/components/KakaoChannelActions"
 
 export default function Footer() {
   const currentYear = new Date().getFullYear()
@@ -44,26 +42,12 @@ export default function Footer() {
               <h4 className="font-semibold text-slate-900 mb-2.5">고객 지원</h4>
               <ul className="space-y-1.5">
                 <li>
-                  <a
-                    href={KAKAO_URL}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1.5 hover:text-emerald-700 transition-colors"
-                  >
-                    <MessageCircle className="w-3.5 h-3.5" />
-                    카카오톡 문의
-                  </a>
+                  <KakaoChannelActions />
                 </li>
                 <li>
                   <a href="mailto:payperic@naver.com" className="inline-flex items-center gap-1.5 hover:text-emerald-700 transition-colors">
                     <Mail className="w-3.5 h-3.5" />
                     payperic@naver.com
-                  </a>
-                </li>
-                <li>
-                  <a href="tel:010-7927-0806" className="inline-flex items-center gap-1.5 hover:text-emerald-700 transition-colors">
-                    <Phone className="w-3.5 h-3.5" />
-                    010-7927-0806
                   </a>
                 </li>
               </ul>

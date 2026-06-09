@@ -3,6 +3,7 @@ import {
   Settings,
   BarChart3,
   Download,
+  FileText,
   LucideIcon
 } from "lucide-react"
 
@@ -66,6 +67,13 @@ export const menuConfig: MenuSection[] = [
         href: "/admin/products",
         icon: Settings,
         roles: ['admin'],
+      },
+      {
+        title: "블로그 관리",
+        href: "/admin/blog",
+        icon: FileText,
+        roles: ['admin'],
+        isNew: true,
       },
     ]
   },

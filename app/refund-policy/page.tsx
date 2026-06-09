@@ -150,8 +150,7 @@ export default function RefundPolicyPage() {
                 
                 <div className="bg-indigo-50 p-4 rounded-lg space-y-2">
                   <p><strong>• 이메일:</strong> payperic@naver.com</p>
-                  <p><strong>• 전화:</strong> 010-7927-0806 (평일 09:00-18:00)</p>
-                  <p><strong>• 카카오톡:</strong> @페이퍼릭</p>
+                  <p><strong>• 카카오톡:</strong> @payperic</p>
                 </div>
 
                 <p>② 환불 신청 시 다음 정보를 포함해 주시기 바랍니다:</p>
@@ -232,7 +231,7 @@ export default function RefundPolicyPage() {
                     <p><strong>통신판매업신고:</strong> 제 2025-부산해운대-1495호</p>
                     <p><strong>주소:</strong> 부산광역시 해운대구 센텀중앙로 48, 1304호(우동, 에이스하이테크21)</p>
                     <p><strong>이메일:</strong> payperic@naver.com</p>
-                    <p><strong>연락처:</strong> 010-7927-0806</p>
+                    <p><strong>카카오톡:</strong> @payperic</p>
                     <p><strong>운영시간:</strong> 평일 09:00 - 18:00 (주말 및 공휴일 휴무)</p>
                   </div>
                 </div>
