@@ -33,6 +33,8 @@ const nextConfig: NextConfig = {
     AWS_SECRET_ACCESS_KEY: process.env.AWS_SECRET_ACCESS_KEY || process.env.S3_SECRET_ACCESS_KEY || '',
     AWS_REGION: process.env.AWS_REGION || process.env.S3_REGION || 'ap-northeast-2',
     AWS_S3_BUCKET_NAME: process.env.AWS_S3_BUCKET_NAME || process.env.S3_BUCKET_NAME || 'wagent-products',
+    ADMIN_EMAIL: process.env.ADMIN_EMAIL || '',
+    ADMIN_PASSWORD_HASH: process.env.ADMIN_PASSWORD_HASH || '',
   },
 };
 
