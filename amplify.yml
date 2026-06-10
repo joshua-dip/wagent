@@ -27,6 +27,9 @@ frontend:
           export TOSS_SECRET_KEY=${TOSS_SECRET_KEY:-live_gsk_QbgMGZzorzjKRv65Mjljrl5E1em4}
           export TOSS_MID=${TOSS_MID:-payper8aqe}
           export NEXT_PUBLIC_TOSS_CLIENT_KEY=${NEXT_PUBLIC_TOSS_CLIENT_KEY:-live_gck_LkKEypNArWQ7G1BgeNBj3lmeaxYG}
+          export ADMIN_EMAIL="$ADMIN_EMAIL"
+          export ADMIN_PASSWORD_HASH="$ADMIN_PASSWORD_HASH"
+          echo "ADMIN_EMAIL length=${#ADMIN_EMAIL}, ADMIN_PASSWORD_HASH length=${#ADMIN_PASSWORD_HASH}"
           echo "Toss Payments 환경변수 설정 완료"
         - npm run build
   artifacts:
