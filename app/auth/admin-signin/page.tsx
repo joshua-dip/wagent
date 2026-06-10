@@ -90,7 +90,7 @@ function AdminSignInForm() {
                 </Label>
                 <Input
                   id="admin-email"
-                  type="email"
+                  type="text"
                   autoComplete="username"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
