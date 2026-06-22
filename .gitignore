@@ -33,6 +33,10 @@ yarn-error.log*
 # env files (can opt-in for committing if needed)
 .env*
 
+# secrets — 평문 자격증명이 담긴 메모/백업 파일 (절대 커밋 금지)
+mongodb-info.md
+amplify-fix.md
+
 # vercel
 .vercel
 
