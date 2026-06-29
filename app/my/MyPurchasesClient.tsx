@@ -62,6 +62,43 @@ export function MyPurchasesClient({ copy = defaultCopy }: { copy?: MyPurchasesCo
   const [purchases, setPurchases] = useState<Purchase[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [pric, setPric] = useState<number | null>(null)
+  const [attendanceToday, setAttendanceToday] = useState(false)
+  const [claiming, setClaiming] = useState(false)
+  const [claimMsg, setClaimMsg] = useState<string | null>(null)
+
+  useEffect(() => {
+    fetch('/api/pric/balance', { credentials: 'include' })
+      .then(r => r.json())
+      .then(d => {
+        if (typeof d?.pric === 'number') setPric(d.pric)
+        setAttendanceToday(!!d?.attendanceToday)
+      })
+      .catch(() => {})
+  }, [])
+
+  const handleAttendance = async () => {
+    setClaiming(true)
+    setClaimMsg(null)
+    try {
+      const res = await fetch('/api/pric/attendance', { method: 'POST', credentials: 'include' })
+      const data = await res.json()
+      if (res.ok && data.success) {
+        setPric(data.balance)
+        setAttendanceToday(true)
+        setClaimMsg(`🎉 +${(data.reward as number).toLocaleString()} 프릭!`)
+      } else if (data.alreadyChecked) {
+        setAttendanceToday(true)
+        setClaimMsg('오늘은 이미 출석했어요. 내일 다시!')
+      } else {
+        setClaimMsg(data.error || data.message || '출석 처리에 실패했습니다.')
+      }
+    } catch {
+      setClaimMsg('네트워크 오류가 발생했습니다.')
+    } finally {
+      setClaiming(false)
+    }
+  }
 
   const isAuthenticated = simpleAuth.isAuthenticated || !!session
   const isAuthLoading = simpleAuth.isLoading || status === "loading"
@@ -163,6 +200,32 @@ export function MyPurchasesClient({ copy = defaultCopy }: { copy?: MyPurchasesCo
                 <p className="text-gray-600 mt-1">{copy.pageSubtitle(purchases.length)}</p>
               </div>
             </div>
+
+            {pric !== null && (
+              <Card className="border-fuchsia-200 bg-fuchsia-50/50">
+                <CardContent className="py-4">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium text-fuchsia-900">🪙 보유 프릭</span>
+                    <span className="text-2xl font-bold text-fuchsia-700">
+                      {pric.toLocaleString()} <span className="text-base font-medium">프릭</span>
+                    </span>
+                  </div>
+                  <div className="mt-3 pt-3 border-t border-fuchsia-200/70 flex items-center justify-between gap-3">
+                    <div className="text-sm text-fuchsia-800">
+                      매일 출석하면 <b>1,000~5,000 프릭</b> 랜덤 지급!
+                      {claimMsg && <span className="ml-2 font-semibold text-fuchsia-700">{claimMsg}</span>}
+                    </div>
+                    <Button
+                      onClick={handleAttendance}
+                      disabled={claiming || attendanceToday}
+                      className="bg-fuchsia-600 hover:bg-fuchsia-700 text-white shrink-0 disabled:opacity-60"
+                    >
+                      {attendanceToday ? '오늘 출석 완료' : claiming ? '처리 중...' : '오늘 출석 체크'}
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
           </div>
 
           {error && (

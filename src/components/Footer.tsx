@@ -33,6 +33,9 @@ export default function Footer() {
                   <Link href="/" className="hover:text-emerald-700 transition-colors">조건영작배열</Link>
                 </li>
                 <li>
+                  <Link href="/essay-special" className="hover:text-emerald-700 transition-colors">서술형특강교재</Link>
+                </li>
+                <li>
                   <Link href="/my/purchases" className="hover:text-emerald-700 transition-colors">구매 내역</Link>
                 </li>
               </ul>

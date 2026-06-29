@@ -3,6 +3,7 @@ import connectDB from "@/lib/db";
 import User from "@/models/User";
 import EmailVerificationToken from "@/models/EmailVerificationToken";
 import { sendVerificationCodeEmail } from "@/lib/email";
+import { grantSignupBonus } from "@/lib/pric";
 
 export async function POST(request: NextRequest) {
   console.log('간단한 회원가입 API 시작 - 환경:', process.env.NODE_ENV);
@@ -107,6 +108,9 @@ export async function POST(request: NextRequest) {
       console.log('사용자 저장 완료:', newUser.email);
       userDoc = newUser;
     }
+
+    // 신규가입 보너스 50,000 프릭 (멱등 — 중복 지급 안 됨)
+    await grantSignupBonus(String(userDoc._id)).catch((e) => console.error('가입 보너스 지급 실패:', e));
 
     const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
     const expiresAt = new Date(Date.now() + 10 * 60 * 1000);

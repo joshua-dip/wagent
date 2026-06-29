@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import connectDB from '@/lib/db'
 import User from '@/models/User'
 import jwt from 'jsonwebtoken'
+import { grantSignupBonus } from '@/lib/pric'
 
 const KAKAO_CLIENT_ID = process.env.NEXT_PUBLIC_KAKAO_CLIENT_ID || ''
 const KAKAO_CLIENT_SECRET = process.env.KAKAO_CLIENT_SECRET || ''
@@ -100,6 +101,8 @@ export async function GET(request: NextRequest) {
         privacyAgreed: true, // 카카오 로그인 시 동의한 것으로 간주
         emailVerified: kakaoUser.kakao_account?.email ? true : false, // 이메일이 있으면 인증된 것으로 간주
       })
+      // 신규가입 보너스 50,000 프릭
+      await grantSignupBonus(String(user._id)).catch((e) => console.error('가입 보너스 지급 실패:', e))
     }
 
     // 5. JWT 토큰 생성 (기존 시스템과 동일한 방식)

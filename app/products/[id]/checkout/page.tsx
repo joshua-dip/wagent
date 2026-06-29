@@ -3,9 +3,9 @@
 import { useEffect, useRef, useState } from "react"
 import { useRouter, useParams } from "next/navigation"
 import Layout from "@/components/Layout"
-import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
+import { Input } from "@/components/ui/input"
 import { useSimpleAuth } from "@/hooks/useSimpleAuth"
 import { useSession } from "next-auth/react"
 import { Loader2, AlertCircle, ArrowLeft, FileText, ShieldCheck } from "lucide-react"
@@ -39,6 +39,8 @@ const CATEGORY_LABELS: Record<string, string> = {
   "grade3-material": "고3",
 }
 
+const MIN_CARD_AMOUNT = 100
+
 export default function ProductCheckoutPage() {
   const router = useRouter()
   const params = useParams()
@@ -50,8 +52,13 @@ export default function ProductCheckoutPage() {
   const [product, setProduct] = useState<Product | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [orderId, setOrderId] = useState("")
   const [authChecked, setAuthChecked] = useState(false)
+  const [paying, setPaying] = useState(false)
+  const [errorMessage, setErrorMessage] = useState("")
+
+  // 프릭
+  const [pricBalance, setPricBalance] = useState(0)
+  const [pricToUse, setPricToUse] = useState(0)
 
   const paymentWidgetRef = useRef<any>(null)
   const paymentMethodsWidgetRef = useRef<any>(null)
@@ -59,6 +66,12 @@ export default function ProductCheckoutPage() {
   const currentUser = simpleAuth.user || session?.user
   const isAuthenticated = simpleAuth.isAuthenticated || !!session
   const isAuthLoading = simpleAuth.isLoading || status === "loading"
+
+  const price = product ? Number(product.price) || 0 : 0
+  const maxPric = Math.min(pricBalance, price)
+  const payable = Math.max(0, price - pricToUse)
+  const cardTooSmall = payable > 0 && payable < MIN_CARD_AMOUNT
+  const fmt = (n: number) => new Intl.NumberFormat("ko-KR").format(n)
 
   // 상품 정보
   useEffect(() => {
@@ -85,14 +98,18 @@ export default function ProductCheckoutPage() {
     }
   }, [isAuthLoading, isAuthenticated, router])
 
+  // 프릭 잔액 로드
+  useEffect(() => {
+    if (!authChecked || !isAuthenticated) return
+    fetch("/api/pric/balance", { credentials: "include" })
+      .then((r) => r.json())
+      .then((d) => { if (typeof d?.pric === "number") setPricBalance(d.pric) })
+      .catch(() => {})
+  }, [authChecked, isAuthenticated])
+
   // Payment Widget 초기화
   useEffect(() => {
     if (!authChecked || !isAuthenticated || !product) return
-
-    const ts = Date.now()
-    const r1 = Math.random().toString(36).substr(2, 9)
-    const r2 = Math.random().toString(36).substr(2, 5)
-    setOrderId(`PRODUCT_${ts}_${r1}_${r2}`)
 
     const script = document.createElement("script")
     script.src = "https://js.tosspayments.com/v1/payment-widget"
@@ -105,7 +122,15 @@ export default function ProductCheckoutPage() {
     document.body.appendChild(script)
 
     return () => { script.parentNode?.removeChild(script) }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [authChecked, isAuthenticated, product])
+
+  // 프릭 사용액 변경 시 위젯 금액 동기화
+  useEffect(() => {
+    if (paymentMethodsWidgetRef.current && payable > 0) {
+      try { paymentMethodsWidgetRef.current.updateAmount(payable) } catch {}
+    }
+  }, [payable])
 
   const initializePaymentWidget = async () => {
     try {
@@ -139,7 +164,7 @@ export default function ProductCheckoutPage() {
 
       paymentMethodsWidgetRef.current = pw.renderPaymentMethods(
         "#payment-method",
-        { value: Number(product.price) || 0 },
+        { value: payable > 0 ? payable : (Number(product.price) || 0) },
         { variantKey: "DEFAULT" }
       )
       await pw.renderAgreement("#agreement", { variantKey: "AGREEMENT" })
@@ -150,27 +175,70 @@ export default function ProductCheckoutPage() {
   }
 
   const handlePayment = async () => {
-    if (!paymentWidgetRef.current || !product) {
+    setErrorMessage("")
+    if (!product) return
+    if (cardTooSmall) {
+      setErrorMessage(`카드 결제는 최소 ${MIN_CARD_AMOUNT}원부터 가능합니다. 프릭 사용을 줄이거나 전액 프릭으로 결제하세요.`)
+      return
+    }
+    if (payable > 0 && !paymentWidgetRef.current) {
       alert("결제 위젯이 초기화되지 않았습니다.")
       return
     }
+
+    const usePric = Math.max(0, Math.min(pricToUse, maxPric))
+    const newOrderId = `PRODUCT_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+    const cartItems = [{
+      productId: product._id,
+      title: product.title,
+      price,
+      category: product.category,
+    }]
+    setPaying(true)
+
+    // 주문 생성
     try {
+      const res = await fetch("/api/orders/create", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ orderId: newOrderId, cartItems, totalAmount: price, pricUsed: usePric }),
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        setPaying(false)
+        setErrorMessage(data.error || "주문 생성에 실패했습니다.")
+        return
+      }
+      if (!data.order?.requiresPayment) {
+        router.push(`/payment/success?pricOnly=1&orderId=${encodeURIComponent(newOrderId)}`)
+        return
+      }
+    } catch {
+      setPaying(false)
+      setErrorMessage("주문 생성 중 오류가 발생했습니다.")
+      return
+    }
+
+    // 카드 결제
+    try {
+      if (paymentMethodsWidgetRef.current) {
+        try { paymentMethodsWidgetRef.current.updateAmount(payable) } catch {}
+      }
       await paymentWidgetRef.current.requestPayment({
-        orderId,
+        orderId: newOrderId,
         orderName: product.title,
         successUrl: `${window.location.origin}/payment/success?productId=${productId}`,
         failUrl: `${window.location.origin}/payment/fail`,
         customerEmail: currentUser?.email || "guest@example.com",
         customerName: currentUser?.name || "고객",
-        customerMobilePhone: (currentUser as any)?.phone || "01000000000",
+        customerMobilePhone: (currentUser as { phone?: string })?.phone || "01000000000",
       })
     } catch {
-      alert("결제 요청 중 오류가 발생했습니다.")
+      setPaying(false)
+      setErrorMessage("결제 요청 중 오류가 발생했습니다.")
     }
   }
-
-  const price = product ? Number(product.price) || 0 : 0
-  const fmt = (n: number) => new Intl.NumberFormat("ko-KR").format(n)
 
   /* ── Error (no product) ── */
   if (error && !product) {
@@ -196,7 +264,6 @@ export default function ProductCheckoutPage() {
     <Layout>
       <div className="-mx-3 -mt-4 sm:-mx-6 sm:-mt-6">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
-          {/* Back */}
           <button
             type="button"
             onClick={() => router.back()}
@@ -206,20 +273,21 @@ export default function ProductCheckoutPage() {
             상품으로 돌아가기
           </button>
 
-          {/* Page title */}
           <div className="flex items-center gap-3 mb-8">
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-emerald-400 to-teal-500 text-white shadow-sm">
               <FileText className="h-5 w-5" />
             </div>
             <div>
               <h1 className="text-xl sm:text-2xl font-bold text-slate-900">결제하기</h1>
-              {product && (
-                <p className="text-sm text-slate-500">
-                  {product.title}
-                </p>
-              )}
+              {product && <p className="text-sm text-slate-500">{product.title}</p>}
             </div>
           </div>
+
+          {errorMessage && (
+            <div role="alert" className="mb-4 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+              {errorMessage}
+            </div>
+          )}
 
           {error ? (
             <div className="rounded-2xl border border-slate-200 bg-white p-10 text-center">
@@ -248,48 +316,91 @@ export default function ProductCheckoutPage() {
                   </div>
                   <div className="text-right shrink-0">
                     {(Number(product.originalPrice) || 0) > price && (
-                      <p className="text-xs text-slate-400 line-through">
-                        {fmt(Number(product.originalPrice) || 0)}원
-                      </p>
+                      <p className="text-xs text-slate-400 line-through">{fmt(Number(product.originalPrice) || 0)}원</p>
                     )}
                     <p className="text-lg font-bold text-slate-900">{fmt(price)}원</p>
                   </div>
                 </div>
 
-                <div className="mt-4 pt-4 border-t border-slate-100 flex justify-between items-center">
-                  <span className="font-semibold text-slate-900">총 결제 금액</span>
-                  <span className="text-xl font-bold text-emerald-700">{fmt(price)}원</span>
+                <div className="mt-4 pt-4 border-t border-slate-100 space-y-2">
+                  <div className="flex justify-between items-center text-sm text-slate-500">
+                    <span>상품 금액</span>
+                    <span>{fmt(price)}원</span>
+                  </div>
+                  {pricToUse > 0 && (
+                    <div className="flex justify-between items-center text-sm text-fuchsia-600">
+                      <span>프릭 사용</span>
+                      <span>- {fmt(pricToUse)}원</span>
+                    </div>
+                  )}
+                  <div className="flex justify-between items-center pt-2 border-t border-slate-100">
+                    <span className="font-semibold text-slate-900">카드 결제 금액</span>
+                    <span className="text-xl font-bold text-emerald-700">{fmt(payable)}원</span>
+                  </div>
                 </div>
               </div>
 
-              {/* Payment methods (Toss widget) */}
-              <div className="rounded-2xl border border-slate-200/80 bg-white p-5 sm:p-6">
-                <h2 className="text-sm font-semibold text-slate-900 mb-4">결제 수단</h2>
-                <div id="payment-method" className="min-h-[200px]" />
+              {/* 프릭 사용 */}
+              <div className="rounded-2xl border border-fuchsia-100 bg-white p-5 sm:p-6">
+                <h2 className="text-sm font-semibold text-slate-900 mb-3 flex items-center gap-2">
+                  🪙 프릭 사용 <span className="text-xs font-normal text-slate-400">보유 {fmt(pricBalance)} 프릭</span>
+                </h2>
+                {maxPric > 0 ? (
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <Input
+                      type="number"
+                      min={0}
+                      max={maxPric}
+                      value={pricToUse === 0 ? "" : pricToUse}
+                      placeholder="0"
+                      onChange={(e) => setPricToUse(Math.max(0, Math.min(Math.trunc(Number(e.target.value) || 0), maxPric)))}
+                      className="w-36"
+                    />
+                    <span className="text-sm text-slate-500">/ 최대 {fmt(maxPric)}</span>
+                    <Button type="button" variant="outline" size="sm" onClick={() => setPricToUse(maxPric)}>전액 사용</Button>
+                    {pricToUse > 0 && (
+                      <Button type="button" variant="ghost" size="sm" onClick={() => setPricToUse(0)}>사용 안 함</Button>
+                    )}
+                  </div>
+                ) : (
+                  <p className="text-sm text-slate-400">사용 가능한 프릭이 없습니다.</p>
+                )}
+                {cardTooSmall && (
+                  <p className="text-xs text-amber-600 mt-2">카드 결제는 최소 {MIN_CARD_AMOUNT}원부터 가능합니다. 프릭 사용을 줄이거나 전액 프릭으로 결제하세요.</p>
+                )}
               </div>
 
-              {/* Agreement (Toss widget) */}
-              <div className="rounded-2xl border border-slate-200/80 bg-white p-5 sm:p-6">
-                <div id="agreement" />
+              {/* Payment methods (전액 프릭이면 숨김) */}
+              <div className={payable > 0 ? "" : "hidden"}>
+                <div className="rounded-2xl border border-slate-200/80 bg-white p-5 sm:p-6">
+                  <h2 className="text-sm font-semibold text-slate-900 mb-4">결제 수단</h2>
+                  <div id="payment-method" className="min-h-[200px]" />
+                </div>
+                <div className="rounded-2xl border border-slate-200/80 bg-white p-5 sm:p-6 mt-4">
+                  <div id="agreement" />
+                </div>
               </div>
+
+              {payable === 0 && (
+                <div className="rounded-2xl border border-fuchsia-200 bg-fuchsia-50/40 p-5 text-center text-fuchsia-700 font-medium">
+                  프릭으로 전액 결제됩니다 — 카드 결제 없이 바로 구매 완료됩니다.
+                </div>
+              )}
 
               {/* Pay button */}
               <Button
                 onClick={handlePayment}
-                className="w-full h-14 text-base font-semibold bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 border-0 shadow-lg shadow-emerald-900/10 rounded-2xl"
+                disabled={paying || cardTooSmall}
+                className="w-full h-14 text-base font-semibold bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 border-0 shadow-lg shadow-emerald-900/10 rounded-2xl disabled:opacity-60"
               >
-                {fmt(price)}원 결제하기
+                {paying ? "처리 중..." : payable === 0 ? `프릭 ${fmt(pricToUse)}으로 결제하기` : `${fmt(payable)}원 결제하기`}
               </Button>
 
-              {/* Info */}
               <div className="flex items-start gap-2.5 rounded-xl bg-emerald-50/70 border border-emerald-100 p-4">
                 <ShieldCheck className="h-4 w-4 text-emerald-600 mt-0.5 shrink-0" />
                 <p className="text-xs text-emerald-800 leading-relaxed">
                   디지털 상품은 결제 후 즉시 다운로드가 가능합니다. 환불 정책은{" "}
-                  <a href="/refund-policy" className="underline underline-offset-2 hover:text-emerald-950">
-                    환불 규정
-                  </a>
-                  을 참고해 주세요.
+                  <a href="/refund-policy" className="underline underline-offset-2 hover:text-emerald-950">환불 규정</a>을 참고해 주세요.
                 </p>
               </div>
             </div>

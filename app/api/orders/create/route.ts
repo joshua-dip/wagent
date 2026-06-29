@@ -5,6 +5,7 @@ import connectDB from "@/lib/db";
 import Order from "@/models/Order";
 import { cookies } from "next/headers";
 import { verify } from "jsonwebtoken";
+import { getUserPric } from "@/lib/pric";
 
 export async function POST(request: NextRequest) {
   try {
@@ -32,13 +33,29 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "로그인이 필요합니다." }, { status: 401 });
     }
 
-    const { orderId, cartItems, totalAmount } = await request.json();
+    const { orderId, cartItems, totalAmount, pricUsed: pricUsedRaw } = await request.json();
 
     if (!orderId || !cartItems || !Array.isArray(cartItems) || cartItems.length === 0) {
       return NextResponse.json({ error: "주문 정보가 올바르지 않습니다." }, { status: 400 });
     }
 
     await connectDB();
+
+    // 프릭 사용액 검증 — 0 ~ min(잔액, 결제총액). 차감은 결제 승인 시점에 원자적으로.
+    const userId = currentUser.id || currentUser._id;
+    let pricUsed = Math.trunc(Number(pricUsedRaw) || 0);
+    if (!Number.isFinite(pricUsed) || pricUsed < 0) pricUsed = 0;
+    pricUsed = Math.min(pricUsed, Math.max(0, Math.trunc(Number(totalAmount) || 0)));
+    if (pricUsed > 0) {
+      const balance = await getUserPric(String(userId));
+      if (pricUsed > balance) {
+        return NextResponse.json(
+          { error: `프릭 잔액이 부족합니다. (보유 ${balance.toLocaleString()} 프릭)` },
+          { status: 400 },
+        );
+      }
+    }
+    const payableAmount = Math.max(0, (Number(totalAmount) || 0) - pricUsed);
 
     // 기존에 동일한 orderId가 있는지 확인
     const existingOrder = await Order.findOne({ orderId });
@@ -54,7 +71,7 @@ export async function POST(request: NextRequest) {
     try {
       order = await Order.create({
         orderId,
-        userId: currentUser.id || currentUser._id,
+        userId,
         userEmail: currentUser.email,
         cartItems: cartItems.map((item: any) => ({
           productId: item.productId,
@@ -63,6 +80,8 @@ export async function POST(request: NextRequest) {
           category: item.category
         })),
         totalAmount,
+        pricUsed,
+        payableAmount,
         status: 'PENDING',
         expiresAt: new Date(Date.now() + 30 * 60 * 1000) // 30분
       });
@@ -82,6 +101,9 @@ export async function POST(request: NextRequest) {
       order: {
         orderId: order.orderId,
         totalAmount: order.totalAmount,
+        pricUsed: order.pricUsed,
+        payableAmount: order.payableAmount,
+        requiresPayment: payableAmount > 0,
         itemCount: order.cartItems.length
       }
     });

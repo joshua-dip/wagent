@@ -38,6 +38,7 @@ interface User {
   createdAt: string
   purchaseCount: number
   totalSpent: number
+  pric?: number
   lastLogin?: string
 }
 
@@ -56,6 +57,35 @@ export default function AdminUsersPage() {
     userId: string
     userName: string
   } | null>(null)
+  /** 프릭 지급/회수 입력 (사용자별) */
+  const [pricInputs, setPricInputs] = useState<Record<string, string>>({})
+  const [pricBusy, setPricBusy] = useState<string | null>(null)
+
+  const handleAdjustPric = async (userId: string, sign: 1 | -1) => {
+    const amount = parseInt((pricInputs[userId] || '').trim(), 10)
+    if (!amount || amount <= 0) { alert('지급/회수할 프릭을 입력하세요.'); return }
+    if (sign < 0 && !confirm(`${amount.toLocaleString()} 프릭을 회수할까요? (잔액보다 많으면 0까지만 회수)`)) return
+    setPricBusy(userId)
+    try {
+      const res = await fetch(`/api/admin/users/${userId}/pric`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ delta: sign * amount }),
+      })
+      const data = await res.json()
+      if (res.ok && data.success) {
+        setUsers(prev => prev.map(u => u._id === userId ? { ...u, pric: data.balanceAfter } : u))
+        setPricInputs(prev => ({ ...prev, [userId]: '' }))
+      } else {
+        alert(data.error || '프릭 변경에 실패했습니다.')
+      }
+    } catch {
+      alert('네트워크 오류가 발생했습니다.')
+    } finally {
+      setPricBusy(null)
+    }
+  }
 
   const currentUser = simpleAuth.user || session?.user
   const isAuthenticated = simpleAuth.isAuthenticated || !!session
@@ -383,13 +413,46 @@ export default function AdminUsersPage() {
                             <ShoppingBag className="h-3 w-3 inline mr-1" />
                             구매 {user.purchaseCount}건 · {user.totalSpent.toLocaleString()}원
                           </span>
+                          <span className="text-xs font-semibold text-fuchsia-600">
+                            🪙 {(user.pric ?? 0).toLocaleString()} 프릭
+                          </span>
                         </div>
                       </div>
                     </div>
 
                     {/* 액션 버튼 (관리자 본인은 수정 불가) */}
                     {user.email !== "wnsrb2898@naver.com" && (
-                      <div className="flex gap-2">
+                      <div className="flex flex-col gap-2 items-end">
+                        {/* 프릭 지급/회수 */}
+                        <div className="flex items-center gap-1">
+                          <Input
+                            type="number"
+                            min={1}
+                            placeholder="프릭"
+                            value={pricInputs[user._id] ?? ''}
+                            onChange={(e) => setPricInputs(prev => ({ ...prev, [user._id]: e.target.value }))}
+                            className="w-20 h-8 text-sm"
+                          />
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            disabled={pricBusy === user._id}
+                            onClick={() => handleAdjustPric(user._id, 1)}
+                            className="gap-1 text-fuchsia-600 hover:text-fuchsia-700"
+                          >
+                            지급
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            disabled={pricBusy === user._id}
+                            onClick={() => handleAdjustPric(user._id, -1)}
+                            className="gap-1 text-gray-500 hover:text-gray-700"
+                          >
+                            회수
+                          </Button>
+                        </div>
+                        <div className="flex gap-2">
                         {user.isActive ? (
                           <Button
                             variant="outline"
@@ -436,6 +499,7 @@ export default function AdminUsersPage() {
                           <Trash2 className="h-4 w-4" />
                           삭제
                         </Button>
+                        </div>
                       </div>
                     )}
                   </div>

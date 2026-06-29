@@ -27,6 +27,35 @@ function PaymentSuccessContent() {
       const amount = searchParams.get('amount')
       const productId = searchParams.get('productId')
       const isCart = searchParams.get('isCart') === 'true'
+      const pricOnly = searchParams.get('pricOnly') === '1'
+
+      // 전액 프릭 결제 — Toss 없이 프릭으로만 확정
+      if (pricOnly) {
+        if (!orderId) {
+          setError('결제 정보가 올바르지 않습니다.')
+          setConfirming(false)
+          return
+        }
+        try {
+          const response = await fetch('/api/payments/pric-only', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ orderId }),
+          })
+          const data = await response.json()
+          if (response.ok) {
+            setPurchaseInfo(data.purchases)
+            clearCart()
+          } else {
+            setError(data.error || '프릭 결제에 실패했습니다.')
+          }
+        } catch {
+          setError('프릭 결제 중 오류가 발생했습니다.')
+        } finally {
+          setConfirming(false)
+        }
+        return
+      }
 
       if (!paymentKey || !orderId || !amount) {
         setError('결제 정보가 올바르지 않습니다.')

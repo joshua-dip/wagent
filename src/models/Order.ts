@@ -12,6 +12,10 @@ export interface IOrder extends Document {
     category: string;
   }>;
   totalAmount: number;
+  /** 사용한 프릭 (1프릭=1원). 기본 0. */
+  pricUsed: number;
+  /** 카드로 실제 결제할 금액 = totalAmount - pricUsed. 미설정(구버전)이면 totalAmount 로 간주. */
+  payableAmount?: number;
   status: 'PENDING' | 'CONFIRMED' | 'EXPIRED';
   createdAt: Date;
   expiresAt: Date;
@@ -38,9 +42,18 @@ const OrderSchema: Schema = new Schema({
     price: { type: Number, required: true },
     category: { type: String, required: true }
   }],
-  totalAmount: { 
-    type: Number, 
-    required: true 
+  totalAmount: {
+    type: Number,
+    required: true
+  },
+  pricUsed: {
+    type: Number,
+    default: 0,
+    min: 0
+  },
+  payableAmount: {
+    type: Number,
+    min: 0
   },
   status: {
     type: String,
