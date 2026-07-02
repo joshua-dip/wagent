@@ -3,7 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { cookies } from "next/headers";
 import { verify } from "jsonwebtoken";
-import { getPricStatus } from "@/lib/pric";
+import { getUserPric } from "@/lib/pric";
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -28,14 +28,14 @@ export async function GET(_request: NextRequest) {
 
   const userId = currentUser?.id || currentUser?._id;
   if (!userId) {
-    return NextResponse.json({ pric: 0, authenticated: false, attendanceToday: false });
+    return NextResponse.json({ pric: 0, authenticated: false });
   }
 
   try {
-    const { pric, attendanceToday } = await getPricStatus(String(userId));
-    return NextResponse.json({ pric, attendanceToday, authenticated: true });
+    const pric = await getUserPric(String(userId));
+    return NextResponse.json({ pric, authenticated: true });
   } catch (e) {
     console.error('프릭 잔액 조회 오류:', e);
-    return NextResponse.json({ pric: 0, authenticated: true, attendanceToday: false });
+    return NextResponse.json({ pric: 0, authenticated: true });
   }
 }

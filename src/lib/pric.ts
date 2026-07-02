@@ -34,32 +34,13 @@ async function recordLedger(
   }
 }
 
-/** 신규가입 보너스 / 출석 보상 범위. */
+/** 신규가입 보너스. */
 export const SIGNUP_BONUS = 50000;
-export const ATTENDANCE_MIN = 1000;
-export const ATTENDANCE_MAX = 5000;
 
 export async function getUserPric(userId: string): Promise<number> {
   await connectDB();
   const u = await User.findById(userId).select('pric').lean<{ pric?: number }>();
   return typeof u?.pric === 'number' && u.pric >= 0 ? u.pric : 0;
-}
-
-/** KST(UTC+9) 기준 오늘 0시. 출석 1일 1회 판정용. */
-export function attendanceDayStart(now: Date = new Date()): Date {
-  const KST = 9 * 60 * 60 * 1000;
-  const DAY = 24 * 60 * 60 * 1000;
-  return new Date(Math.floor((now.getTime() + KST) / DAY) * DAY - KST);
-}
-
-/** 잔액 + 오늘 출석 여부. */
-export async function getPricStatus(userId: string): Promise<{ pric: number; attendanceToday: boolean }> {
-  await connectDB();
-  const u = await User.findById(userId).select('pric lastAttendanceDate').lean<{ pric?: number; lastAttendanceDate?: Date }>();
-  const pric = typeof u?.pric === 'number' && u.pric >= 0 ? u.pric : 0;
-  const last = u?.lastAttendanceDate ? new Date(u.lastAttendanceDate) : null;
-  const attendanceToday = !!last && last.getTime() >= attendanceDayStart().getTime();
-  return { pric, attendanceToday };
 }
 
 /** 임의 kind 로 가산 + 원장 기록 (내부 공용). */
@@ -96,35 +77,6 @@ export async function grantBackfillPric(userId: string, amount: number, meta?: L
   return res ? { balanceAfter: res.balanceAfter } : null;
 }
 
-/** 출석 보상 — 1일 1회, 1000~5000(100 단위) 랜덤. 원자적 일일 점유. */
-export async function claimAttendance(
-  userId: string,
-): Promise<{ ok: boolean; alreadyChecked: boolean; reward: number; balanceAfter: number }> {
-  await connectDB();
-  const dayStart = attendanceDayStart();
-  const claimed = await User.findOneAndUpdate(
-    {
-      _id: userId,
-      $or: [
-        { lastAttendanceDate: { $exists: false } },
-        { lastAttendanceDate: null },
-        { lastAttendanceDate: { $lt: dayStart } },
-      ],
-    },
-    { $set: { lastAttendanceDate: new Date() } },
-    { new: false },
-  ).select('_id');
-
-  if (!claimed) {
-    const exists = await User.exists({ _id: userId });
-    return { ok: false, alreadyChecked: !!exists, reward: 0, balanceAfter: await getUserPric(userId) };
-  }
-
-  const steps = (ATTENDANCE_MAX - ATTENDANCE_MIN) / 100; // 40
-  const reward = ATTENDANCE_MIN + Math.floor(Math.random() * (steps + 1)) * 100; // 1000~5000
-  const res = await addPric(userId, reward, 'attendance', { note: '출석 보상' });
-  return { ok: true, alreadyChecked: false, reward, balanceAfter: res?.balanceAfter ?? (await getUserPric(userId)) };
-}
 
 /** 관리자 지급 (amount>0). */
 export async function grantPric(
