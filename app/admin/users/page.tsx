@@ -17,6 +17,7 @@ import {
   UserX,
   Mail,
   Calendar,
+  Clock,
   ShoppingBag,
   AlertCircle,
   CheckCircle,
@@ -39,7 +40,7 @@ interface User {
   purchaseCount: number
   totalSpent: number
   pric?: number
-  lastLogin?: string
+  lastLoginAt?: string
 }
 
 export default function AdminUsersPage() {
@@ -388,14 +389,20 @@ export default function AdminUsersPage() {
                           )}
                         </div>
                         
-                        <div className="flex items-center gap-4 mt-1 text-sm text-gray-600">
+                        <div className="flex items-center gap-4 mt-1 text-sm text-gray-600 flex-wrap">
                           <span className="flex items-center gap-1">
                             <Mail className="h-3 w-3" />
                             {user.email}
                           </span>
                           <span className="flex items-center gap-1">
                             <Calendar className="h-3 w-3" />
-                            {new Date(user.createdAt).toLocaleDateString()}
+                            가입 {new Date(user.createdAt).toLocaleDateString()}
+                          </span>
+                          <span className="flex items-center gap-1" title="마지막 로그인 시각">
+                            <Clock className="h-3 w-3" />
+                            최근접속 {user.lastLoginAt
+                              ? new Date(user.lastLoginAt).toLocaleString('ko-KR', { dateStyle: 'short', timeStyle: 'short' })
+                              : '기록 없음'}
                           </span>
                         </div>
                         

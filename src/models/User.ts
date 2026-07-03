@@ -15,6 +15,8 @@ export interface IUser extends Document {
   privacyAgreed: boolean
   /** 프릭(pric) 잔액 — 1프릭 = 1원. 관리자 지급, 결제 시 차감. */
   pric: number
+  /** 최근 로그인(접속) 시각 — 로그인 성공 시 기록. */
+  lastLoginAt?: Date
   createdAt: Date
   updatedAt: Date
   emailVerified: boolean
@@ -96,6 +98,9 @@ const userSchema = new Schema<IUser>({
     type: Number,
     default: 0,
     min: 0
+  },
+  lastLoginAt: {
+    type: Date
   },
   emailVerified: {
     type: Boolean,

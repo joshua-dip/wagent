@@ -101,6 +101,9 @@ export async function POST(request: NextRequest) {
           );
         }
         
+        // 최근 접속 시각 기록 (로그인 성공 시)
+        await User.updateOne({ _id: user._id }, { $set: { lastLoginAt: new Date() } }).catch(() => {});
+
         const token = jwt.sign(
           {
             id: user._id.toString(),

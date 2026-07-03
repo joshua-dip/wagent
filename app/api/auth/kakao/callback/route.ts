@@ -105,6 +105,9 @@ export async function GET(request: NextRequest) {
       await grantSignupBonus(String(user._id)).catch((e) => console.error('가입 보너스 지급 실패:', e))
     }
 
+    // 최근 접속 시각 기록 (로그인 성공 시)
+    await User.updateOne({ _id: user._id }, { $set: { lastLoginAt: new Date() } }).catch(() => {})
+
     // 5. JWT 토큰 생성 (기존 시스템과 동일한 방식)
     const JWT_SECRET = process.env.NEXTAUTH_SECRET || 'simple-auth-secret-key'
     
