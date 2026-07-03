@@ -15,6 +15,7 @@ function PaymentSuccessContent() {
   const [confirming, setConfirming] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [purchaseInfo, setPurchaseInfo] = useState<any>(null)
+  const [chargeInfo, setChargeInfo] = useState<{ charged: number; balance: number } | null>(null)
   const confirmedRef = useRef(false)
 
   useEffect(() => {
@@ -28,6 +29,34 @@ function PaymentSuccessContent() {
       const productId = searchParams.get('productId')
       const isCart = searchParams.get('isCart') === 'true'
       const pricOnly = searchParams.get('pricOnly') === '1'
+      const pricCharge = searchParams.get('pricCharge') === '1'
+
+      // 프릭 충전 — 결제 승인 후 프릭 적립
+      if (pricCharge) {
+        if (!paymentKey || !orderId || !amount) {
+          setError('결제 정보가 올바르지 않습니다.')
+          setConfirming(false)
+          return
+        }
+        try {
+          const response = await fetch('/api/pric/charge/confirm', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ paymentKey, orderId, amount: parseInt(amount) }),
+          })
+          const data = await response.json()
+          if (response.ok && data.success) {
+            setChargeInfo({ charged: data.charged, balance: data.balance })
+          } else {
+            setError(data.error || '프릭 충전에 실패했습니다.')
+          }
+        } catch {
+          setError('프릭 충전 중 오류가 발생했습니다.')
+        } finally {
+          setConfirming(false)
+        }
+        return
+      }
 
       // 전액 프릭 결제 — Toss 없이 프릭으로만 확정
       if (pricOnly) {
@@ -135,6 +164,39 @@ function PaymentSuccessContent() {
                   <Home className="w-4 h-4 mr-2" />
                   홈으로
                 </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </Layout>
+    )
+  }
+
+  if (chargeInfo) {
+    return (
+      <Layout>
+        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-fuchsia-50 to-purple-50 py-12 px-4">
+          <Card className="w-full max-w-md border-fuchsia-200 shadow-xl">
+            <CardHeader className="text-center pb-4">
+              <div className="w-20 h-20 bg-gradient-to-r from-fuchsia-500 to-purple-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                <CheckCircle2 className="w-12 h-12 text-white" />
+              </div>
+              <CardTitle className="text-2xl font-bold text-gray-900">프릭 충전 완료</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="bg-white rounded-lg border border-fuchsia-100 p-6 text-center">
+                <p className="text-sm text-gray-500 mb-1">충전한 프릭</p>
+                <p className="text-3xl font-bold text-fuchsia-700 mb-4">+{new Intl.NumberFormat('ko-KR').format(chargeInfo.charged)} 프릭</p>
+                <div className="pt-4 border-t border-fuchsia-100 flex justify-between items-center">
+                  <span className="text-sm text-gray-500">현재 보유 프릭</span>
+                  <span className="text-xl font-bold text-gray-900">{new Intl.NumberFormat('ko-KR').format(chargeInfo.balance)} 프릭</span>
+                </div>
+              </div>
+              <div className="flex gap-3">
+                <Button className="flex-1 bg-gradient-to-r from-fuchsia-600 to-purple-600 hover:from-fuchsia-700 hover:to-purple-700" onClick={() => router.push('/')}>
+                  자료 구매하러 가기
+                </Button>
+                <Button variant="outline" onClick={() => router.push('/my/purchases')}>마이페이지</Button>
               </div>
             </CardContent>
           </Card>

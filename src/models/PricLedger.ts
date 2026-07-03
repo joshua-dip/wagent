@@ -7,6 +7,7 @@ export type PricKind =
   | 'spend'
   | 'refund'
   | 'signup_bonus'   // 신규가입 보너스
+  | 'charge'         // 카드 결제로 프릭 충전
   | 'backfill';      // 기존회원 일괄지급
 
 export interface IPricLedger extends Document {
@@ -28,7 +29,7 @@ const PricLedgerSchema: Schema = new Schema({
   balanceAfter: { type: Number, required: true },
   kind: {
     type: String,
-    enum: ['admin_grant', 'admin_recall', 'spend', 'refund', 'signup_bonus', 'backfill'],
+    enum: ['admin_grant', 'admin_recall', 'spend', 'refund', 'signup_bonus', 'charge', 'backfill'],
     required: true,
   },
   meta: { type: Schema.Types.Mixed, default: {} },

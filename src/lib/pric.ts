@@ -68,6 +68,12 @@ export async function grantSignupBonus(userId: string, meta?: LedgerMeta): Promi
   return res ? { balanceAfter: res.balanceAfter } : null;
 }
 
+/** 카드 결제로 프릭 충전 적립. */
+export async function creditPricCharge(userId: string, amount: number, meta?: LedgerMeta): Promise<{ balanceAfter: number } | null> {
+  const res = await addPric(userId, amount, 'charge', { note: '프릭 충전', ...meta });
+  return res ? { balanceAfter: res.balanceAfter } : null;
+}
+
 /** 기존회원 일괄지급 (멱등 — 가입보너스/백필 이력 있으면 skip). 스크립트에서 사용. */
 export async function grantBackfillPric(userId: string, amount: number, meta?: LedgerMeta): Promise<{ balanceAfter: number } | null> {
   await connectDB();

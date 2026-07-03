@@ -174,11 +174,19 @@ export function MyPurchasesClient({ copy = defaultCopy }: { copy?: MyPurchasesCo
 
             {pric !== null && (
               <Card className="border-fuchsia-200 bg-fuchsia-50/50">
-                <CardContent className="py-4 flex items-center justify-between">
+                <CardContent className="py-4 flex items-center justify-between gap-3">
                   <span className="text-sm font-medium text-fuchsia-900">🪙 보유 프릭</span>
-                  <span className="text-2xl font-bold text-fuchsia-700">
-                    {pric.toLocaleString()} <span className="text-base font-medium">프릭</span>
-                  </span>
+                  <div className="flex items-center gap-3">
+                    <span className="text-2xl font-bold text-fuchsia-700">
+                      {pric.toLocaleString()} <span className="text-base font-medium">프릭</span>
+                    </span>
+                    <Button
+                      onClick={() => router.push('/my/pric-charge')}
+                      className="bg-fuchsia-600 hover:bg-fuchsia-700 text-white shrink-0"
+                    >
+                      충전
+                    </Button>
+                  </div>
                 </CardContent>
               </Card>
             )}
