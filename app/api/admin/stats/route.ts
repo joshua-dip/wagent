@@ -3,6 +3,7 @@ import connectDB from '@/lib/db'
 import User from '@/models/User'
 import Product from '@/models/Product'
 import Purchase from '@/models/Purchase'
+import PricCharge from '@/models/PricCharge'
 import { requireAdmin } from '@/lib/adminAuth'
 
 export async function GET(request: NextRequest) {
@@ -42,10 +43,16 @@ export async function GET(request: NextRequest) {
       })
     ])
 
-    // 매출 계산
+    // 매출 계산 (정가 기준 gross)
     const totalRevenue = allPurchases.reduce((sum, p) => sum + (p.amount || 0), 0)
     const lastMonthRevenue = lastMonthPurchases.reduce((sum, p) => sum + (p.amount || 0), 0)
     const twoMonthsAgoRevenue = twoMonthsAgoPurchases.reduce((sum, p) => sum + (p.amount || 0), 0)
+
+    // 프릭 분리: 전액 프릭으로 결제된 상품(비현금) + 프릭 충전으로 들어온 현금
+    const pricPaidRevenue = allPurchases.reduce((sum, p) => sum + (p.paymentMethod === 'PRIC' ? (p.amount || 0) : 0), 0)
+    const pricChargeDocs = await PricCharge.find({ status: 'CONFIRMED' }).select('payAmount').lean()
+    const pricChargeRevenue = (pricChargeDocs as Array<{ payAmount?: number }>).reduce((sum, c) => sum + (c.payAmount || 0), 0)
+    const cashProductRevenue = totalRevenue - pricPaidRevenue // 카드 상품매출(≈현금, 부분 프릭 사용분은 정가 포함)
 
     // 성장률 계산
     const revenueGrowth = twoMonthsAgoRevenue > 0 
@@ -72,6 +79,9 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       stats: {
         totalRevenue: Math.round(totalRevenue),
+        pricPaidRevenue: Math.round(pricPaidRevenue),
+        cashProductRevenue: Math.round(cashProductRevenue),
+        pricChargeRevenue: Math.round(pricChargeRevenue),
         revenueGrowth: Math.round(revenueGrowth * 10) / 10,
         totalUsers,
         userGrowth: Math.round(userGrowth * 10) / 10,

@@ -27,6 +27,9 @@ import { cn } from "@/lib/utils"
 
 interface DashboardStats {
   totalRevenue: number
+  pricPaidRevenue: number
+  cashProductRevenue: number
+  pricChargeRevenue: number
   revenueGrowth: number
   totalUsers: number
   userGrowth: number
@@ -69,7 +72,7 @@ export default function AdminDashboardPage() {
   const router = useRouter()
   const [loading, setLoading] = useState(true)
   const [stats, setStats] = useState<DashboardStats>({
-    totalRevenue: 0, revenueGrowth: 0,
+    totalRevenue: 0, pricPaidRevenue: 0, cashProductRevenue: 0, pricChargeRevenue: 0, revenueGrowth: 0,
     totalUsers: 0, userGrowth: 0,
     totalProducts: 0, activeProducts: 0,
     totalOrders: 0, orderGrowth: 0,
@@ -249,6 +252,30 @@ export default function AdminDashboardPage() {
               {Math.abs(stats.downloadGrowth)}%
             </div>
           </div>
+        </div>
+
+        {/* 매출 상세 (프릭 분리) */}
+        <div className="rounded-xl border border-slate-200 bg-white p-4 sm:p-5">
+          <p className="text-sm font-semibold text-slate-900 mb-3">매출 상세 <span className="text-xs font-normal text-slate-400">· 프릭 분리</span></p>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <div>
+              <p className="text-xs text-slate-500">카드 상품매출 <span className="text-slate-400">(≈현금)</span></p>
+              <p className="text-lg font-bold text-emerald-700">{stats.cashProductRevenue.toLocaleString()}원</p>
+            </div>
+            <div>
+              <p className="text-xs text-slate-500">프릭 충전 매출 <span className="text-slate-400">(현금)</span></p>
+              <p className="text-lg font-bold text-fuchsia-700">{stats.pricChargeRevenue.toLocaleString()}원</p>
+            </div>
+            <div>
+              <p className="text-xs text-slate-500">프릭 결제분 <span className="text-slate-400">(비현금)</span></p>
+              <p className="text-lg font-bold text-slate-400">{stats.pricPaidRevenue.toLocaleString()}원</p>
+            </div>
+            <div>
+              <p className="text-xs text-slate-500">총 매출 <span className="text-slate-400">(정가)</span></p>
+              <p className="text-lg font-bold text-slate-900">{stats.totalRevenue.toLocaleString()}원</p>
+            </div>
+          </div>
+          <p className="text-[11px] text-slate-400 mt-2 leading-relaxed">※ 상단 「총 매출」은 정가 기준이라 프릭 결제분이 포함됩니다. 실제 현금 유입 ≈ 카드 상품매출 + 프릭 충전 매출. (부분 프릭 사용분은 카드 상품매출에 정가로 포함되는 근사치)</p>
         </div>
 
         {/* Recent Orders + Top Products */}
