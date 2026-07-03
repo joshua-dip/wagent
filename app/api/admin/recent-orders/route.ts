@@ -18,10 +18,13 @@ export async function GET(request: NextRequest) {
 
     // 주문 데이터 포맷팅
     const orders = purchases.map(purchase => ({
-      _id: purchase._id.toString(),
+      _id: String(purchase._id),
+      orderId: (purchase.orderId as string) || '',
       userEmail: purchase.userEmail,
       userName: purchase.userEmail.split('@')[0], // 이메일에서 이름 추출
       totalAmount: purchase.amount,
+      paymentMethod: (purchase.paymentMethod as string) || 'CARD',
+      paymentStatus: (purchase.paymentStatus as string) || 'COMPLETED',
       status: purchase.status || 'CONFIRMED',
       createdAt: purchase.createdAt,
       itemCount: 1 // 현재는 1개씩

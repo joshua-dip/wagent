@@ -43,9 +43,12 @@ interface DashboardStats {
 
 interface RecentOrder {
   _id: string
+  orderId: string
   userEmail: string
   userName: string
   totalAmount: number
+  paymentMethod: string
+  paymentStatus: string
   status: string
   createdAt: string
   itemCount: number
@@ -80,6 +83,31 @@ export default function AdminDashboardPage() {
   })
   const [recentOrders, setRecentOrders] = useState<RecentOrder[]>([])
   const [topProducts, setTopProducts] = useState<TopProduct[]>([])
+  const [refundingId, setRefundingId] = useState<string | null>(null)
+
+  const handleRefund = async (order: RecentOrder) => {
+    if (!order.orderId) { alert('주문 정보가 없어 환불할 수 없습니다.'); return }
+    if (!confirm(`${order.userName} · ${order.totalAmount.toLocaleString()}원 주문을 환불할까요?\n\n카드 결제는 취소되고, 사용한 프릭은 복원됩니다.`)) return
+    setRefundingId(order._id)
+    try {
+      const res = await fetch(`/api/admin/orders/${encodeURIComponent(order.orderId)}/refund`, {
+        method: 'POST', credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ reason: '관리자 환불' }),
+      })
+      const data = await res.json()
+      if (res.ok && data.success) {
+        setRecentOrders(prev => prev.map(o => o.orderId === order.orderId ? { ...o, paymentStatus: 'REFUNDED' } : o))
+        alert(data.message || '환불 완료')
+      } else {
+        alert(data.error || '환불에 실패했습니다.')
+      }
+    } catch {
+      alert('네트워크 오류가 발생했습니다.')
+    } finally {
+      setRefundingId(null)
+    }
+  }
 
   const currentUser = simpleAuth.user || session?.user
   const isAuthenticated = simpleAuth.isAuthenticated || !!session
@@ -304,18 +332,28 @@ export default function AdminDashboardPage() {
                         </span>
                       </div>
                     </div>
-                    <div className="text-right shrink-0 ml-3">
+                    <div className="text-right shrink-0 ml-3 flex flex-col items-end gap-1">
                       <p className="text-sm font-bold text-slate-900">{order.totalAmount.toLocaleString()}원</p>
-                      <Badge className={cn(
-                        "mt-1 text-[10px] border-0 rounded-full",
-                        order.status === "CONFIRMED"
-                          ? "bg-emerald-100 text-emerald-700"
-                          : order.status === "CANCELED"
-                            ? "bg-red-100 text-red-600"
-                            : "bg-amber-100 text-amber-700"
-                      )}>
-                        {STATUS_LABEL[order.status] || order.status}
-                      </Badge>
+                      {order.paymentStatus === "REFUNDED" ? (
+                        <Badge className="text-[10px] border-0 rounded-full bg-red-100 text-red-600">환불됨</Badge>
+                      ) : (
+                        <div className="flex items-center gap-1.5">
+                          <Badge className={cn(
+                            "text-[10px] border-0 rounded-full",
+                            order.paymentMethod === "PRIC" ? "bg-fuchsia-100 text-fuchsia-700" : "bg-emerald-100 text-emerald-700"
+                          )}>
+                            {order.paymentMethod === "PRIC" ? "프릭" : "카드"}
+                          </Badge>
+                          <button
+                            type="button"
+                            onClick={() => handleRefund(order)}
+                            disabled={refundingId === order._id || !order.orderId}
+                            className="text-[11px] px-2 py-0.5 rounded border border-red-200 text-red-600 hover:bg-red-50 disabled:opacity-40"
+                          >
+                            {refundingId === order._id ? "처리중" : "환불"}
+                          </button>
+                        </div>
+                      )}
                     </div>
                   </div>
                 ))
