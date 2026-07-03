@@ -5,7 +5,8 @@ export interface IPricCharge extends Document {
   orderId: string;
   userId: string;
   userEmail?: string;
-  amount: number; // 충전할 프릭 = 결제 원화
+  amount: number; // 충전(적립)할 프릭 수
+  payAmount: number; // 실제 결제할 원화 (할인 적용)
   status: 'PENDING' | 'CONFIRMED' | 'EXPIRED';
   paymentKey?: string;
   createdAt: Date;
@@ -18,6 +19,7 @@ const PricChargeSchema: Schema = new Schema(
     userId: { type: String, required: true, index: true },
     userEmail: { type: String },
     amount: { type: Number, required: true, min: 1 },
+    payAmount: { type: Number, required: true, min: 0 },
     status: { type: String, enum: ['PENDING', 'CONFIRMED', 'EXPIRED'], default: 'PENDING' },
     paymentKey: { type: String },
     expiresAt: { type: Date, required: true, default: () => new Date(Date.now() + 30 * 60 * 1000) },

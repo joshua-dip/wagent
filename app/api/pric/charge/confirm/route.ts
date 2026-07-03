@@ -45,8 +45,10 @@ export async function POST(request: NextRequest) {
     if (charge.status === 'CONFIRMED') {
       return NextResponse.json({ success: true, alreadyDone: true, charged: charge.amount, balance: await getUserPric(user.id) });
     }
-    if (charge.amount !== amount) {
-      return NextResponse.json({ error: "결제 금액이 충전 금액과 일치하지 않습니다." }, { status: 400 });
+    // Toss 결제액(amount)은 할인 적용된 payAmount 와 일치해야 함. 적립은 charge.amount(프릭).
+    const payAmount = typeof charge.payAmount === 'number' ? charge.payAmount : charge.amount;
+    if (payAmount !== amount) {
+      return NextResponse.json({ error: "결제 금액이 주문 금액과 일치하지 않습니다." }, { status: 400 });
     }
 
     // 토스 승인 (카드 캡처)

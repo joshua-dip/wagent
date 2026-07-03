@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input'
 import { useSimpleAuth } from '@/hooks/useSimpleAuth'
 import { useSession } from 'next-auth/react'
 import { Loader2, Coins, ChevronLeft, AlertCircle } from 'lucide-react'
+import { pricChargePayable, pricChargeDiscountRate } from '@/lib/pric-charge'
 
 declare global {
   interface Window {
@@ -41,6 +42,8 @@ export default function PricChargePage() {
   const isAuthLoading = simpleAuth.isLoading || status === 'loading'
 
   const fmt = (n: number) => new Intl.NumberFormat('ko-KR').format(n)
+  const discountRate = pricChargeDiscountRate(amount)
+  const payable = pricChargePayable(amount)
 
   // 인증
   useEffect(() => {
@@ -75,12 +78,12 @@ export default function PricChargePage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [authChecked, isAuthenticated])
 
-  // 금액 변경 → 위젯 동기화
+  // 결제 금액(할인 적용) 변경 → 위젯 동기화
   useEffect(() => {
-    if (paymentMethodsWidgetRef.current && amount >= MIN) {
-      try { paymentMethodsWidgetRef.current.updateAmount(amount) } catch {}
+    if (paymentMethodsWidgetRef.current && payable > 0) {
+      try { paymentMethodsWidgetRef.current.updateAmount(payable) } catch {}
     }
-  }, [amount])
+  }, [payable])
 
   const initWidget = async () => {
     try {
@@ -106,7 +109,7 @@ export default function PricChargePage() {
       const customerKey = currentUser?.email ? btoa(currentUser.email).substring(0, 50) : `GUEST_${Date.now()}`
       const pw = window.PaymentWidget(clientKey, customerKey)
       paymentWidgetRef.current = pw
-      paymentMethodsWidgetRef.current = pw.renderPaymentMethods('#payment-method', { value: amount }, { variantKey: 'DEFAULT' })
+      paymentMethodsWidgetRef.current = pw.renderPaymentMethods('#payment-method', { value: payable }, { variantKey: 'DEFAULT' })
       await pw.renderAgreement('#agreement', { variantKey: 'AGREEMENT' })
     } catch (err) {
       setError(err instanceof Error ? err.message : '결제 위젯 초기화 실패')
@@ -118,7 +121,7 @@ export default function PricChargePage() {
 
   const handleCharge = async () => {
     setErrorMessage('')
-    if (amount < MIN) { setErrorMessage(`최소 ${fmt(MIN)}원부터 충전할 수 있습니다.`); return }
+    if (amount < MIN) { setErrorMessage(`최소 ${fmt(MIN)} 프릭부터 충전할 수 있습니다.`); return }
     if (!paymentWidgetRef.current) { setErrorMessage('결제 위젯이 초기화되지 않았습니다.'); return }
 
     const orderId = `PRIC_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
@@ -137,7 +140,7 @@ export default function PricChargePage() {
     }
 
     try {
-      try { paymentMethodsWidgetRef.current?.updateAmount(amount) } catch {}
+      try { paymentMethodsWidgetRef.current?.updateAmount(payable) } catch {}
       await paymentWidgetRef.current.requestPayment({
         orderId,
         orderName: `프릭 ${fmt(amount)} 충전`,
@@ -170,7 +173,7 @@ export default function PricChargePage() {
             </div>
             <div>
               <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">프릭 충전</h1>
-              <p className="text-gray-600 mt-1 text-sm">보유 프릭 <span className="font-bold text-fuchsia-700">{fmt(pricBalance)}</span> · 1프릭 = 1원</p>
+              <p className="text-gray-600 mt-1 text-sm">보유 프릭 <span className="font-bold text-fuchsia-700">{fmt(pricBalance)}</span> · 많이 충전할수록 최대 15% 할인</p>
             </div>
           </div>
 
@@ -192,19 +195,26 @@ export default function PricChargePage() {
               <Card className="shadow-md">
                 <CardHeader><CardTitle className="text-lg">충전 금액</CardTitle></CardHeader>
                 <CardContent>
-                  <div className="flex flex-wrap gap-2 mb-4">
-                    {PRESETS.map((p) => (
-                      <button
-                        key={p}
-                        type="button"
-                        onClick={() => setAmount(p)}
-                        className={`px-4 py-2 rounded-lg text-sm font-semibold border transition-colors ${
-                          amount === p ? 'bg-fuchsia-600 border-fuchsia-600 text-white' : 'bg-white border-slate-200 text-slate-700 hover:border-fuchsia-300'
-                        }`}
-                      >
-                        {fmt(p)} 프릭
-                      </button>
-                    ))}
+                  <div className="grid grid-cols-3 sm:grid-cols-5 gap-2 mb-4">
+                    {PRESETS.map((p) => {
+                      const active = amount === p
+                      const r = pricChargeDiscountRate(p)
+                      return (
+                        <button
+                          key={p}
+                          type="button"
+                          onClick={() => setAmount(p)}
+                          className={`flex flex-col items-center leading-tight py-2.5 px-2 rounded-lg text-sm font-semibold border transition-colors ${
+                            active ? 'bg-fuchsia-600 border-fuchsia-600 text-white' : 'bg-white border-slate-200 text-slate-700 hover:border-fuchsia-300'
+                          }`}
+                        >
+                          <span>{fmt(p)}</span>
+                          {r > 0 && (
+                            <span className={`text-[10px] font-bold ${active ? 'text-fuchsia-100' : 'text-rose-600'}`}>{Math.round(r * 100)}% 할인</span>
+                          )}
+                        </button>
+                      )
+                    })}
                   </div>
                   <div className="flex items-center gap-2">
                     <Input
@@ -218,9 +228,22 @@ export default function PricChargePage() {
                     />
                     <span className="text-sm text-slate-500">프릭 직접 입력 (최소 {fmt(MIN)})</span>
                   </div>
-                  <div className="mt-4 pt-4 border-t flex justify-between items-center">
-                    <span className="text-lg font-semibold text-gray-900">결제 금액</span>
-                    <span className="text-2xl font-bold text-fuchsia-700">{fmt(amount)}원</span>
+
+                  <div className="mt-4 pt-4 border-t space-y-1.5">
+                    <div className="flex justify-between items-center text-sm text-slate-500">
+                      <span>충전 프릭</span>
+                      <span>{fmt(amount)} 프릭</span>
+                    </div>
+                    {discountRate > 0 && (
+                      <div className="flex justify-between items-center text-sm text-rose-600 font-medium">
+                        <span>{Math.round(discountRate * 100)}% 할인</span>
+                        <span>- {fmt(amount - payable)}원</span>
+                      </div>
+                    )}
+                    <div className="flex justify-between items-center pt-2 border-t">
+                      <span className="text-lg font-semibold text-gray-900">결제 금액</span>
+                      <span className="text-2xl font-bold text-fuchsia-700">{fmt(payable)}원</span>
+                    </div>
                   </div>
                 </CardContent>
               </Card>
@@ -237,13 +260,14 @@ export default function PricChargePage() {
                 disabled={paying || amount < MIN}
                 className="w-full bg-gradient-to-r from-fuchsia-600 to-purple-600 hover:from-fuchsia-700 hover:to-purple-700 py-6 text-lg font-semibold disabled:opacity-60"
               >
-                {paying ? '처리 중...' : `${fmt(amount)}원 결제하고 ${fmt(amount)} 프릭 충전`}
+                {paying ? '처리 중...' : `${fmt(payable)}원 결제하고 ${fmt(amount)} 프릭 충전`}
               </Button>
 
               <div className="bg-gray-50 p-4 rounded-lg">
                 <p className="text-sm text-gray-600">
+                  • 많이 충전할수록 할인: 1만+ 5% · 3만+ 7% · 5만+ 10% · 10만+ 15%<br />
                   • 충전한 프릭은 자료 구매 시 결제 금액에 사용할 수 있습니다.<br />
-                  • 1프릭 = 1원, 결제 완료 즉시 잔액에 반영됩니다.
+                  • 결제 완료 즉시 잔액에 반영됩니다.
                 </p>
               </div>
             </div>

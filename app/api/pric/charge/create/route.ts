@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import connectDB from "@/lib/db";
 import PricCharge from "@/models/PricCharge";
 import { getAuthUser } from "@/lib/authUser";
+import { pricChargePayable, pricChargeDiscountRate } from "@/lib/pric-charge";
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -29,12 +30,16 @@ export async function POST(request: NextRequest) {
     );
   }
 
+  // 충전할 프릭(amount) → 할인 적용된 실결제 원화(payAmount). 서버에서 계산(클라 신뢰 X).
+  const payAmount = pricChargePayable(amount);
+  const discountRate = pricChargeDiscountRate(amount);
+
   try {
     await connectDB();
     const dup = await PricCharge.findOne({ orderId });
     if (dup) return NextResponse.json({ error: "중복된 주문입니다. 새로고침 후 다시 시도하세요." }, { status: 409 });
-    await PricCharge.create({ orderId, userId: user.id, userEmail: user.email, amount, status: 'PENDING' });
-    return NextResponse.json({ success: true, orderId, amount });
+    await PricCharge.create({ orderId, userId: user.id, userEmail: user.email, amount, payAmount, status: 'PENDING' });
+    return NextResponse.json({ success: true, orderId, pric: amount, payAmount, discountRate });
   } catch (e) {
     if ((e as { code?: number })?.code === 11000) {
       return NextResponse.json({ error: "중복된 주문입니다." }, { status: 409 });
