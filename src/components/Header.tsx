@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button"
 import { useSession, signOut } from "next-auth/react"
-import { User, LogOut, ShoppingCart, Download, Coins, FileText, GraduationCap } from "lucide-react"
+import { User, LogOut, ShoppingCart, Download, Coins, FileText, GraduationCap, BookMarked } from "lucide-react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { useSimpleAuth } from "@/hooks/useSimpleAuth"
@@ -15,6 +15,7 @@ type NavKind = "paid" | "free"
 const NAV_ITEMS: { href: string; label: string; kind: NavKind; icon: typeof Coins }[] = [
   { href: "/", label: "조건영작배열", kind: "paid", icon: Coins },
   { href: "/essay-special", label: "서술형특강교재", kind: "paid", icon: GraduationCap },
+  { href: "/curator", label: "그래머 큐레이터", kind: "paid", icon: BookMarked },
   { href: "/blog", label: "Blog", kind: "free", icon: FileText },
 ]
 
