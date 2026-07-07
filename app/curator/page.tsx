@@ -53,6 +53,10 @@ export default function CuratorLandingPage() {
             </Link>
           </div>
 
+          <p className="text-center mt-6">
+            <Link href="/curator/practice" className="text-sm font-medium text-emerald-700 hover:underline">또는 문법 문제은행에서 바로 연습하기 →</Link>
+          </p>
+
           <p className="text-center text-xs text-slate-400 mt-8">
             청구기호 예) <span className="font-mono text-slate-500">GC-101 문장의 5형식</span> · <span className="font-mono text-slate-500">GC-401 관계대명사</span>
           </p>
