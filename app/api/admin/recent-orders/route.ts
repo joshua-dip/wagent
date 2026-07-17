@@ -22,6 +22,7 @@ export async function GET(request: NextRequest) {
       orderId: (purchase.orderId as string) || '',
       userEmail: purchase.userEmail,
       userName: purchase.userEmail.split('@')[0], // 이메일에서 이름 추출
+      productTitle: (purchase.productTitle as string) || '(상품 정보 없음)',
       totalAmount: purchase.amount,
       paymentMethod: (purchase.paymentMethod as string) || 'CARD',
       paymentStatus: (purchase.paymentStatus as string) || 'COMPLETED',

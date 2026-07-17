@@ -46,6 +46,7 @@ interface RecentOrder {
   orderId: string
   userEmail: string
   userName: string
+  productTitle: string
   totalAmount: number
   paymentMethod: string
   paymentStatus: string
@@ -87,7 +88,7 @@ export default function AdminDashboardPage() {
 
   const handleRefund = async (order: RecentOrder) => {
     if (!order.orderId) { alert('주문 정보가 없어 환불할 수 없습니다.'); return }
-    if (!confirm(`${order.userName} · ${order.totalAmount.toLocaleString()}원 주문을 환불할까요?\n\n카드 결제는 취소되고, 사용한 프릭은 복원됩니다.`)) return
+    if (!confirm(`${order.productTitle}\n${order.userName} · ${order.totalAmount.toLocaleString()}원 주문을 환불할까요?\n\n카드 결제는 취소되고, 사용한 프릭은 복원됩니다.`)) return
     setRefundingId(order._id)
     try {
       const res = await fetch(`/api/admin/orders/${encodeURIComponent(order.orderId)}/refund`, {
@@ -323,11 +324,11 @@ export default function AdminDashboardPage() {
                 recentOrders.map((order) => (
                   <div key={order._id} className="flex items-center justify-between rounded-xl bg-slate-50/80 p-3.5 hover:bg-slate-100/80 transition-colors">
                     <div className="min-w-0 flex-1">
-                      <p className="text-sm font-medium text-slate-900 truncate">{order.userName}</p>
+                      <p className="text-sm font-medium text-slate-900 truncate">{order.productTitle}</p>
                       <div className="flex items-center gap-2 mt-1">
-                        <span className="text-xs text-slate-400">{order.itemCount}개</span>
+                        <span className="text-xs text-slate-500 truncate max-w-[10rem]">{order.userName}</span>
                         <span className="text-xs text-slate-300">·</span>
-                        <span className="text-xs text-slate-400">
+                        <span className="text-xs text-slate-400 shrink-0">
                           {new Date(order.createdAt).toLocaleDateString("ko-KR")}
                         </span>
                       </div>
