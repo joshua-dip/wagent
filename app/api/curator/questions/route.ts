@@ -10,7 +10,10 @@ export async function GET(request: NextRequest) {
   try {
     await connectDB()
     const setName = request.nextUrl.searchParams.get('set')?.trim() || 'default'
-    const qs = await DiagnosticQuestion.find({ setName, isActive: true }).sort({ order: 1, createdAt: 1 }).lean()
+    const sample = Math.min(200, Math.max(0, Number(request.nextUrl.searchParams.get('sample')) || 0))
+    const qs = sample > 0
+      ? await DiagnosticQuestion.aggregate([{ $match: { setName, isActive: true } }, { $sample: { size: sample } }])
+      : await DiagnosticQuestion.find({ setName, isActive: true }).sort({ order: 1, createdAt: 1 }).lean()
     const questions = (qs as Array<{ _id: unknown; prompt?: string; choices?: Array<{ text?: string }> }>).map((q) => ({
       _id: String(q._id),
       prompt: q.prompt ?? '',
