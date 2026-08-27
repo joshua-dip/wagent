@@ -14,7 +14,8 @@ import { cn } from "@/lib/utils"
 type NavKind = "paid" | "free"
 const NAV_ITEMS: { href: string; label: string; kind: NavKind; icon: typeof Coins }[] = [
   { href: "/", label: "조건영작배열", kind: "paid", icon: Coins },
-  { href: "/essay-special", label: "서술형특강교재", kind: "paid", icon: GraduationCap },
+  // 서술형특강교재 — 상단 메뉴에서 숨김 (복구하려면 주석 해제). 페이지(/essay-special)는 유지.
+  // { href: "/essay-special", label: "서술형특강교재", kind: "paid", icon: GraduationCap },
   // 그래머 큐레이터 — 상단 메뉴에서 숨김 (복구하려면 주석 해제). 페이지/관리자 기능은 유지.
   // { href: "/curator", label: "그래머 큐레이터", kind: "paid", icon: BookMarked },
   { href: "/blog", label: "Blog", kind: "free", icon: FileText },
