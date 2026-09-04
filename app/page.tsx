@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect, useCallback, useMemo } from "react"
 import { useSession } from "next-auth/react"
 import { useSimpleAuth } from "@/hooks/useSimpleAuth"
 import { useCart } from "@/contexts/CartContext"
@@ -58,7 +58,9 @@ const GRADE_CARDS = [
   },
 ]
 
-const EXAMS = [
+/** 폴백 전용 — 실제 목록은 /api/products/exam-rounds 로 상품 태그에서 집계한다.
+  * (하드코딩만 쓰던 시절, 새 회차를 적재해도 칩이 없어 화면에 안 뜨는 사고가 있었다) */
+const FALLBACK_EXAMS = [
   { id: "26년 9월", label: "26년 9월" },
   { id: "26년 6월", label: "26년 6월" },
   { id: "26년 5월", label: "26년 5월" },
@@ -67,7 +69,7 @@ const EXAMS = [
   { id: "25년 3월", label: "25년 3월" },
 ]
 
-const EXAM_GRADES: Record<string, readonly string[]> = {
+const FALLBACK_EXAM_GRADES: Record<string, readonly string[]> = {
   "26년 9월": ["고1", "고2", "고3"],
   "26년 6월": ["고1", "고2", "고3"],
   "26년 5월": ["고3"],
@@ -76,7 +78,7 @@ const EXAM_GRADES: Record<string, readonly string[]> = {
   "25년 3월": ["고1", "고2", "고3"],
 }
 
-const EXAM_TO_ROUND: Record<string, string> = {
+const FALLBACK_EXAM_TO_ROUND: Record<string, string> = {
   "26년 9월": "26-09",
   "26년 6월": "26-06",
   "26년 5월": "26-05",
@@ -193,11 +195,27 @@ export default function HomePage() {
 
   const [selectedGrade, setSelectedGrade] = useState<string>("고3")
   const [selectedExam, setSelectedExam] = useState("26년 9월")
+  /** 상품 태그에서 집계한 회차 목록. 실패 시 FALLBACK_* 사용. */
+  const [examList, setExamList] = useState<{ id: string; label: string; round: string; grades: string[] }[]>([])
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
   const [drawerOpen, setDrawerOpen] = useState(false)
   const [downloadingId, setDownloadingId] = useState<string | null>(null)
   const [purchasedIds, setPurchasedIds] = useState<Set<string>>(new Set())
+
+  /* 회차 목록·매핑 — API 집계가 있으면 그걸, 없으면 하드코딩 폴백. */
+  const EXAMS = useMemo(
+    () => (examList.length > 0 ? examList.map((e) => ({ id: e.id, label: e.label })) : FALLBACK_EXAMS),
+    [examList],
+  )
+  const EXAM_GRADES = useMemo<Record<string, readonly string[]>>(() => {
+    if (examList.length === 0) return FALLBACK_EXAM_GRADES
+    return Object.fromEntries(examList.map((e) => [e.id, e.grades]))
+  }, [examList])
+  const EXAM_TO_ROUND = useMemo<Record<string, string>>(() => {
+    if (examList.length === 0) return FALLBACK_EXAM_TO_ROUND
+    return Object.fromEntries(examList.map((e) => [e.id, e.round]))
+  }, [examList])
 
   const fetchProducts = useCallback(async (grade: string, exam: string) => {
     try {
@@ -230,6 +248,17 @@ export default function HomePage() {
       return
     }
     let cancelled = false
+    fetch("/api/products/exam-rounds")
+      .then((r) => r.json())
+      .then((d) => {
+        const list = Array.isArray(d?.exams) ? d.exams : []
+        if (list.length === 0) return
+        setExamList(list)
+        // 최신 회차를 기본 선택으로 (현재 선택이 목록에 없을 때만 교체)
+        setSelectedExam((cur) => (list.some((e: { id: string }) => e.id === cur) ? cur : list[0].id))
+      })
+      .catch(() => {})
+
     fetch("/api/purchases/my-purchases")
       .then((r) => (r.ok ? r.json() : null))
       .then((data) => {
