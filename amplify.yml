@@ -31,6 +31,10 @@ frontend:
           export ADMIN_PASSWORD_HASH="$ADMIN_PASSWORD_HASH"
           echo "ADMIN_EMAIL length=${#ADMIN_EMAIL}, ADMIN_PASSWORD_HASH length=${#ADMIN_PASSWORD_HASH}"
           echo "Toss Payments 환경변수 설정 완료"
+        # 페이퍼릭 ingest 공유 시크릿 — Amplify 콘솔 값이 SSR 런타임(API 라우트)까지
+        # 가려면 빌드 전에 .env.production 에 써야 한다. 없으면 checkIngestSecret 이
+        # 503 'PAYPERIC_INGEST_SECRET 미설정' 을 낸다.
+        - env | grep -e PAYPERIC_ >> .env.production || true
         - npm run build
   artifacts:
     baseDirectory: .next
