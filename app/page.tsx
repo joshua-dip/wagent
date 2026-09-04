@@ -59,6 +59,7 @@ const GRADE_CARDS = [
 ]
 
 const EXAMS = [
+  { id: "26년 9월", label: "26년 9월" },
   { id: "26년 6월", label: "26년 6월" },
   { id: "26년 5월", label: "26년 5월" },
   { id: "26년 3월", label: "26년 3월" },
@@ -67,6 +68,7 @@ const EXAMS = [
 ]
 
 const EXAM_GRADES: Record<string, readonly string[]> = {
+  "26년 9월": ["고1", "고2", "고3"],
   "26년 6월": ["고1", "고2", "고3"],
   "26년 5월": ["고3"],
   "26년 3월": ["고1", "고2", "고3"],
@@ -75,6 +77,7 @@ const EXAM_GRADES: Record<string, readonly string[]> = {
 }
 
 const EXAM_TO_ROUND: Record<string, string> = {
+  "26년 9월": "26-09",
   "26년 6월": "26-06",
   "26년 5월": "26-05",
   "26년 3월": "26-03",
@@ -189,7 +192,7 @@ export default function HomePage() {
   const isAuthenticated = simpleAuth.isAuthenticated || !!session
 
   const [selectedGrade, setSelectedGrade] = useState<string>("고3")
-  const [selectedExam, setSelectedExam] = useState("26년 5월")
+  const [selectedExam, setSelectedExam] = useState("26년 9월")
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
   const [drawerOpen, setDrawerOpen] = useState(false)
